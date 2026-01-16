@@ -7,7 +7,7 @@ const drawerWidth = 280;
 
 export default function AdminLayout({ children }) {
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f1f5f9" }}>
       <CssBaseline />
 
       {/* HEADER */}
@@ -21,16 +21,23 @@ export default function AdminLayout({ children }) {
         component="main"
         sx={{
           flexGrow: 1,
-          ml: 0,
-          p: 3,
-          bgcolor: "#f1f5f9",
+          width: { sm: `calc(100% - ${drawerWidth}px)` }, // Đảm bảo chiếm hết phần còn lại
           minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        {/* Spacer cho Header */}
-        <Toolbar />
+        {/* Toolbar này đóng vai trò là phần đệm dưới Header */}
+        <Toolbar /> 
 
-        <Box sx={{ p: 3 }}>
+        {/* Nội dung thực tế */}
+        <Box 
+          sx={{ 
+            p: { xs: 2, md: 4 }, // Padding linh hoạt theo thiết bị
+            flexGrow: 1,         // Giúp box này giãn hết chiều cao còn lại
+            width: "100%",
+          }}
+        >
           {children}
         </Box>
       </Box>

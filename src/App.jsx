@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
 import UserManagement from "./pages/admin/UserManagement";
 import AdminLayout from "./components/AdminLayout";
+// import Profile from "../pages/admin/Profile";
 
 
 export default function App() {
@@ -23,6 +24,7 @@ export default function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/admin" element={<AdminLayout><AdminHome /></AdminLayout>} />
 <Route path="/admin/users" element={<AdminLayout><UserManagement /></AdminLayout>} />
+{/* <Route path="profile" element={<Profile />} /> */}
 
       {/* Protected */}
     {/* ADMIN */}
