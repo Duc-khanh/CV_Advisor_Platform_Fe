@@ -19,7 +19,7 @@ export default function StatCard({ title, value, icon, color }) {
       <Box sx={{ 
         p: 1.5, 
         borderRadius: 3, 
-        bgcolor: `${color}10`, // Màu icon nhạt 10% làm nền
+        bgcolor: `${color}10`, 
         color: color,
         display: "flex"
       }}>

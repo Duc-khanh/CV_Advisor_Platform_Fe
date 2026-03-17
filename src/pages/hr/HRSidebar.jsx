@@ -16,11 +16,11 @@ export default function HRSidebar() {
   };
 
   const menuItems = [
-    { text: "Dashboard", icon: <Dashboard />, path: "/hr", color: "#2d6a4f" }, // Xanh lá đậm
-    { text: "Tin tuyển dụng", icon: <PostAdd />, path: "/hr/jobs", color: "#0077b6" }, // Xanh dương
-    { text: "Ứng viên", icon: <Groups />, path: "/hr/candidates", color: "#d97706" }, // Cam
-    { text: "Lịch phỏng vấn", icon: <EventNote />, path: "/hr/interviews", color: "#7209b7" }, // Tím
-    { text: "Cài đặt", icon: <Settings />, path: "/hr/settings", color: "#64748b" }, // Xám Slate
+    { text: "Dashboard", icon: <Dashboard />, path: "/hr", color: "#2d6a4f" }, 
+    { text: "Tin tuyển dụng", icon: <PostAdd />, path: "/hr/jobs", color: "#0077b6" }, 
+    { text: "Ứng viên", icon: <Groups />, path: "/hr/candidates", color: "#d97706" }, 
+    { text: "Lịch phỏng vấn", icon: <EventNote />, path: "/hr/interviews", color: "#7209b7" }, 
+    { text: "Cài đặt", icon: <Settings />, path: "/hr/settings", color: "#64748b" }, 
   ];
 
   return (
@@ -32,7 +32,7 @@ export default function HRSidebar() {
         [`& .MuiDrawer-paper`]: { 
           width: drawerWidth, 
           boxSizing: "border-box", 
-          bgcolor: "#ffffff", // Chuyển về nền trắng thuần
+          bgcolor: "#ffffff",
           borderRight: "1px solid #edf2f7",
           display: "flex",
           flexDirection: "column",
@@ -56,13 +56,13 @@ export default function HRSidebar() {
                   sx={{ 
                     borderRadius: 2.5, 
                     border: "1.5px solid",
-                    borderColor: `${item.color}15`, // Viền mặc định cực nhạt
+                    borderColor: `${item.color}15`, 
                     bgcolor: "#ffffff",
                     color: "#64748b",
                     transition: "all 0.25s ease",
                     "& .MuiListItemIcon-root": { color: item.color, minWidth: 40 },
                     "&:hover": { 
-                      bgcolor: `${item.color}08`, // Nền nhạt khi hover
+                      bgcolor: `${item.color}08`,
                       borderColor: item.color,
                       color: item.color,
                       transform: "translateX(4px)",

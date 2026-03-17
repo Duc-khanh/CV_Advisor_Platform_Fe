@@ -1,12 +1,18 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import UserHome from "./pages/user/UserHome";
 import AdminHome from "./pages/admin/AdminHome";
-import HrHome from "./pages/hr/HrHome";
+import HrDashboard from "./pages/hr/HrDashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
 import UserManagement from "./pages/admin/UserManagement";
 import AdminLayout from "./components/AdminLayout";
+import HrJobManagement from "./pages/hr/HrJobManagement";
+import CompanyApplications from "./pages/hr/CompanyApplications";
+import JobDetail from "./pages/user/JobDetail";
+import PrivacyPolicy from "./pages/user/PrivacyPolicy";
+import FavoriteJobs from "./pages/user/FavoriteJobs";
+import AppliedJobs from "./pages/User/AppliedJobs";
 // import Profile from "../pages/admin/Profile";
 
 
@@ -23,7 +29,14 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/admin" element={<AdminLayout><AdminHome /></AdminLayout>} />
+      <Route path="/user/job/:id" element={<JobDetail />} />
 <Route path="/admin/users" element={<AdminLayout><UserManagement /></AdminLayout>} />
+<Route path="/privacy-policy" element={<PrivacyPolicy />} />
+<Route path="/user/favorite-jobs" element={<FavoriteJobs />} />
+<Route path="/user/applied-jobs" element={<AppliedJobs />} />
+ <Route path="applications" element={<CompanyApplications />} />
+
+
 {/* <Route path="profile" element={<Profile />} /> */}
 
       {/* Protected */}
@@ -74,14 +87,33 @@ export default function App() {
 />
 
 
-      <Route
-        path="/hr"
-        element={
-          <ProtectedRoute role="HR">
-            <HrHome />
-          </ProtectedRoute>
-        }
-      />
+     <Route
+  path="/hr"
+  element={
+    <ProtectedRoute role="HR">
+      <HrDashboard />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/hr/jobs"
+  element={
+    <ProtectedRoute role="HR">
+      <HrJobManagement />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/hr/applications"
+  element={
+    <ProtectedRoute role="HR">
+      <CompanyApplications />
+    </ProtectedRoute>
+  }
+/>
+
     </Routes>
   );
 }

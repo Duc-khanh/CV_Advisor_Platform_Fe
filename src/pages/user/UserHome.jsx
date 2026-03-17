@@ -1,15 +1,29 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import CareerRoadmap from "./CareerRoadmap";
+import { useNavigate } from "react-router-dom";
 import { 
   Box, Grid, Typography, Button, Container, TextField, 
-  InputAdornment, Stack, Paper, Divider, Chip, LinearProgress 
+  InputAdornment, Stack, Paper, Divider, LinearProgress, 
+  IconButton, Avatar, Pagination 
 } from "@mui/material";
 import { 
-  Search, CloudUpload, LocationOn, AutoAwesome 
+  Search, LocationOn, AutoAwesome, FavoriteBorder, Favorite 
 } from "@mui/icons-material";
-import CandidateHeader from "./CandidateHeader";
+import UserLayout from "../../components/UserLayout";
 import AIAnalysisCard from "./AIAnalysisCard";
-import AdminFooter from "../admin/AdminFooter";
+import HeroSection from "./HeroSection";
 
 export default function UserHome() {
+  const navigate = useNavigate();
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState({ keyword: "", location: "" });
+
+  // LOGIC PHÂN TRANG
+  const [currentPage, setCurrentPage] = useState(1);
+  const jobsPerPage = 12;
+
   const aiData = {
     score: 85,
     strengths: ["Kỹ năng ReactJS tốt", "Kinh nghiệm làm việc nhóm", "Tư duy logic mạnh"],
@@ -17,157 +31,175 @@ export default function UserHome() {
     missingSkills: ["Docker", "Kubernetes", "AWS Certified", "IELTS 6.5+"]
   };
 
+  /* ===== HÀM LẤY AUTH HEADER (Đồng bộ với JobDetail) ===== */
+  const getAuthHeader = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    return { Authorization: `Bearer ${token}` };
+  };
+
+  /* ===== FETCH DANH SÁCH CÔNG VIỆC ===== */
+  const fetchJobs = async () => {
+    setLoading(true);
+    const authHeader = getAuthHeader(); 
+    try {
+      const response = await axios.get("http://localhost:8080/api/public/jobs", {
+        params: {
+          keyword: searchQuery.keyword,
+          location: searchQuery.location
+        },
+        headers: authHeader || {} // Gửi token để nhận trạng thái isFavorite từ server
+      });
+      setJobs(response.data);
+      setCurrentPage(1);
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách công việc:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  /* ===== LOGIC TOGGLE FAVORITE (Đồng bộ với JobDetail) ===== */
+  const handleToggleFavorite = async (e, jobId, currentFavoriteStatus) => {
+    e.stopPropagation(); // Ngăn sự kiện click Paper chuyển sang trang chi tiết
+    
+    const authHeader = getAuthHeader();
+    if (!authHeader) {
+      alert("Vui lòng đăng nhập để thực hiện chức năng này");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      // Gọi đúng API endpoint mà JobDetail đang sử dụng
+      await axios.post(
+        `http://localhost:8080/api/user/jobs/favorite/${jobId}`,
+        null,
+        { headers: authHeader }
+      );
+
+      // Cập nhật state jobs cục bộ để giao diện thay đổi ngay lập tức
+      setJobs((prevJobs) =>
+        prevJobs.map((job) =>
+          job.jobId === jobId ? { ...job, isFavorite: !currentFavoriteStatus } : job
+        )
+      );
+    } catch (err) {
+      console.error("Lỗi toggle favorite:", err);
+      alert("Không thể thực hiện thao tác");
+    }
+  };
+
+  // Logic phân trang
+  const indexOfLastJob = currentPage * jobsPerPage;
+  const indexOfFirstJob = indexOfLastJob - jobsPerPage;
+  const currentJobs = jobs.slice(indexOfFirstJob, indexOfLastJob);
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+    const section = document.getElementById('job-list-section');
+    if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    fetchJobs();
+  };
+
   return (
-    <Box sx={{ bgcolor: "#ffffff", minHeight: "100vh", width: "100%" }}>
-      <CandidateHeader />
+    <UserLayout>
+      {/* 1. HERO SECTION */}
+     <HeroSection 
+        searchQuery={searchQuery} 
+        setSearchQuery={setSearchQuery} 
+        onSearch={handleSearch} 
+      />
 
-      {/* 1. HERO SECTION - TRÀN MÀN HÌNH */}
-      <Box sx={{ 
-        width: "100%",
-        bgcolor: "#f8faff", 
-        pt: 12, pb: 18, 
-        borderBottom: "1px solid #eff6ff",
-        backgroundImage: "radial-gradient(circle at 90% 10%, #e0e7ff 0%, transparent 20%)" 
-      }}>
-        <Container maxWidth={false} sx={{ px: { xs: 4, md: 10 } }}>
-          <Box sx={{ textAlign: 'center', mb: 6 }}>
-            <Typography variant="h2" fontWeight="900" sx={{ color: "#1e293b", mb: 2, letterSpacing: -2, fontSize: { xs: '2.5rem', md: '4rem' } }}>
-              Tìm việc làm <span style={{ color: '#6366f1' }}>thông minh</span> hơn với AI
-            </Typography>
-            <Typography variant="h6" color="text.secondary" sx={{ mb: 6, maxWidth: 850, mx: 'auto', fontSize: '1.25rem' }}>
-              Hệ thống tự động phân tích CV và kết nối bạn với những cơ hội phù hợp nhất dựa trên năng lực thực tế của chính bạn.
-            </Typography>
-
-            {/* THANH TÌM KIẾM TO RỘNG */}
-            <Paper elevation={0} sx={{ 
-              p: 1.5, borderRadius: 6, display: 'flex', gap: 1, 
-              boxShadow: '0 25px 60px rgba(99, 102, 241, 0.1)',
-              maxWidth: 1100, mx: 'auto', border: '1px solid #e2e8f0',
-              flexDirection: { xs: 'column', md: 'row' }
-            }}>
-              <TextField 
-                fullWidth variant="standard" placeholder="Vị trí ứng tuyển, kỹ năng..." 
-                InputProps={{ 
-                  disableUnderline: true, 
-                  startAdornment: <InputAdornment position="start"><Search sx={{ml: 2, color: '#6366f1'}} /></InputAdornment> 
-                }}
-                sx={{ px: 2, py: 1 }}
-              />
-              <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', md: 'block' } }} />
-              <TextField 
-                variant="standard" placeholder="Địa điểm" 
-                InputProps={{ 
-                  disableUnderline: true, 
-                  startAdornment: <InputAdornment position="start"><LocationOn sx={{ml: 2, color: '#94a3b8'}} /></InputAdornment> 
-                }}
-                sx={{ px: 2, py: 1, width: { xs: '100%', md: 350 } }}
-              />
-              <Button variant="contained" sx={{ px: 8, py: 2, borderRadius: 5, bgcolor: '#6366f1', fontWeight: 800, textTransform: 'none', fontSize: '1.1rem' }}>
-                Tìm kiếm ngay
-              </Button>
-            </Paper>
-          </Box>
-        </Container>
-      </Box>
-
-      {/* 2. AI ANALYSIS SECTION - TRÀN RỘNG NHƯNG NỔI LÊN TRÊN */}
+      {/* 2. AI ANALYSIS SECTION */}
       <Container maxWidth={false} sx={{ mt: -10, mb: 12, px: { xs: 4, md: 10 }, position: 'relative', zIndex: 2 }}>
-        <Box sx={{ maxWidth: 1400, mx: 'auto' }}>
-            <AIAnalysisCard {...aiData} />
-        </Box>
+        <AIAnalysisCard {...aiData} />
       </Container>
 
-      {/* 3. VIỆC LÀM GỢI Ý - TRÀN RỘNG */}
-      <Container maxWidth={false} sx={{ mb: 15, px: { xs: 4, md: 10 } }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 6 }}>
-          <Box>
-            <Stack direction="row" spacing={1} alignItems="center" mb={1}>
-              <AutoAwesome sx={{ color: '#f59e0b', fontSize: 24 }} />
-              <Typography variant="subtitle2" fontWeight="900" color="#6366f1" sx={{ letterSpacing: 2, textTransform: 'uppercase' }}>AI Matching Performance</Typography>
-            </Stack>
-            <Typography variant="h3" fontWeight="900" sx={{ color: '#1e293b' }}>Cơ hội dành riêng cho bạn</Typography>
-          </Box>
-          <Button variant="outlined" sx={{ fontWeight: 800, color: '#6366f1', borderRadius: 3, px: 4, py: 1.5, borderWidth: 2, '&:hover': { borderWidth: 2 } }}>
-            Xem tất cả việc làm →
-          </Button>
-        </Stack>
+      {/* 3. DANH SÁCH VIỆC LÀM */}
+      <Container id="job-list-section" maxWidth={false} sx={{ mb: 15, px: { xs: 4, md: 10 } }}>
+        <Typography variant="h3" fontWeight="900" textAlign="center" sx={{ mb: 6, color: '#1e293b' }}>
+          Cơ hội dành riêng cho bạn
+        </Typography>
 
-        <Grid container spacing={4}>
-          {[1, 2, 3, 4].map((item) => (
-            <Grid item xs={12} key={item}>
-              <Paper variant="outlined" sx={{ 
-                p: 4, borderRadius: 5, transition: '0.4s', 
-                "&:hover": { borderColor: '#6366f1', transform: 'translateY(-5px)', boxShadow: '0 20px 40px rgba(0,0,0,0.05)' }, 
-                cursor: 'pointer', border: '1px solid #e2e8f0' 
-              }}>
-                <Grid container alignItems="center" spacing={2}>
-                  <Grid item xs={12} md={8}>
-                    <Typography variant="h5" fontWeight="900" sx={{ mb: 1 }}>Senior Frontend Developer (ReactJS / Next.js)</Typography>
-                    <Typography variant="h6" color="#6366f1" fontWeight="700" sx={{ mb: 2 }}>Tập đoàn Công nghệ Toàn cầu • $2500 - $4000</Typography>
-                    <Stack direction="row" spacing={1.5} flexWrap="wrap">
-                      {["React", "TypeScript", "AI Integration", "Tailwind"].map(tag => (
-                        <Chip key={tag} label={tag} sx={{ fontWeight: 600, bgcolor: '#f1f5f9' }} />
-                      ))}
-                    </Stack>
-                  </Grid>
-                  <Grid item xs={12} md={4} sx={{ textAlign: { md: 'right' }, mt: { xs: 3, md: 0 } }}>
-                    <Box sx={{ mb: 2 }}>
-                      <Chip 
-                        icon={<AutoAwesome sx={{ fontSize: '1rem !important', color: '#0369a1 !important' }} />}
-                        label="95% MATCH SCORE" 
-                        sx={{ bgcolor: '#e0f2fe', color: '#0369a1', fontWeight: 900, px: 2, py: 2.5 }} 
-                      />
-                    </Box>
-                    <Button variant="contained" disableElevation sx={{ borderRadius: 3, bgcolor: '#1e293b', px: 5, py: 1.5, fontWeight: 700, textTransform: 'none' }}>
-                        Ứng tuyển ngay
-                    </Button>
-                  </Grid>
-                </Grid>
-              </Paper>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
-
-      {/* 4. LỘ TRÌNH PHÁT TRIỂN - TRÀN MÀN HÌNH MÀU TỐI */}
-      <Box sx={{ bgcolor: "#0f172a", py: 15, color: "white", width: "100%" }}>
-        <Container maxWidth={false} sx={{ px: { xs: 4, md: 12 } }}>
-          <Grid container spacing={10} alignItems="center">
-            <Grid item xs={12} md={6}>
-              <Typography variant="h3" fontWeight="900" mb={3} sx={{ lineHeight: 1.2 }}>Nâng cấp sự nghiệp <br/>với AI Mentor</Typography>
-              <Typography variant="h6" sx={{ opacity: 0.7, mb: 6, lineHeight: 1.6 }}>
-                Dựa trên phân tích CV sâu, AI nhận thấy bạn chỉ cần bổ sung kỹ năng <b>Docker</b> và <b>AWS Cloud</b> để có thể tiếp cận các vị trí Senior với mức lương cao hơn 40%.
-              </Typography>
-              <Button variant="contained" sx={{ bgcolor: '#6366f1', px: 6, py: 2, borderRadius: 4, fontWeight: 800, fontSize: '1.1rem', '&:hover': { bgcolor: '#4f46e5' } }}>
-                Khám phá lộ trình học tập
-              </Button>
-            </Grid>
-            <Grid item xs={12} md={6}>
-                <Box sx={{ p: 5, bgcolor: 'rgba(255,255,255,0.03)', borderRadius: 6, border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
-                   <Typography variant="h6" color="#6366f1" fontWeight="800" mb={4} sx={{ textTransform: 'uppercase', letterSpacing: 2 }}>Kỹ năng AI khuyến nghị</Typography>
-                   <Stack spacing={4}>
-                      <Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
-                            <Typography fontWeight="700" variant="body1">Docker & Containerization</Typography>
-                            <Typography color="#6366f1" fontWeight="900">Mức độ ưu tiên: Cao</Typography>
-                        </Box>
-                        <LinearProgress variant="determinate" value={10} sx={{ height: 10, borderRadius: 5, bgcolor: 'rgba(255,255,255,0.1)', "& .MuiLinearProgress-bar": { bgcolor: '#6366f1' } }} />
-                      </Box>
-                      <Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
-                            <Typography fontWeight="700" variant="body1">AWS Cloud Practitioner</Typography>
-                            <Typography color="#6366f1" fontWeight="900">Mức độ ưu tiên: Trung bình</Typography>
-                        </Box>
-                        <LinearProgress variant="determinate" value={45} sx={{ height: 10, borderRadius: 5, bgcolor: 'rgba(255,255,255,0.1)', "& .MuiLinearProgress-bar": { bgcolor: '#6366f1' } }} />
-                      </Box>
-                   </Stack>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'center' }}>
+          {currentJobs.map((job) => (
+            <Paper
+              key={job.jobId}
+              onClick={() => navigate(`/user/job/${job.jobId}`)}
+              sx={{
+                width: '7cm', minWidth: '7cm', maxWidth: '7cm',
+                p: 2.5, borderRadius: 4, cursor: "pointer",
+                border: "1px solid #e5e7eb", transition: "all 0.25s ease",
+                display: "flex", flexDirection: "column", justifyContent: "space-between",
+                "&:hover": { borderColor: "#6366f1", transform: "translateY(-5px)", boxShadow: "0 10px 25px rgba(99, 102, 241, 0.1)" }
+              }}
+            >
+              <Stack direction="row" spacing={2} alignItems="flex-start">
+                {job.companyLogo ? (
+                  <Avatar src={job.companyLogo} variant="rounded" sx={{ width: 50, height: 50 }} />
+                ) : (
+                  <Avatar variant="rounded" sx={{ width: 50, height: 50, bgcolor: "#eef2ff", color: "#6366f1", fontWeight: 800 }}>
+                    {job.companyName?.charAt(0).toUpperCase()}
+                  </Avatar>
+                )}
+                <Box sx={{ minWidth: 0, flex: 1 }}>
+                  <Typography fontWeight={700} sx={{ fontSize: "1rem", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", minHeight: "2.6em" }}>
+                    {job.title}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#64748b", display: "block", textTransform: "uppercase" }}>{job.companyName}</Typography>
                 </Box>
-            </Grid>
-          </Grid>
-        </Container>
-      </Box>
+              </Stack>
 
-      <AdminFooter />
-    </Box>
+              <Stack direction="row" alignItems="center" justifyContent="space-between" mt={3}>
+                <Stack direction="row" spacing={1}>
+                  <Box sx={{ bgcolor: "#f1f5f9", px: 1, py: 0.5, borderRadius: 1.5 }}>
+                    <Typography variant="caption" fontWeight="700">{job.salaryRange || "Thỏa thuận"}</Typography>
+                  </Box>
+                  <Box sx={{ bgcolor: "#f1f5f9", px: 1, py: 0.5, borderRadius: 1.5 }}>
+                    <Typography variant="caption" fontWeight="700">{job.location?.split(',').pop()}</Typography>
+                  </Box>
+                </Stack>
+
+                <IconButton
+                  size="small"
+                  onClick={(e) => handleToggleFavorite(e, job.jobId, job.isFavorite)}
+                  sx={{
+                    border: "1px solid #f1f5f9",
+                    color: job.isFavorite ? "#ef4444" : "#94a3b8",
+                    bgcolor: job.isFavorite ? "#fee2e2" : "transparent",
+                    "&:hover": { bgcolor: "#fee2e2", color: "#ef4444" },
+                  }}
+                >
+                  {job.isFavorite ? <Favorite fontSize="small" /> : <FavoriteBorder fontSize="small" />}
+                </IconButton>
+              </Stack>
+            </Paper>
+          ))}
+        </Box>
+
+        {/* PHÂN TRANG */}
+        <Stack alignItems="center" sx={{ mt: 8 }}>
+          <Pagination 
+            count={Math.ceil(jobs.length / jobsPerPage)} 
+            page={currentPage} 
+            onChange={handlePageChange} 
+            color="primary"
+            sx={{ '& .Mui-selected': { bgcolor: '#6366f1 !important' } }}
+          />
+        </Stack>
+      </Container>
+
+      {/* 4. LỘ TRÌNH PHÁT TRIỂN */}
+<CareerRoadmap />
+    </UserLayout>
   );
 }

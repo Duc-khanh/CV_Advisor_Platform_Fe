@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Drawer,
   List,
@@ -23,7 +24,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
-const drawerWidth = 280;
+const drawerWidth = 260;
 
 export default function AdminSidebar({ mobileOpen, handleDrawerToggle }) {
   const navigate = useNavigate();
@@ -46,20 +47,6 @@ export default function AdminSidebar({ mobileOpen, handleDrawerToggle }) {
 
   const drawerContent = (
     <>
-      {/* LOGO / TITLE
-      <Toolbar sx={{ mb: 2 }}>
-        <Typography
-          variant="h6"
-          sx={{
-            fontWeight: "bold",
-            color: "#1e7ba4",
-            letterSpacing: 1,
-          }}
-        >
-          ADMIN PANEL
-        </Typography>
-      </Toolbar> */}
-
       {/* MENU */}
       <Box sx={{ flexGrow: 1 }}>
         <List sx={{ px: 2 }}>
@@ -141,25 +128,22 @@ export default function AdminSidebar({ mobileOpen, handleDrawerToggle }) {
   );
 
   return (
-   <Drawer
-  variant="permanent"
-  sx={{
-  
-    flexShrink: 0,
-    left: 0,
-    top: 0,
-    ml:"144px",
-
-    "& .MuiDrawer-paper": {
-      width: drawerWidth,
-      boxSizing: "border-box",
-      mt: "64px",        // né Header
-      height: "calc(100% - 64px)",
-    },
-  }}
->
-  {drawerContent}
-</Drawer>
-
+    <Drawer
+      variant="permanent"
+      sx={{
+        left: 0,
+        top: 0,
+        "& .MuiDrawer-paper": {
+          width: drawerWidth,
+          boxSizing: "border-box",
+          mt: "64px", // Né Header
+          height: "calc(100% - 64px)",
+          borderTop: "none", // Loại bỏ border phía trên
+          boxShadow: "none", // Loại bỏ shadow nếu có
+        },
+      }}
+    >
+      {drawerContent}
+    </Drawer>
   );
 }
