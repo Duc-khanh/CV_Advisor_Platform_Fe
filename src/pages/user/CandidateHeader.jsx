@@ -1,4 +1,4 @@
-import React, { useState } from "react"; // Thêm useState
+import React, { useState, useEffect } from "react";
 import {
   AppBar,
   Toolbar,
@@ -11,7 +11,6 @@ import {
   Fade,
 } from "@mui/material";
 import {
-  Logout,
   NotificationsNone,
   ChatBubbleOutline,
   KeyboardArrowDown,
@@ -19,17 +18,51 @@ import {
   AssignmentTurnedIn,
   Search,
 } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom"; // Import useNavigate để điều hướng
+import { useNavigate } from "react-router-dom";
 
 export default function CandidateHeader() {
   const navigate = useNavigate();
+
   const token = localStorage.getItem("token");
-const isLoggedIn = !!token;
-  
-  // State quản lý Menu Việc làm
+  const isLoggedIn = !!token;
+
+  // ===== USER STATE =====
+  const [user, setUser] = useState(null);
+
+  // ===== MENU VIỆC LÀM =====
   const [anchorEl, setAnchorEl] = useState(null);
   const openMenu = Boolean(anchorEl);
 
+  // ===== MENU USER =====
+  const [anchorUser, setAnchorUser] = useState(null);
+  const openUserMenu = Boolean(anchorUser);
+
+  // ===== FETCH USER =====
+  useEffect(() => {
+    if (token) {
+      fetch("http://localhost:8080/api/users/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => setUser(data))
+        .catch((err) => console.error(err));
+    }
+  }, [token]);
+
+  // ===== GET INITIALS =====
+  const getInitials = (name) => {
+    if (!name) return "";
+    const words = name.trim().split(" ");
+    if (words.length === 1) return words[0][0].toUpperCase();
+    return (
+      words[0][0].toUpperCase() +
+      words[words.length - 1][0].toUpperCase()
+    );
+  };
+
+  // ===== HANDLER =====
   const handleClickJob = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -38,15 +71,23 @@ const isLoggedIn = !!token;
     setAnchorEl(null);
   };
 
+  const handleOpenUserMenu = (event) => {
+    setAnchorUser(event.currentTarget);
+  };
+
+  const handleCloseUserMenu = () => {
+    setAnchorUser(null);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     window.location.href = "/login";
   };
 
-  // Hàm điều hướng tiện lợi
   const goTo = (path) => {
     navigate(path);
     handleCloseMenu();
+    handleCloseUserMenu();
   };
 
   return (
@@ -69,24 +110,25 @@ const isLoggedIn = !!token;
               minHeight: 64,
             }}
           >
+            {/* LOGO */}
             <Typography
               variant="h5"
               fontWeight="900"
               onClick={() => navigate("/")}
-              sx={{ color: "#6366f1", letterSpacing: -1, cursor: "pointer" }}
+              sx={{ color: "#6366f1", cursor: "pointer" }}
             >
               AI RECRUIT
             </Typography>
 
+            {/* RIGHT SIDE */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+              
+              {/* MENU */}
               <Box sx={{ display: { xs: "none", md: "flex" }, gap: 3 }}>
-                
-                {/* MỤC VIỆC LÀM CÓ DROPDOWN */}
                 <Typography
                   onClick={handleClickJob}
                   sx={{
                     fontWeight: 600,
-                    fontSize: "0.95rem",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
@@ -98,13 +140,11 @@ const isLoggedIn = !!token;
                   Việc làm <KeyboardArrowDown fontSize="small" />
                 </Typography>
 
-                {/* CÁC MỤC KHÁC GIỮ NGUYÊN */}
                 {["Phân tích CV", "Cộng đồng"].map((item) => (
                   <Typography
                     key={item}
                     sx={{
                       fontWeight: 600,
-                      fontSize: "0.95rem",
                       cursor: "pointer",
                       "&:hover": { color: "#6366f1" },
                     }}
@@ -114,11 +154,13 @@ const isLoggedIn = !!token;
                 ))}
               </Box>
 
+              {/* ICON */}
               <Box sx={{ display: "flex", gap: 1 }}>
                 <NotificationsNone sx={{ color: "#64748b", cursor: "pointer" }} />
                 <ChatBubbleOutline sx={{ color: "#64748b", cursor: "pointer" }} />
               </Box>
 
+              {/* USER */}
               <Box
                 sx={{
                   display: "flex",
@@ -128,68 +170,71 @@ const isLoggedIn = !!token;
                   pl: 2,
                 }}
               >
-                <Avatar sx={{ bgcolor: "#6366f1", width: 32, height: 32, fontSize: "0.8rem" }}>
-                  NA
+                {/* AVATAR */}
+                <Avatar
+                  src={user?.avatar}
+                  onClick={handleOpenUserMenu}
+                  sx={{
+                    bgcolor: "#6366f1",
+                    width: 32,
+                    height: 32,
+                    fontSize: "0.8rem",
+                    cursor: "pointer",
+                  }}
+                >
+                  {!user?.avatar && getInitials(user?.fullName)}
                 </Avatar>
+
+                {/* LOGIN / LOGOUT */}
                 <Button
-  size="small"
-  onClick={() => {
-    if (isLoggedIn) {
-      handleLogout();
-    } else {
-      navigate("/login");
-    }
-  }}
-  sx={{
-    fontWeight: 700,
-    textTransform: "none",
-    color: isLoggedIn ? "#ef4444" : "#6366f1"
-  }}
->
-  {isLoggedIn ? "ĐĂNG XUẤT" : "ĐĂNG NHẬP"}
-</Button>
+                  size="small"
+                  onClick={() => {
+                    if (isLoggedIn) handleLogout();
+                    else navigate("/login");
+                  }}
+                  sx={{
+                    fontWeight: 700,
+                    textTransform: "none",
+                    color: isLoggedIn ? "#ef4444" : "#6366f1",
+                  }}
+                >
+                  {isLoggedIn ? "ĐĂNG XUẤT" : "ĐĂNG NHẬP"}
+                </Button>
               </Box>
             </Box>
           </Toolbar>
         </Box>
       </Box>
 
-      {/* MENU THẢ XUỐNG CHO PHẦN VIỆC LÀM */}
+      {/* MENU VIỆC LÀM */}
+      <Menu anchorEl={anchorEl} open={openMenu} onClose={handleCloseMenu}>
+        <MenuItem onClick={() => goTo("/jobs")}>
+          <Search fontSize="small" /> Tìm việc
+        </MenuItem>
+        <MenuItem onClick={() => goTo("/user/favorite-jobs")}>
+          <FavoriteBorder fontSize="small" /> Yêu thích
+        </MenuItem>
+        <MenuItem onClick={() => goTo("/user/applied-jobs")}>
+          <AssignmentTurnedIn fontSize="small" /> Đã ứng tuyển
+        </MenuItem>
+      </Menu>
+
+      {/* MENU USER */}
       <Menu
-        anchorEl={anchorEl}
-        open={openMenu}
-        onClose={handleCloseMenu}
-        TransitionComponent={Fade}
-        sx={{
-          "& .MuiPaper-root": {
-            borderRadius: 2,
-            mt: 1,
-            minWidth: 220,
-            boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
-            border: "1px solid #f1f5f9",
-          }
-        }}
+        anchorEl={anchorUser}
+        open={openUserMenu}
+        onClose={handleCloseUserMenu}
       >
-        <MenuItem onClick={() => goTo("/jobs")} sx={{ py: 1.5, gap: 1.5 }}>
-          <Search fontSize="small" color="action" />
-          <Typography variant="body2" fontWeight={500}>Tìm việc làm</Typography>
+        <MenuItem disabled>
+          {user?.fullName || "User"}
         </MenuItem>
 
-        <MenuItem onClick={() => goTo("/user/favorite-jobs")} sx={{ py: 1.5, gap: 1.5 }}>
-          <FavoriteBorder fontSize="small" color="action" />
-          <Typography variant="body2" fontWeight={500}>Việc làm đã lưu (Yêu thích)</Typography>
+        <MenuItem onClick={() => goTo("/profile")}>
+          Thông tin tài khoản
         </MenuItem>
 
-        <MenuItem onClick={() => goTo("/user/applied-jobs")} sx={{ py: 1.5, gap: 1.5 }}>
-    <AssignmentTurnedIn fontSize="small" color="action" />
-    <Typography variant="body2" fontWeight={500}>
-      Việc làm đã ứng tuyển
-    </Typography>
-  </MenuItem>
-
-        <MenuItem onClick={() => goTo("/companies")} sx={{ py: 1.5, gap: 1.5 }}>
-          <Box sx={{ width: 20, height: 20, bgcolor: "#e2e8f0", borderRadius: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10 }}>🏢</Box>
-          <Typography variant="body2" fontWeight={500}>Danh sách công ty</Typography>
+        <MenuItem onClick={handleLogout}>
+          Đăng xuất
         </MenuItem>
       </Menu>
     </AppBar>
