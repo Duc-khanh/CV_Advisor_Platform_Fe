@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Table, TableHead, TableRow, TableCell, TableBody,
   Button, Stack, Dialog, DialogTitle, DialogContent,
@@ -16,41 +17,53 @@ import {
   toggleUserStatus
 } from "../../services/adminUserService";
 import UserForm from "./UserForm";
-import AdminLayout from "../../components/AdminLayout";
+import { useToast } from "../../contexts/ToastContext";
 
 export default function UserManagement() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [totalElements, setTotalElements] = useState(0);
   const [open, setOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const showToast = useToast();
 
   const [filters, setFilters] = useState({
     search: "",
     role: "",
     enabled: "",
     page: 0,
-    size: 5,
+    size: 10,
   });
+  
 
   const loadUsers = useCallback(async () => {
     try {
       const params = {
         ...filters,
-        enabled: filters.enabled === ""
-          ? null
-          : filters.enabled === "true",
+        enabled: filters.enabled === "" ? null : filters.enabled === "true",
       };
       const data = await getUsers(params);
       setUsers(data.content || []);
       setTotalElements(data.totalElements || 0);
     } catch (error) {
-      console.error("Lỗi load user:", error);
+      showToast("Lỗi tải danh sách người dùng", "error");
     }
   }, [filters]);
 
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
+
+  // Tự động mở Dialog Thêm người dùng nếu có tín hiệu từ trang khác
+  useEffect(() => {
+    if (location.state?.action === "addUser") {
+      setSelectedUser(null);
+      setOpen(true);
+      // Xóa state an toàn bằng React Router để khi F5 không bị mở lại form
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -73,13 +86,15 @@ export default function UserManagement() {
     try {
       if (selectedUser) {
         await updateUser(selectedUser.userId || selectedUser.id, formData);
+        showToast("Cập nhật người dùng thành công!", "success");
       } else {
         await createUser(formData);
+        showToast("Thêm người dùng thành công!", "success");
       }
       setOpen(false);
       loadUsers();
     } catch {
-      alert("Thao tác thất bại!");
+      showToast("Thao tác thất bại!", "error");
     }
   };
 
@@ -87,20 +102,31 @@ export default function UserManagement() {
     const action = user.enabled ? "KHÓA" : "MỞ";
     if (window.confirm(`Bạn có chắc muốn ${action} tài khoản này?`)) {
       await toggleUserStatus(user.userId || user.id);
+      showToast(`Đã ${action.toLowerCase()} tài khoản thành công!`, "success");
       loadUsers();
     }
   };
 
   return (
-    <AdminLayout>
-      <Box sx={{ width: "100%" }}>
+    <>
+      {/* CĂN CHỈNH TẠI ĐÂY */}
+      <Box 
+        sx={{ 
+          width: "100%", 
+          margin: "0 auto",   // CĂN GIỮA MÀN HÌNH
+          pt: 0,              // ĐẨY LÊN TRÊN CÙNG
+          px: { xs: 2, md: 4 }, // Khoảng đệm hai bên để không dính sát lề
+          display: "block" 
+        }}
+      >
         <Stack spacing={3}>
-
+          
           {/* HEADER */}
           <Stack
-            direction="row"
+            direction={{ xs: "column", sm: "row" }}
             justifyContent="space-between"
-            alignItems="center"
+            alignItems={{ xs: "flex-start", sm: "center" }}
+            sx={{ mt: 2 }} // Khoảng cách nhỏ với đỉnh trang
           >
             <Typography variant="h4" fontWeight={800} color="#1e293b">
               Quản lý người dùng
@@ -118,6 +144,7 @@ export default function UserManagement() {
                 py: 1,
                 fontWeight: 700,
                 textTransform: "none",
+                bgcolor: "#3b82f6"
               }}
             >
               Thêm User
@@ -125,15 +152,15 @@ export default function UserManagement() {
           </Stack>
 
           {/* FILTER */}
-          <Paper sx={{ p: 2, borderRadius: 3 }}>
-            <Stack direction="row" spacing={2} flexWrap="wrap">
+          <Paper sx={{ p: 2.5, borderRadius: 3, boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+            <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap gap={2}>
               <TextField
                 name="search"
                 size="small"
                 placeholder="Tìm tên hoặc email..."
                 value={filters.search}
                 onChange={handleFilterChange}
-                sx={{ width: 320 }}
+                sx={{ flexGrow: 1, minWidth: "250px" }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -142,30 +169,18 @@ export default function UserManagement() {
                   ),
                 }}
               />
-
-              <FormControl size="small" sx={{ minWidth: 160 }}>
+              <FormControl size="small" sx={{ minWidth: 150 }}>
                 <InputLabel>Quyền</InputLabel>
-                <Select
-                  name="role"
-                  value={filters.role}
-                  label="Quyền"
-                  onChange={handleFilterChange}
-                >
+                <Select name="role" value={filters.role} label="Quyền" onChange={handleFilterChange}>
                   <MenuItem value="">Tất cả</MenuItem>
                   <MenuItem value="ADMIN">ADMIN</MenuItem>
                   <MenuItem value="HR">HR</MenuItem>
                   <MenuItem value="USER">USER</MenuItem>
                 </Select>
               </FormControl>
-
-              <FormControl size="small" sx={{ minWidth: 160 }}>
+              <FormControl size="small" sx={{ minWidth: 150 }}>
                 <InputLabel>Trạng thái</InputLabel>
-                <Select
-                  name="enabled"
-                  value={filters.enabled}
-                  label="Trạng thái"
-                  onChange={handleFilterChange}
-                >
+                <Select name="enabled" value={filters.enabled} label="Trạng thái" onChange={handleFilterChange}>
                   <MenuItem value="">Tất cả</MenuItem>
                   <MenuItem value="true">Hoạt động</MenuItem>
                   <MenuItem value="false">Đã khóa</MenuItem>
@@ -175,72 +190,58 @@ export default function UserManagement() {
           </Paper>
 
           {/* TABLE */}
-          <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
-            <Table>
-              <TableHead sx={{ bgcolor: "#f8fafc" }}>
-                <TableRow>
-                  <TableCell align="center">STT</TableCell>
-                  <TableCell>Avatar</TableCell>
-                  <TableCell>Họ tên</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Role</TableCell>
-                  <TableCell>Trạng thái</TableCell>
-                  <TableCell align="right">Hành động</TableCell>
-                </TableRow>
-              </TableHead>
-
-              <TableBody>
-                {users.map((u, index) => (
-                  <TableRow key={u.userId || u.id} hover>
-                    <TableCell align="center">
-                      {filters.page * filters.size + index + 1}
-                    </TableCell>
-                    <TableCell>
-                      <Avatar
-                        src={u.avatar ? `http://localhost:8080${u.avatar}` : ""}
-                        sx={{ width: 42, height: 42 }}
-                      >
-                        {u.fullName?.charAt(0)}
-                      </Avatar>
-                    </TableCell>
-                    <TableCell fontWeight={600}>{u.fullName}</TableCell>
-                    <TableCell>{u.email}</TableCell>
-                    <TableCell>
-                      <Chip label={u.role} size="small" />
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={u.enabled ? "Hoạt động" : "Đã khóa"}
-                        color={u.enabled ? "success" : "error"}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <Stack direction="row" spacing={1} justifyContent="flex-end">
-                        <Button
-                          size="small"
-                          onClick={() => {
-                            setSelectedUser(u);
-                            setOpen(true);
-                          }}
-                        >
-                          Sửa
-                        </Button>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          color={u.enabled ? "error" : "success"}
-                          onClick={() => handleToggleStatus(u)}
-                        >
-                          {u.enabled ? "Khóa" : "Mở"}
-                        </Button>
-                      </Stack>
-                    </TableCell>
+          <Paper sx={{ borderRadius: 3, overflow: "hidden", boxShadow: "0 4px 15px rgba(0,0,0,0.05)" }}>
+            <Box sx={{ width: '100%', overflowX: 'auto' }}>
+              <Table>
+                <TableHead sx={{ bgcolor: "#f8fafc" }}>
+                  <TableRow>
+                    <TableCell align="center" sx={{ fontWeight: 700 }}>STT</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Người dùng</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Vai trò</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Trạng thái</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700 }}>Hành động</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-
+                </TableHead>
+                <TableBody>
+                  {users.map((u, index) => (
+                    <TableRow key={u.userId || u.id} hover>
+                      <TableCell align="center">{filters.page * filters.size + index + 1}</TableCell>
+                      <TableCell>
+                        <Stack direction="row" spacing={2} alignItems="center">
+                          <Avatar src={u.avatar ? `http://localhost:8080${u.avatar}` : ""}>
+                            {u.fullName?.charAt(0)}
+                          </Avatar>
+                          <Typography variant="subtitle2" fontWeight={600}>{u.fullName}</Typography>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>{u.email}</TableCell>
+                      <TableCell><Chip label={u.role} size="small" variant="outlined" /></TableCell>
+                      <TableCell>
+                        <Chip
+                          label={u.enabled ? "Hoạt động" : "Đã khóa"}
+                          color={u.enabled ? "success" : "error"}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell align="right">
+                        <Stack direction="row" spacing={1} justifyContent="flex-end">
+                          <Button size="small" onClick={() => { setSelectedUser(u); setOpen(true); }}>Sửa</Button>
+                          <Button 
+                            size="small" 
+                            variant="outlined" 
+                            color={u.enabled ? "error" : "success"}
+                            onClick={() => handleToggleStatus(u)}
+                          >
+                            {u.enabled ? "Khóa" : "Mở"}
+                          </Button>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
             <TablePagination
               component="div"
               count={totalElements}
@@ -253,22 +254,16 @@ export default function UserManagement() {
             />
           </Paper>
 
-          {/* DIALOG */}
+          {/* DIALOG giữ nguyên logic */}
           <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
-            <DialogTitle fontWeight={800}>
-              {selectedUser ? "Cập nhật User" : "Thêm User"}
-            </DialogTitle>
+            <DialogTitle fontWeight={800}>{selectedUser ? "Cập nhật User" : "Thêm User"}</DialogTitle>
             <DialogContent dividers>
-              <UserForm
-                initialData={selectedUser}
-                onSubmit={handleSubmit}
-                onCancel={() => setOpen(false)}
-              />
+              <UserForm initialData={selectedUser} onSubmit={handleSubmit} onCancel={() => setOpen(false)} />
             </DialogContent>
           </Dialog>
 
         </Stack>
       </Box>
-    </AdminLayout>
+    </>
   );
 }

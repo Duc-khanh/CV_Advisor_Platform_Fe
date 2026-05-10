@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import api from "../../services/axios";
 import {
   Box,
   Typography,
@@ -35,6 +36,7 @@ import {
   Description,
 } from "@mui/icons-material";
 import UserLayout from "../../components/UserLayout";
+import { useToast } from "../../contexts/ToastContext";
 
 /* ===== STYLE CHO MODAL ===== */
 const modalStyle = {
@@ -42,7 +44,7 @@ const modalStyle = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: { xs: "95%", sm: 650 },
+  width: { xs: "95%", sm: "90%", md: 840 },
   bgcolor: "background.paper",
   borderRadius: 3,
   boxShadow: 24,
@@ -54,7 +56,7 @@ const modalStyle = {
 /* ===== LẤY AUTH HEADER ===== */
 const getAuthHeader = () => {
   const token = localStorage.getItem("token");
-  if (!token) return null;
+  if (!token || token === "undefined" || token === "null") return null;
   return {
     Authorization: `Bearer ${token}`,
   };
@@ -72,6 +74,7 @@ export default function JobDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation(); // Đã sửa: Phải nằm trong component
+  const showToast = useToast();
 
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -80,8 +83,9 @@ export default function JobDetail() {
   const [cvFile, setCvFile] = useState(null);
   const [applying, setApplying] = useState(false);
 
-  // State cho Modal và Form ứng tuyển
   const [openModal, setOpenModal] = useState(false);
+  const [isEvaluatingAi, setIsEvaluatingAi] = useState(false);
+  const [aiFeedback, setAiFeedback] = useState(null);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -89,6 +93,7 @@ export default function JobDetail() {
     targetLocation: "",
     coverLetter: "",
     agreeTerms: false,
+    allowAiAnalysis: true,
   });
 
   const isFetched = useRef(false);
@@ -146,7 +151,7 @@ export default function JobDetail() {
   const handleToggleFavorite = async () => {
     const authHeader = getAuthHeader();
     if (!authHeader) {
-      alert("Vui lòng đăng nhập để thực hiện chức năng này");
+      showToast("Vui lòng đăng nhập để thực hiện chức năng này", "warning");
       navigate("/login");
       return;
     }
@@ -158,8 +163,9 @@ export default function JobDetail() {
         { headers: authHeader }
       );
       setIsFavorite(!isFavorite);
+      showToast(!isFavorite ? "Đã lưu tin!" : "Đã bỏ lưu tin!", "success");
     } catch (err) {
-      alert("Không thể thực hiện thao tác yêu thích");
+      showToast("Không thể thực hiện thao tác yêu thích", "error");
     }
   };
 
@@ -167,7 +173,7 @@ export default function JobDetail() {
   const handleOpenApplyModal = () => {
     const authHeader = getAuthHeader();
     if (!authHeader) {
-      alert("Vui lòng đăng nhập để ứng tuyển");
+      showToast("Vui lòng đăng nhập để ứng tuyển", "warning");
       navigate("/login");
       return;
     }
@@ -180,12 +186,12 @@ export default function JobDetail() {
     const authHeader = getAuthHeader();
 
     if (!cvFile) {
-      alert("Vui lòng tải lên file CV của bạn");
+      showToast("Vui lòng tải lên file CV của bạn", "warning");
       return;
     }
 
     if (!formData.agreeTerms) {
-      alert("Bạn cần đồng ý với điều khoản để tiếp tục");
+      showToast("Bạn cần đồng ý với điều khoản để tiếp tục", "warning");
       return;
     }
 
@@ -199,23 +205,52 @@ export default function JobDetail() {
 
     try {
       setApplying(true);
-      await axios.post(
-        `http://localhost:8080/api/user/jobs/apply/${id}`,
+      await api.post(
+        `/api/user/jobs/apply/${id}`,
         submitData,
         {
           headers: {
-            ...authHeader,
             "Content-Type": "multipart/form-data",
           },
         }
       );
-      alert("Ứng tuyển thành công! Nhà tuyển dụng sẽ xem xét hồ sơ của bạn.");
-      setOpenModal(false);
-      setCvFile(null);
+
+      if (formData.allowAiAnalysis) {
+        setIsEvaluatingAi(true);
+
+        const evaluateData = new FormData();
+        evaluateData.append("cv", cvFile);
+        evaluateData.append("jobDescription", `Title: ${job.title}\n\nDescription:\n${job.description}\n\nRequirements:\n${job.candidateRequirements}`);
+
+        try {
+          const aiRes = await axios.post(
+            "http://localhost:8080/api/v1/ai/evaluate-cv",
+            evaluateData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+          setAiFeedback(aiRes.data);
+          showToast("Ứng tuyển thành công!", "success");
+        } catch (aiErr) {
+          console.error("Lỗi AI:", aiErr);
+          showToast("Ứng tuyển thành công! Nhưng có lỗi khi AI phân tích.", "warning");
+          setOpenModal(false);
+          setCvFile(null);
+        }
+      } else {
+        showToast("Ứng tuyển thành công! Bạn đã chọn không phân tích CV bằng AI.", "success");
+        setOpenModal(false);
+        setCvFile(null);
+      }
+
     } catch (err) {
-      alert(err.response?.data?.message || "Ứng tuyển thất bại");
+      showToast(err.response?.data?.message || "Ứng tuyển thất bại", "error");
     } finally {
       setApplying(false);
+      setIsEvaluatingAi(false);
     }
   };
 
@@ -290,13 +325,13 @@ export default function JobDetail() {
 
             <Divider sx={{ my: 4 }} />
 
-            <Stack direction="row" spacing={2} alignItems="center">
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="stretch">
               <Button
                 variant={isFavorite ? "contained" : "outlined"}
                 color={isFavorite ? "error" : "primary"}
                 startIcon={isFavorite ? <Favorite /> : <FavoriteBorder />}
                 onClick={handleToggleFavorite}
-                sx={{ borderRadius: 2, flex: 1, textTransform: "none", fontWeight: 700, py: 1.5 }}
+                sx={{ borderRadius: 2, textTransform: "none", fontWeight: 700, py: 1.5, width: { xs: "100%", sm: "auto" } }}
               >
                 {isFavorite ? "Đã lưu" : "Lưu tin"}
               </Button>
@@ -308,7 +343,7 @@ export default function JobDetail() {
                 startIcon={<AutoAwesome />}
                 disabled={remainingDays !== null && remainingDays <= 0}
                 onClick={handleOpenApplyModal}
-                sx={{ py: 2, fontWeight: 800, borderRadius: 2, flex: 2.5, bgcolor: "#00b14f", "&:hover": { bgcolor: "#008f3f" }, textTransform: "none" }}
+                sx={{ py: 2, fontWeight: 800, borderRadius: 2, width: { xs: "100%", sm: "auto" }, bgcolor: "#00b14f", "&:hover": { bgcolor: "#008f3f" }, textTransform: "none" }}
               >
                 {remainingDays !== null && remainingDays <= 0 ? "Hết hạn ứng tuyển" : "Ứng tuyển ngay"}
               </Button>
@@ -318,109 +353,116 @@ export default function JobDetail() {
       </Box>
 
       {/* MODAL ỨNG TUYỂN */}
+{/* MODAL ỨNG TUYỂN */}
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <Box sx={modalStyle}>
+        <Box component="form" onSubmit={handleApplySubmit} sx={modalStyle}>
+          {/* Header luôn hiển thị */}
           <Box sx={{ p: 2.5, borderBottom: "1px solid #eee", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <Typography variant="h6" fontWeight={700}>
               Ứng tuyển <span style={{ color: "#00b14f" }}>{job.title}</span>
             </Typography>
-            <IconButton onClick={() => setOpenModal(false)}><Close /></IconButton>
+            <IconButton onClick={() => { setOpenModal(false); setAiFeedback(null); }}><Close /></IconButton>
           </Box>
 
-          <Box sx={{ p: 3 }} component="form" onSubmit={handleApplySubmit}>
-            <Stack spacing={3}>
-              <Box sx={{ border: "2px dashed #00b14f", borderRadius: 2, p: 3, textAlign: "center", bgcolor: "#f0fff4" }}>
-                <CloudUpload sx={{ fontSize: 40, color: "#00b14f", mb: 1 }} />
-                <Typography variant="body1" fontWeight={600}>Tải lên CV từ máy tính</Typography>
-                <Typography variant="caption" color="text.secondary">Hỗ trợ .doc, .docx, .pdf dưới 5MB</Typography>
-                <Box mt={2}>
-                  <Button variant="contained" component="label" sx={{ bgcolor: "#eee", color: "#333", "&:hover": { bgcolor: "#ddd" } }}>
-                    Chọn CV
+          <Box sx={{ p: { xs: 3, md: 4 } }}>
+            {isEvaluatingAi ? (
+              /* TRẠNG THÁI 1: ĐANG PHÂN TÍCH */
+              <Box sx={{ py: 6, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <CircularProgress size={60} sx={{ color: '#00b14f', mb: 3 }} />
+                <Typography variant="h6" fontWeight={600}>Đang ứng tuyển và phân tích CV...</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
+                  Hệ thống AI đang đánh giá mức độ phù hợp. Vui lòng đợi trong giây lát.
+                </Typography>
+              </Box>
+            ) : aiFeedback ? (
+              /* TRẠNG THÁI 2: KẾT QUẢ AI */
+              <Box>
+                <Box sx={{ textAlign: 'center', mb: 3 }}>
+                  <CheckCircle sx={{ fontSize: 60, color: '#00b14f', mb: 1 }} />
+                  <Typography variant="h5" fontWeight={700} color="success.main">Ứng tuyển thành công!</Typography>
+                </Box>
+                
+                <Paper elevation={0} sx={{ p: 3, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 2 }}>
+                  <Typography variant="subtitle1" fontWeight={700} mb={2} display="flex" alignItems="center" gap={1}>
+                    <AutoAwesome color="primary" fontSize="small" /> Đánh giá từ AI
+                  </Typography>
+                  
+                  <Stack direction="row" spacing={3} alignItems="center" mb={3}>
+                    <Box sx={{ position: 'relative', display: 'flex' }}>
+                      <CircularProgress variant="determinate" value={100} size={70} sx={{ color: '#e2e8f0' }} />
+                      <CircularProgress variant="determinate" value={aiFeedback.score} size={70} sx={{ position: 'absolute', color: aiFeedback.score >= 70 ? '#10b981' : '#f59e0b' }} />
+                      <Box sx={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Typography fontWeight={800}>{aiFeedback.score}%</Typography>
+                      </Box>
+                    </Box>
+                    <Typography variant="body2">{aiFeedback.summary}</Typography>
+                  </Stack>
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="caption" fontWeight={700} color="success.main">ƯU ĐIỂM:</Typography>
+                      {aiFeedback.strengths?.map((s, i) => <Typography key={i} variant="caption" display="block">• {s}</Typography>)}
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="caption" fontWeight={700} color="error.main">CẦN CẢI THIỆN:</Typography>
+                      {aiFeedback.weaknesses?.map((w, i) => <Typography key={i} variant="caption" display="block">• {w}</Typography>)}
+                    </Grid>
+                  </Grid>
+                </Paper>
+
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                  <Button variant="contained" onClick={() => { setOpenModal(false); setAiFeedback(null); }} sx={{ bgcolor: '#00b14f' }}>Hoàn tất</Button>
+                </Box>
+              </Box>
+            ) : (
+              /* TRẠNG THÁI 3: FORM ĐIỀN */
+              <Stack spacing={2.5}>
+                <Box sx={{ border: "2px dashed #00b14f", borderRadius: 2, p: 2, textAlign: "center", bgcolor: "#f0fff4" }}>
+                  <CloudUpload sx={{ color: "#00b14f", mb: 1 }} />
+                  <Typography variant="body2" fontWeight={600}>Tải lên CV (.pdf, .doc)</Typography>
+                  <Button variant="outlined" size="small" component="label" sx={{ mt: 1 }}>
+                    Chọn file
                     <input hidden type="file" accept=".pdf,.doc,.docx" onChange={(e) => setCvFile(e.target.files[0])} />
                   </Button>
+                  {cvFile && <Typography variant="caption" display="block" sx={{ mt: 1, color: "#00b14f" }}>{cvFile.name}</Typography>}
                 </Box>
-                {cvFile && (
-                  <Stack direction="row" justifyContent="center" alignItems="center" mt={2} spacing={1} sx={{ color: "#00b14f" }}>
-                    <CheckCircle fontSize="small" />
-                    <Typography variant="body2" fontWeight={700}>{cvFile.name}</Typography>
-                  </Stack>
-                )}
-              </Box>
 
-              <TextField
-                label="Họ và tên *" fullWidth size="small"
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                required
-              />
-
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Email *" fullWidth size="small" type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    required
-                  />
+                <TextField label="Họ và tên *" fullWidth size="small" value={formData.fullName} onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} required />
+                
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField label="Email *" fullWidth size="small" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField label="Số điện thoại *" fullWidth size="small" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} required />
+                  </Grid>
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Số điện thoại *" fullWidth size="small"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    required
+
+                <TextField label="Thư giới thiệu" multiline rows={3} fullWidth placeholder="Viết ngắn gọn..." value={formData.coverLetter} onChange={(e) => setFormData({ ...formData, coverLetter: e.target.value })} />
+
+                <Box>
+                  <FormControlLabel
+                    control={<Checkbox size="small" checked={formData.agreeTerms} onChange={(e) => setFormData({ ...formData, agreeTerms: e.target.checked })} color="success" />}
+                    label={<Typography variant="caption">Tôi đồng ý với điều khoản sử dụng</Typography>}
                   />
-                </Grid>
-              </Grid>
-
-
-              <Box>
-                <Typography variant="subtitle2" fontWeight={700} gutterBottom sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Description fontSize="small" color="success" /> Thư giới thiệu:
-                </Typography>
-                <TextField
-                  placeholder="Viết thư giới thiệu ngắn gọn..."
-                  multiline rows={4} fullWidth
-                  value={formData.coverLetter}
-                  onChange={(e) => setFormData({ ...formData, coverLetter: e.target.value })}
-                />
-              </Box>
-
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formData.agreeTerms}
-                    onChange={(e) => setFormData({ ...formData, agreeTerms: e.target.checked })}
-                    color="success"
+                  <FormControlLabel
+                    control={<Checkbox size="small" checked={formData.allowAiAnalysis} onChange={(e) => setFormData({ ...formData, allowAiAnalysis: e.target.checked })} color="primary" />}
+                    label={<Typography variant="caption">Cho phép AI phân tích CV</Typography>}
                   />
-                }
-                label={
-                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                    Tôi đã đọc và đồng ý với {" "}
-                    <Link 
-                      onClick={() => navigate("/privacy-policy")} // Dùng navigate để giữ state
-                      sx={{ color: "#00b14f", cursor: "pointer", fontWeight: 600, textDecoration: "none" }}
-                    >
-                      "Thoả thuận sử dụng dữ liệu cá nhân"
-                    </Link>{" "}
-                    của Nhà tuyển dụng
-                  </Typography>
-                }
-              />
+                </Box>
 
-              <Stack direction="row" spacing={2} justifyContent="flex-end">
-                <Button variant="outlined" onClick={() => setOpenModal(false)} sx={{ px: 4 }}>Hủy</Button>
-                <Button
-                  type="submit" variant="contained" disabled={applying}
-                  sx={{ bgcolor: "#00b14f", px: 4, "&:hover": { bgcolor: "#008f3f" } }}
-                >
-                  {applying ? "Đang xử lý..." : "Nộp hồ sơ ứng tuyển"}
-                </Button>
+                <Stack direction="row" spacing={2} justifyContent="flex-end">
+                  <Button variant="outlined" onClick={() => setOpenModal(false)}>Hủy</Button>
+                  <Button type="submit" variant="contained" disabled={applying} sx={{ bgcolor: "#00b14f" }}>
+                    {applying ? "Đang xử lý..." : "Nộp hồ sơ"}
+                  </Button>
+                </Stack>
               </Stack>
-            </Stack>
+            )}
           </Box>
         </Box>
       </Modal>
     </UserLayout>
   );
 }
+   

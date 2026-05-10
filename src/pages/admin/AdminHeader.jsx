@@ -14,7 +14,13 @@ export default function AdminHeader() {
   const [openProfile, setOpenProfile] = useState(false);
 
   useEffect(() => {
-    getCurrentUser().then(res => setUser(res.data));
+    getCurrentUser()
+      .then(res => {
+        // Dự phòng trường hợp backend bọc data trong res.data.data
+        const userData = res.data.data || res.data;
+        setUser(userData);
+      })
+      .catch(err => console.error("Lỗi lấy user:", err));
   }, []);
 
   const handleLogout = () => {
@@ -44,7 +50,7 @@ export default function AdminHeader() {
             <Box sx={{ display: "flex", alignItems: "center" }}>
               <Typography mr={1}>{user.fullName}</Typography>
               <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
-                <Avatar src={user.avatarUrl}>
+                <Avatar src={user.avatarUrl ? `http://localhost:8080${user.avatarUrl}` : ""}>
                   {user.fullName?.charAt(0)}
                 </Avatar>
               </IconButton>

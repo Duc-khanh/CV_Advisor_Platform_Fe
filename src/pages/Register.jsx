@@ -11,6 +11,8 @@ import {
   Paper,
   InputAdornment,
   IconButton,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import { 
   PersonAdd, 
@@ -21,8 +23,9 @@ import {
   VisibilityOff 
 } from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
-import { register } from "../services/authService";
+import { register, registerHr } from "../services/authService";
 import AuthLayout from "../components/AuthLayout";
+import { useToast } from "../contexts/ToastContext";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -30,7 +33,13 @@ export default function Register() {
     email: "",
     password: "",
     confirmPassword: "",
+    companyName: "",
+    industryName: "",
+    address: "",
+    description: "",
   });
+
+  const [isHr, setIsHr] = useState(false);
 
   // State quản lý ẩn/hiện mật khẩu
   const [showPassword, setShowPassword] = useState(false);
@@ -38,6 +47,7 @@ export default function Register() {
   
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const showToast = useToast();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -47,18 +57,22 @@ export default function Register() {
     e.preventDefault();
 
     if (form.password !== form.confirmPassword) {
-      alert("Mật khẩu nhập lại không khớp!");
+      showToast("Mật khẩu nhập lại không khớp!", "error");
       return;
     }
 
     setLoading(true);
     try {
       const { confirmPassword, ...registerData } = form;
-      await register(registerData);
-      alert("Đăng ký thành công!");
+      if (isHr) {
+        await registerHr(registerData);
+      } else {
+        await register({ fullName: form.fullName, email: form.email, password: form.password });
+      }
+      showToast("Đăng ký thành công!", "success");
       navigate("/login");
     } catch (err) {
-      alert(err.response?.data?.message || "Đăng ký thất bại");
+      showToast(err.response?.data?.message || "Đăng ký thất bại", "error");
     } finally {
       setLoading(false);
     }
@@ -99,6 +113,17 @@ export default function Register() {
            Bắt đầu hành trình tìm kiếm sự nghiệp mơ ước của bạn ngay hôm nay.
           </Typography>
         </Box>
+
+        {/* Tabs for choosing role */}
+        <Tabs
+          value={isHr ? 1 : 0}
+          onChange={(e, val) => setIsHr(val === 1)}
+          variant="fullWidth"
+          sx={{ mb: 3 }}
+        >
+          <Tab label="Ứng viên" sx={{ fontWeight: 600 }} />
+          <Tab label="Nhà tuyển dụng" sx={{ fontWeight: 600 }} />
+        </Tabs>
 
         {/* Form */}
         <Stack spacing={2.5} component="form" onSubmit={handleSubmit}>
@@ -196,6 +221,44 @@ export default function Register() {
             }}
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
           />
+
+          {isHr && (
+            <>
+              <TextField
+                name="companyName"
+                label="Tên công ty"
+                required
+                fullWidth
+                onChange={handleChange}
+                sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+              />
+              <TextField
+                name="industryName"
+                label="Lĩnh vực hoạt động"
+                required
+                fullWidth
+                onChange={handleChange}
+                sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+              />
+              <TextField
+                name="address"
+                label="Địa chỉ công ty"
+                required
+                fullWidth
+                onChange={handleChange}
+                sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+              />
+              <TextField
+                name="description"
+                label="Mô tả công ty"
+                multiline
+                rows={3}
+                fullWidth
+                onChange={handleChange}
+                sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+              />
+            </>
+          )}
 
           <Button
             type="submit"

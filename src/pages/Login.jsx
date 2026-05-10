@@ -21,6 +21,15 @@ import AuthLayout from "../components/AuthLayout";
 import { login } from "../services/authService";
 import { Link, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { useToast } from "../contexts/ToastContext";
+
+const normalizeToken = (value) => {
+  if (!value) return null;
+  if (typeof value === 'string') {
+    return value.trim().replace(/^Bearer\s+/i, "");
+  }
+  return null; // Chỉ trả về string, không xử lý object
+};
 
 export default function Login() {
   const [form, setForm] = useState({
@@ -29,6 +38,7 @@ export default function Login() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const showToast = useToast();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -37,11 +47,19 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Xóa token cũ trước khi login để tránh token sai còn tồn đọng
+    localStorage.removeItem("token");
+
     try {
       const res = await login(form);
-      const token = res.data.token;
+      const rawToken = res.data.token || res.data.accessToken || res.data.access_token;
+      const token = normalizeToken(rawToken);
 
-      // Lưu token vào localStorage
+      if (!token) {
+        throw new Error("Không nhận được token đăng nhập");
+      }
+
+      // Lưu token đã chuẩn hóa vào localStorage
       localStorage.setItem("token", token);
 
       // Decode token để lấy role
@@ -49,6 +67,7 @@ export default function Login() {
       const role = decoded.role;
 
       // Điều hướng theo role
+      showToast("Đăng nhập thành công!", "success");
       if (role === "ADMIN") {
         navigate("/admin");
       } else if (role === "HR") {
@@ -57,7 +76,14 @@ export default function Login() {
         navigate("/user");
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Đăng nhập thất bại. Vui lòng thử lại!");
+      console.error("Login error:", err.response?.data || err.message, err.response?.status);
+      const message =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.response?.statusText ||
+        err.message ||
+        "Đăng nhập thất bại. Vui lòng thử lại!";
+      showToast(message, "error");
     }
   };
 

@@ -5,11 +5,13 @@ import {
   AdminPanelSettings,
   Dataset
 } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminQuickActions() {
+  const navigate = useNavigate();
   const actions = [
-    { label: "Thêm người dùng", icon: <PersonAdd />, color: "#2d6a4f" },
-    { label: "Thêm nhân sự HR", icon: <PeopleAlt />, color: "#0077b6" },
+    { label: "Thêm người dùng", icon: <PersonAdd />, color: "#2d6a4f", path: "/admin/users", state: { action: "addUser" } },
+    { label: "Thêm nhân sự HR", icon: <PeopleAlt />, color: "#0077b6", path: "/admin/users", state: { action: "addUser" } },
     { label: "Phân quyền hệ thống", icon: <AdminPanelSettings />, color: "#f59e0b" },
     { label: "Quản lý dữ liệu", icon: <Dataset />, color: "#7209b7" },
   ];
@@ -37,6 +39,7 @@ export default function AdminQuickActions() {
                 variant="outlined"
                 fullWidth
                 startIcon={action.icon}
+                onClick={() => action.path ? navigate(action.path, { state: action.state }) : null}
                 sx={{
                   py: 1.8, // giữ chiều cao giống HR
                   px: "calc(16px + 0.5cm)", // ⬅️ tăng chiều ngang

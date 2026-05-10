@@ -12,8 +12,11 @@ import CompanyApplications from "./pages/hr/CompanyApplications";
 import JobDetail from "./pages/user/JobDetail";
 import PrivacyPolicy from "./pages/user/PrivacyPolicy";
 import FavoriteJobs from "./pages/user/FavoriteJobs";
-import AppliedJobs from "./pages/User/AppliedJobs";
-// import Profile from "../pages/admin/Profile";
+import AppliedJobs from "./pages/user/AppliedJobs";
+import CVAnalysis from "./pages/user/CVAnalysis";
+import UserProfile from "./pages/user/UserProfile";
+import CVBuilder from "./pages/user/CVBuilder";
+import CareerRoadmap from "./pages/user/CareerRoadmap";
 
 
 export default function App() {
@@ -28,9 +31,11 @@ export default function App() {
       {/* Auth */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/admin" element={<AdminLayout><AdminHome /></AdminLayout>} />
       <Route path="/user/job/:id" element={<JobDetail />} />
-<Route path="/admin/users" element={<AdminLayout><UserManagement /></AdminLayout>} />
+<Route path="/user/cv-analysis" element={<CVAnalysis />} />
+<Route path="/user/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+<Route path="/user/cv-builder" element={<ProtectedRoute><CVBuilder /></ProtectedRoute>} />
+<Route path="/user/career-roadmap" element={<ProtectedRoute><CareerRoadmap /></ProtectedRoute>} />
 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 <Route path="/user/favorite-jobs" element={<FavoriteJobs />} />
 <Route path="/user/applied-jobs" element={<AppliedJobs />} />
@@ -45,7 +50,9 @@ export default function App() {
   path="/admin"
   element={
     <ProtectedRoute role="ADMIN">
-      <AdminHome />
+      <AdminLayout>
+        <AdminHome />
+      </AdminLayout>
     </ProtectedRoute>
   }
 />
@@ -54,7 +61,9 @@ export default function App() {
   path="/admin/users"
   element={
     <ProtectedRoute role="ADMIN">
-      <UserManagement />
+      <AdminLayout>
+        <UserManagement />
+      </AdminLayout>
     </ProtectedRoute>
   }
 />
