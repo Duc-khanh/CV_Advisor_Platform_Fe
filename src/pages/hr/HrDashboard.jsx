@@ -105,7 +105,7 @@ export default function HrDashboard() {
         )}
 
         {/* 1. Header Section */}
-        <Box sx={{ 
+        {/* <Box sx={{ 
           p: { xs: 3, md: 4 }, mb: 4, bgcolor: "#ffffff", borderRadius: 4, 
           border: "1px solid #f1f5f9", boxShadow: "0 12px 40px rgba(15, 23, 42, 0.04)" 
         }}>
@@ -115,7 +115,7 @@ export default function HrDashboard() {
           <Typography variant="body1" color="text.secondary">
             Chào mừng quay trở lại! Dưới đây là tình hình tuyển dụng mới nhất của doanh nghiệp.
           </Typography>
-        </Box>
+        </Box> */}
 
         {/* 2. Stats Section (Đưa lên trên biểu đồ) */}
         <Box sx={{ mb: 4 }}>
@@ -130,47 +130,53 @@ export default function HrDashboard() {
         </Box>
 
         {/* 3. Charts Section */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} md={6}>
-            <Box sx={{ 
-              p: 3, bgcolor: "#ffffff", borderRadius: 4, border: "1px solid #f1f5f9",
-              boxShadow: "0 10px 30px rgba(15, 23, 42, 0.04)", minHeight: 420 
-            }}>
-              <Typography variant="h6" fontWeight={700} mb={3}>Ứng tuyển theo ngày</Typography>
-              <Box sx={{ height: 340, width: "100%" }}>
-                <ResponsiveContainer>
-                  <LineChart data={applicationsByDate}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                    <RechartsTooltip />
-                    <Line type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 8 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </Box>
+        <Box sx={{ 
+          display: "grid", 
+          gridTemplateColumns: { xs: "1fr", lg: "repeat(2, 1fr)" }, 
+          gap: 3, 
+          mb: 4 
+        }}>
+          <Box sx={{ 
+            p: 3, bgcolor: "#ffffff", borderRadius: 4, border: "1px solid #f1f5f9",
+            boxShadow: "0 10px 30px rgba(15, 23, 42, 0.04)", minHeight: 460, width: "100%", boxSizing: "border-box" 
+          }}>
+            <Typography variant="h6" fontWeight={700} mb={3}>Ứng tuyển theo ngày</Typography>
+            <Box sx={{ height: 420, width: "100%" }}>
+              <ResponsiveContainer>
+                <LineChart data={applicationsByDate} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="date" tick={{ fontSize: 12, fill: "#64748b" }} axisLine={{ stroke: "#e2e8f0" }} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#64748b" }} axisLine={false} tickLine={false} />
+                  <RechartsTooltip 
+                    contentStyle={{ borderRadius: 8, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}
+                  />
+                  <Line type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={4} dot={{ r: 5, fill: "#3b82f6", strokeWidth: 2, stroke: "#fff" }} activeDot={{ r: 8, strokeWidth: 0 }} />
+                </LineChart>
+              </ResponsiveContainer>
             </Box>
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} md={6}>
-            <Box sx={{ 
-              p: 3, bgcolor: "#ffffff", borderRadius: 4, border: "1px solid #f1f5f9",
-              boxShadow: "0 10px 30px rgba(15, 23, 42, 0.04)", minHeight: 420 
-            }}>
-              <Typography variant="h6" fontWeight={700} mb={3}>Công việc thu hút nhất</Typography>
-              <Box sx={{ height: 340, width: "100%" }}>
-                <ResponsiveContainer>
-                  <BarChart data={topJobs} layout="vertical" margin={{ left: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                    <XAxis type="number" hide />
-                    <YAxis dataKey="title" type="category" width={120} tick={{ fontSize: 11 }} />
-                    <RechartsTooltip />
-                    <Bar dataKey="count" fill="#10b981" radius={[0, 4, 4, 0]} barSize={20} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </Box>
+          <Box sx={{ 
+            p: 3, bgcolor: "#ffffff", borderRadius: 4, border: "1px solid #f1f5f9",
+            boxShadow: "0 10px 30px rgba(15, 23, 42, 0.04)", minHeight: 460, width: "100%", boxSizing: "border-box" 
+          }}>
+            <Typography variant="h6" fontWeight={700} mb={3}>Công việc thu hút nhất</Typography>
+            <Box sx={{ height: 420, width: "100%" }}>
+              <ResponsiveContainer>
+                <BarChart data={topJobs} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                  <XAxis type="number" hide />
+                  <YAxis dataKey="title" type="category" width={140} tick={{ fontSize: 12, fill: "#64748b" }} axisLine={false} tickLine={false} />
+                  <RechartsTooltip 
+                    cursor={{fill: "#f8fafc"}}
+                    contentStyle={{ borderRadius: 8, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}
+                  />
+                  <Bar dataKey="count" fill="#10b981" radius={[0, 6, 6, 0]} barSize={24} />
+                </BarChart>
+              </ResponsiveContainer>
             </Box>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         {/* 4. Feature & Quick Actions */}
         <HRFeatureSection />
