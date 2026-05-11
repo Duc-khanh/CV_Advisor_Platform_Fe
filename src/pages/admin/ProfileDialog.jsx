@@ -1,11 +1,13 @@
 import {
   Dialog, DialogTitle, DialogContent,
-  TextField, Button, Avatar, Stack, Box 
+  TextField, Button, Avatar, Stack, Box, Typography 
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { updateCurrentUser } from "../../services/currentUser";
+import { useToast } from "../../contexts/ToastContext";
 
 export default function ProfileDialog({ open, onClose, user, onUpdated }) {
+  const showToast = useToast();
   const [formData, setFormData] = useState({
     fullName: "",
     email: ""
@@ -19,7 +21,7 @@ export default function ProfileDialog({ open, onClose, user, onUpdated }) {
         fullName: user.fullName || "",
         email: user.email || ""
       });
-      setPreviewUrl(user.avatar || "");
+      setPreviewUrl(user.avatarUrl ? `http://localhost:8080${user.avatarUrl}` : "");
     }
   }, [user]);
 
@@ -37,10 +39,11 @@ export default function ProfileDialog({ open, onClose, user, onUpdated }) {
     try {
       const res = await updateCurrentUser(formData, avatarFile);
       onUpdated(res.data);
+      showToast("Cập nhật thông tin thành công!", "success");
       onClose();
     } catch (err) {
       console.error("Update failed:", err);
-      alert("Cập nhật thất bại");
+      showToast("Cập nhật thất bại", "error");
     }
   };
 

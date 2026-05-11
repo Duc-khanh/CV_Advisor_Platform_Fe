@@ -13,10 +13,13 @@ import {
   Typography
 } from "@mui/material";
 import { createJob, updateJob } from "../../services/hrJobService";
+import { useToast } from "../../contexts/ToastContext";
 const DEFAULT_IMAGE = "https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg";
 const API_BASE_URL = "http://localhost:8080";
 
 export default function HrJobForm({ job, onClose, onSuccess }) {
+  const showToast = useToast();
+
   /* ================= STATE ================= */
   const [form, setForm] = useState({
     title: "",
@@ -67,34 +70,95 @@ export default function HrJobForm({ job, onClose, onSuccess }) {
     setImageFile(file);
     setPreview(URL.createObjectURL(file));
   };
+const handleSubmit = async (e) => {
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const formData = new FormData();
-      Object.keys(form).forEach(key => {
-        if (key === 'vacancies') formData.append(key, Number(form[key]));
-        else if (key === 'expiredAt') formData.append(key, form[key] ? `${form[key]}T23:59:59` : "");
-        else if (key !== 'requiredSkills') formData.append(key, form[key]);
+  e.preventDefault();
+
+  setLoading(true);
+
+  try {
+
+    const formData = new FormData();
+
+    Object.keys(form).forEach(key => {
+
+      if (key === "vacancies") {
+
+        formData.append(
+          key,
+          Number(form[key])
+        );
+
+      } else if (key === "expiredAt") {
+
+        formData.append(
+          key,
+          form[key]
+            ? `${form[key]}T23:59:59`
+            : ""
+        );
+
+      } else if (key !== "requiredSkills") {
+
+        formData.append(
+          key,
+          form[key]
+        );
+      }
+    });
+
+    form.requiredSkills
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean)
+      .forEach(skill => {
+
+        formData.append(
+          "requiredSkills",
+          skill
+        );
       });
 
-      form.requiredSkills.split(",").map(s => s.trim()).filter(Boolean)
-        .forEach(skill => formData.append("requiredSkills", skill));
+    if (imageFile) {
 
-      if (imageFile) formData.append("image", imageFile);
-
-      if (job) await updateJob(job.jobId, formData);
-      else await createJob(formData);
-      
-      onSuccess();
-    } catch (err) {
-      console.error("Lỗi khi lưu job:", err);
-      alert("Không thể lưu tin tuyển dụng");
-    } finally {
-      setLoading(false);
+      formData.append(
+        "image",
+        imageFile
+      );
     }
-  };
+
+    let response;
+
+    if (job) {
+
+      response = await updateJob(
+        job.jobId,
+        formData
+      );
+
+    } else {
+
+      response = await createJob(
+        formData
+      );
+    }
+
+    onSuccess(response);
+
+  } catch (err) {
+
+    console.error(err);
+
+    showToast(
+      "Không thể lưu tin tuyển dụng",
+      "error"
+    );
+
+  } finally {
+
+    setLoading(false);
+  }
+};
 
   return (
     <Dialog open fullWidth maxWidth="md" onClose={onClose} scroll="paper">
