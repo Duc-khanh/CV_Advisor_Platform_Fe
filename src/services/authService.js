@@ -11,3 +11,10 @@ export const registerHr = (data) => {
 export const login = (data) => {
   return authApi.post("/login", data);
 };
+
+// GOOGLE LOGIN
+export const loginWithGoogle = (token) => {
+  return authApi.post("/google", {
+    token,
+  });
+};

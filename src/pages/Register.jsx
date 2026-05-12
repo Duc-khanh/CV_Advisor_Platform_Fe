@@ -20,7 +20,12 @@ import {
   Lock, 
   Person, 
   Visibility, 
-  VisibilityOff 
+  VisibilityOff,
+  // Thêm các icon mới
+  Business,
+  Public,
+  LocationOn,
+  Description,
 } from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
 import { register, registerHr } from "../services/authService";
@@ -230,24 +235,48 @@ export default function Register() {
                 required
                 fullWidth
                 onChange={handleChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Business color="action" fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
                 sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
               />
+              
               <TextField
                 name="industryName"
                 label="Lĩnh vực hoạt động"
                 required
                 fullWidth
                 onChange={handleChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Public color="action" fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
                 sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
               />
+              
               <TextField
                 name="address"
                 label="Địa chỉ công ty"
                 required
                 fullWidth
                 onChange={handleChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LocationOn color="action" fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
                 sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
               />
+              
               <TextField
                 name="description"
                 label="Mô tả công ty"
@@ -255,6 +284,13 @@ export default function Register() {
                 rows={3}
                 fullWidth
                 onChange={handleChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Description color="action" fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
                 sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
               />
             </>
@@ -272,7 +308,6 @@ export default function Register() {
               borderRadius: 2,
               fontWeight: "600",
               textTransform: "none",
-              // background: "linear-gradient(135deg, #1e7ba4, #2fa1c4)",
               background: "linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)",
               "&:hover": {
                 transform: "translateY(-1px)",

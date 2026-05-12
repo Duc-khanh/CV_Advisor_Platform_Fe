@@ -9,6 +9,7 @@ import {
   Paper,
   InputAdornment,
   IconButton,
+  Divider,
 } from "@mui/material";
 import {
   Work,
@@ -17,75 +18,101 @@ import {
   Visibility,
   VisibilityOff,
 } from "@mui/icons-material";
+import { Google } from "@mui/icons-material";
+import { useGoogleLogin } from "@react-oauth/google";
 import AuthLayout from "../components/AuthLayout";
-import { login } from "../services/authService";
+import { login, loginWithGoogle } from "../services/authService";
 import { Link, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { useToast } from "../contexts/ToastContext";
 
 const normalizeToken = (value) => {
   if (!value) return null;
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return value.trim().replace(/^Bearer\s+/i, "");
   }
-  return null; // Chỉ trả về string, không xử lý object
+  return null;
+};
+
+const navigateByRole = (role, navigate) => {
+  if (role === "ADMIN") navigate("/admin");
+  else if (role === "HR") navigate("/hr");
+  else navigate("/user");
 };
 
 export default function Login() {
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const showToast = useToast();
 
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
+  // ── Đăng nhập thường ──────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Xóa token cũ trước khi login để tránh token sai còn tồn đọng
     localStorage.removeItem("token");
-
     try {
       const res = await login(form);
-      const rawToken = res.data.token || res.data.accessToken || res.data.access_token;
+      const rawToken =
+        res.data.token || res.data.accessToken || res.data.access_token;
       const token = normalizeToken(rawToken);
+      if (!token) throw new Error("Không nhận được token đăng nhập");
 
-      if (!token) {
-        throw new Error("Không nhận được token đăng nhập");
-      }
-
-      // Lưu token đã chuẩn hóa vào localStorage
       localStorage.setItem("token", token);
-
-      // Decode token để lấy role
       const decoded = jwtDecode(token);
-      const role = decoded.role;
-
-      // Điều hướng theo role
       showToast("Đăng nhập thành công!", "success");
-      if (role === "ADMIN") {
-        navigate("/admin");
-      } else if (role === "HR") {
-        navigate("/hr");
-      } else {
-        navigate("/user");
-      }
+      navigateByRole(decoded.role, navigate);
     } catch (err) {
-      console.error("Login error:", err.response?.data || err.message, err.response?.status);
-      const message =
+      console.error("Login error:", err.response?.data || err.message);
+      showToast(
         err.response?.data?.message ||
-        err.response?.data?.error ||
-        err.response?.statusText ||
-        err.message ||
-        "Đăng nhập thất bại. Vui lòng thử lại!";
-      showToast(message, "error");
+          err.response?.statusText ||
+          err.message ||
+          "Đăng nhập thất bại. Vui lòng thử lại!",
+        "error"
+      );
     }
   };
+
+  // ── Đăng nhập Google (useGoogleLogin → access_token) ──────
+  const loginGoogle = useGoogleLogin({
+    scope: "openid email profile",
+    onSuccess: async (tokenResponse) => {
+      try {
+        localStorage.removeItem("token");
+        console.log(
+          "[Google] access_token:",
+          tokenResponse.access_token?.substring(0, 30) + "..."
+        );
+
+        const res = await loginWithGoogle(tokenResponse.access_token);
+        const rawToken =
+          res.data.token || res.data.accessToken || res.data.access_token;
+        const token = normalizeToken(rawToken);
+        if (!token) throw new Error("Không nhận được token đăng nhập");
+
+        localStorage.setItem("token", token);
+        const decoded = jwtDecode(token);
+        showToast("Đăng nhập thành công!", "success");
+        navigateByRole(decoded.role, navigate);
+      } catch (err) {
+        console.error(
+          "Google login error:",
+          err.response?.data || err.message
+        );
+        showToast(
+          err.response?.data?.message || "Đăng nhập bằng Google thất bại!",
+          "error"
+        );
+      }
+    },
+    onError: (error) => {
+      console.error("Google OAuth error:", error);
+      showToast("Không thể mở cửa sổ đăng nhập Google!", "error");
+    },
+  });
 
   return (
     <AuthLayout>
@@ -97,12 +124,11 @@ export default function Login() {
           maxWidth: 480,
           borderRadius: 4,
           textAlign: "center",
-          // Đổ bóng mềm mại tạo chiều sâu (Soft Shadow)
           boxShadow: "0px 10px 30px rgba(0, 0, 0, 0.08)",
           bgcolor: "background.paper",
         }}
       >
-        {/* Phần đầu của Form */}
+        {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Avatar
             sx={{
@@ -124,7 +150,7 @@ export default function Login() {
           </Typography>
         </Box>
 
-        {/* Nội dung Form */}
+        {/* Form */}
         <Stack spacing={3} component="form" onSubmit={handleSubmit}>
           <TextField
             fullWidth
@@ -182,7 +208,7 @@ export default function Login() {
               borderRadius: 2,
               textTransform: "none",
               fontSize: "1rem",
-              fontWeight: "600",
+              fontWeight: 600,
               background: "linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)",
               boxShadow: "0 4px 12px rgba(25, 118, 210, 0.3)",
               "&:hover": {
@@ -194,7 +220,46 @@ export default function Login() {
             Đăng nhập ngay
           </Button>
 
-          <Box sx={{ mt: 2 }}>
+          <Divider sx={{ color: "text.secondary", fontSize: "0.8rem" }}>
+            hoặc
+          </Divider>
+
+          {/* Google Login Button */}
+       <Button
+  variant="outlined"
+  fullWidth
+  size="large"
+  onClick={() => loginGoogle()}
+  startIcon={<Google />}
+  sx={{
+    py: 1.6,
+    borderRadius: 2.5,
+    textTransform: "none",
+    fontSize: "1rem",
+    fontWeight: 600,
+
+    // Màu Google chuẩn hơn
+    color: "#4285F4",
+    borderColor: "#DADCE0",
+    backgroundColor: "#fff",
+
+    boxShadow: "0 1px 2px rgba(60,64,67,.15)",
+
+    "&:hover": {
+      backgroundColor: "#F8FAFF",
+      borderColor: "#4285F4",
+      boxShadow: "0 2px 6px rgba(66,133,244,.25)",
+    },
+
+    "&:active": {
+      backgroundColor: "#EEF4FF",
+    },
+  }}
+>
+  Đăng nhập bằng Google
+</Button>
+
+          <Box sx={{ mt: 1 }}>
             <Typography variant="body2" color="text.secondary">
               Bạn chưa có tài khoản?{" "}
               <Link
