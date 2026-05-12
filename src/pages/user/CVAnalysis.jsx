@@ -228,154 +228,108 @@ export default function CVAnalysis() {
               {loadingJobs ? (
                 <Typography color="text.secondary">Đang tải gợi ý việc làm từ hệ thống...</Typography>
               ) : recommendedJobs.length > 0 ? (
-                <Grid container spacing={3}>
-                  {recommendedJobs.map((job) => {
-  const jobId = job.jobId || job.id;
-  return (
-    <Grid item xs={12} sm={6} md={4} lg={3} key={jobId || job.title} sx={{ display: 'flex' }}>
-      <Paper
-        onClick={() => jobId && navigate(`/user/job/${jobId}`)}
-        elevation={0}
-        sx={{
-          p: 2.5, 
-          borderRadius: 4,
-          border: "1px solid #e2e8f0",
-          cursor: jobId ? "pointer" : "default",
-          transition: "all 0.3s ease",
-          bgcolor: "#ffffff",
-          
-          width: '100%',
-          height: 380, 
-          display: "flex",
-          flexDirection: "column",
-          overflow: 'hidden',
-          
-          '&:hover': jobId ? { 
-            boxShadow: '0 12px 24px rgba(15, 23, 42, 0.08)', 
-            transform: 'translateY(-4px)',
-            borderColor: 'primary.main' 
-          } : {},
-        }}
-      >
-       
-        <Stack direction="row" spacing={1.5} alignItems="flex-start" justifyContent="space-between" mb={1.5}>
-          <Box sx={{ flex: 1, minWidth: 0 }}> 
-            <Typography 
-              fontWeight={700} 
-              sx={{ 
-                mb: 0.5,
-                fontSize: '0.95rem',
-                display: '-webkit-box',
-                WebkitLineClamp: 2, 
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                lineHeight: 1.3
-              }}
-            >
-              {job.title || job.jobTitle || "Công việc đề xuất"}
-            </Typography>
-            <Typography 
-              variant="caption" 
-              color="text.secondary"
-              sx={{ 
-                display: 'block',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis' 
-              }}
-            >
-              {job.companyName || job.company || "Công ty chưa xác định"}
-            </Typography>
-          </Box>
-          <Box sx={{ 
-            width: 40, 
-            height: 40, 
-            flexShrink: 0, 
-            borderRadius: 2, 
-            bgcolor: '#eef2ff', 
-            color: '#4338ca', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            fontWeight: 700,
-            fontSize: '0.9rem'
-          }}>
-            {job.companyName?.charAt(0)?.toUpperCase() || job.title?.charAt(0)?.toUpperCase() || "J"}
-          </Box>
-        </Stack>
+                <Box sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2,1fr)', md: 'repeat(3,1fr)', lg: 'repeat(4,1fr)' },
+                  gap: 3,
+                }}>
+                  {recommendedJobs.map((job, idx) => {
+                    const jobId = job.jobId || job.id;
+                    const companyInitial = job.companyName?.charAt(0)?.toUpperCase() || job.title?.charAt(0)?.toUpperCase() || 'J';
+                    return (
+                      <Paper
+                        key={jobId || idx}
+                        elevation={0}
+                        onClick={() => jobId && navigate(`/user/job/${jobId}`)}
+                        sx={{
+                          p: 2.5, borderRadius: 4,
+                          border: '1px solid #e2e8f0',
+                          bgcolor: '#ffffff',
+                          cursor: jobId ? 'pointer' : 'default',
+                          display: 'flex', flexDirection: 'column',
+                          height: 220,           // ← chiều cao cố định như UserHome
+                          overflow: 'hidden',
+                          transition: 'all 0.3s ease',
+                          '&:hover': jobId ? {
+                            borderColor: '#4f46e5',
+                            transform: 'translateY(-5px)',
+                            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.05)',
+                          } : {},
+                        }}
+                      >
+                        {/* Header: avatar + title + company */}
+                        <Stack direction="row" spacing={2} alignItems="flex-start" mb={1.5}>
+                          <Box sx={{
+                            width: 44, height: 44, flexShrink: 0,
+                            borderRadius: 2, bgcolor: '#eef2ff', color: '#4338ca',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontWeight: 800, fontSize: '1rem',
+                            boxShadow: '0 2px 8px rgba(79,70,229,0.12)',
+                          }}>
+                            {companyInitial}
+                          </Box>
+                          <Box sx={{ minWidth: 0, flex: 1 }}>
+                            {/* Tên việc làm – tối đa 2 dòng, chiều cao cố định */}
+                            <Typography fontWeight={700} sx={{
+                              fontSize: '0.92rem', lineHeight: 1.35,
+                              height: '2.5rem',           // ← 2 dòng × line-height
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                              color: '#1e293b',
+                              wordBreak: 'break-word',
+                            }}>
+                              {job.title || job.jobTitle || 'Công việc đề xuất'}
+                            </Typography>
+                            {/* Công ty – 1 dòng ellipsis */}
+                            <Typography variant="body2" sx={{
+                              mt: 0.25, color: '#64748b',
+                              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                            }}>
+                              {job.companyName || job.company || '\u00A0'}
+                            </Typography>
+                          </Box>
+                        </Stack>
 
-        {/* Tags */}
-        <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-          <Chip 
-            label={job.location || "Toàn quốc"} 
-            size="small" 
-            sx={{ bgcolor: '#f1f5f9', color: '#475569', fontSize: '0.7rem', height: 20 }} 
-          />
-          <Chip 
-            label={job.jobType || "Full-time"} 
-            size="small" 
-            sx={{ bgcolor: '#f1f5f9', color: '#475569', fontSize: '0.7rem', height: 20 }} 
-          />
-        </Stack>
+                        {/* Chips */}
+                        <Stack direction="row" spacing={1} sx={{ mb: 1.5, overflow: 'hidden' }}>
+                          <Chip
+                            label={job.location ? job.location.split(',').pop().trim() : 'Toàn quốc'}
+                            size="small"
+                            sx={{ bgcolor: '#f1f5f9', color: '#475569', fontWeight: 500, borderRadius: 2, flexShrink: 0, maxWidth: 120 }}
+                          />
+                          <Chip
+                            label={job.jobType || 'Toàn thời gian'}
+                            size="small"
+                            sx={{ bgcolor: '#f1f5f9', color: '#475569', fontWeight: 500, borderRadius: 2, flexShrink: 0 }}
+                          />
+                        </Stack>
 
-        <Typography 
-          variant="body2" 
-          color="text.secondary" 
-          sx={{ 
-            flex: 1, 
-            mb: 2, 
-            fontSize: '0.85rem',
-            display: '-webkit-box',
-            WebkitLineClamp: 4, 
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            lineHeight: 1.5,
-            textAlign: 'justify'
-          }}
-        >
-          {job.candidateRequirements || job.description || "Không có mô tả chi tiết cho công việc này."}
-        </Typography>
-
-        <Divider sx={{ mb: 2, borderStyle: 'dashed' }} />
-
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Typography 
-            fontWeight={700} 
-            color="success.main" 
-            sx={{ 
-              fontSize: '0.9rem',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              maxWidth: '50%'
-            }}
-          >
-            {job.salaryRange || "Thỏa thuận"}
-          </Typography>
-          <Button
-            size="small"
-            variant="contained"
-            disableElevation
-            onClick={(e) => {
-              e.stopPropagation();
-              if (jobId) navigate(`/user/job/${jobId}`);
-            }}
-            sx={{ 
-              textTransform: 'none', 
-              fontWeight: 700,
-              fontSize: '0.75rem',
-              px: 1.5,
-              flexShrink: 0
-            }}
-          >
-            Chi tiết
-          </Button>
-        </Stack>
-      </Paper>
-    </Grid>
-  );
-})}
-                </Grid>
+                        {/* Salary + Button – luôn ở đáy card */}
+                        <Box sx={{ mt: 'auto' }}>
+                          <Divider sx={{ mb: 1.5, borderColor: '#f1f5f9' }} />
+                          <Stack direction="row" alignItems="center" justifyContent="space-between">
+                            <Typography fontWeight={800} sx={{
+                              color: '#10b981', fontSize: '0.92rem',
+                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                              maxWidth: 'calc(100% - 80px)',
+                            }}>
+                              {job.salaryRange || 'Thỏa thuận'}
+                            </Typography>
+                            <Button
+                              size="small" variant="contained" disableElevation
+                              onClick={(e) => { e.stopPropagation(); if (jobId) navigate(`/user/job/${jobId}`); }}
+                              sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.75rem', px: 1.5, flexShrink: 0 }}
+                            >
+                              Chi tiết
+                            </Button>
+                          </Stack>
+                        </Box>
+                      </Paper>
+                    );
+                  })}
+                </Box>
               ) : (
                 <Typography color="text.secondary">
                   Chưa có gợi ý việc làm từ dữ liệu hệ thống. Vui lòng thử lại hoặc cập nhật CV và hồ sơ.

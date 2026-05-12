@@ -25,7 +25,8 @@ import {
   FormControl,
   InputLabel,
   Button,
-  Divider
+  Divider,
+  Modal
 } from "@mui/material";
 
 import {
@@ -33,7 +34,8 @@ import {
   Refresh,
   Description,
   Person,
-  Work
+  Work,
+  Close
 } from "@mui/icons-material";
 
 import HRLayout from "../../components/HRLayout";
@@ -67,7 +69,15 @@ export default function HRApplications() {
 
   const [updatingId, setUpdatingId] = useState(null);
 
+  const [viewCvUrl, setViewCvUrl] = useState(null);
+  const [openCvModal, setOpenCvModal] = useState(false);
+
   const rowsPerPage = 5;
+
+  const handleViewCv = (cvFileUrl) => {
+    setViewCvUrl(`http://localhost:8080/uploads/cv/${cvFileUrl}`);
+    setOpenCvModal(true);
+  };
 
   useEffect(() => {
     fetchApplications();
@@ -436,11 +446,8 @@ export default function HRApplications() {
                           <Button
                             variant="outlined"
                             size="small"
-                            startIcon={
-                              <Description />
-                            }
-                            href={`http://localhost:8080/uploads/cv/${app.cvFileUrl}`}
-                            target="_blank"
+                            startIcon={<Description />}
+                            onClick={() => handleViewCv(app.cvFileUrl)}
                           >
                             Xem CV
                           </Button>
@@ -546,6 +553,40 @@ export default function HRApplications() {
           </Stack>
         </Paper>
       </Box>
+
+      {/* CV VIEWER MODAL */}
+      <Modal open={openCvModal} onClose={() => setOpenCvModal(false)}>
+        <Box sx={{
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+          width: { xs: '95%', md: '80%', lg: '1000px' }, height: '90vh', bgcolor: 'background.paper',
+          borderRadius: 3, boxShadow: 24, display: 'flex', flexDirection: 'column', overflow: 'hidden'
+        }}>
+          <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee' }}>
+            <Typography variant="h6" fontWeight={700}>Xem trước CV ứng viên</Typography>
+            <IconButton onClick={() => setOpenCvModal(false)}><Close /></IconButton>
+          </Box>
+          <Box sx={{ flexGrow: 1, p: 0, bgcolor: '#f1f5f9' }}>
+            {viewCvUrl ? (
+              <iframe 
+                src={viewCvUrl} 
+                width="100%" 
+                height="100%" 
+                style={{ border: 'none' }} 
+                title="CV Preview" 
+              />
+            ) : (
+              <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+                <CircularProgress />
+              </Box>
+            )}
+          </Box>
+          <Box sx={{ p: 2, borderTop: '1px solid #eee', display: 'flex', justifyContent: 'flex-end', bgcolor: 'white' }}>
+            <Button variant="outlined" onClick={() => setOpenCvModal(false)} sx={{ mr: 2 }}>Đóng</Button>
+            <Button variant="contained" component="a" href={viewCvUrl} target="_blank" download>Tải xuống</Button>
+          </Box>
+        </Box>
+      </Modal>
+
     </HRLayout>
   );
 }

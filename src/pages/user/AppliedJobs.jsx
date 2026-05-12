@@ -5,9 +5,10 @@ import {
   Container, Typography, Box, Stack, Avatar, 
   Paper, CircularProgress, Button, Chip,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  TablePagination, FormControl, InputLabel, Select, MenuItem 
+  TablePagination, FormControl, InputLabel, Select, MenuItem,
+  Modal, IconButton
 } from "@mui/material";
-import { ArrowForward, WorkHistoryOutlined, Description, Visibility, FilterList } from "@mui/icons-material";
+import { ArrowForward, WorkHistoryOutlined, Description, Visibility, FilterList, Close } from "@mui/icons-material";
 import UserLayout from "../../components/UserLayout";
 import { useToast } from "../../contexts/ToastContext";
 
@@ -21,6 +22,15 @@ export default function AppliedJobs() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [statusFilter, setStatusFilter] = useState("ALL"); // Mặc định là tất cả
+
+  // ----- STATE XEM CV -----
+  const [viewCvUrl, setViewCvUrl] = useState(null);
+  const [openCvModal, setOpenCvModal] = useState(false);
+
+  const handleViewCv = (cvFileUrl) => {
+    setViewCvUrl(`http://localhost:8080/uploads/cv/${cvFileUrl}`);
+    setOpenCvModal(true);
+  };
 
   const fetchAppliedJobs = async (status = "ALL") => {
     setLoading(true);
@@ -174,7 +184,7 @@ export default function AppliedJobs() {
                                 size="small" 
                                 color="inherit" 
                                 startIcon={<Description />} 
-                                onClick={() => window.open(`http://localhost:8080/uploads/cv/${app.cvFileUrl}`, '_blank')}
+                                onClick={() => handleViewCv(app.cvFileUrl)}
                                 sx={{ textTransform: 'none', color: '#64748b' }}
                             >
                                 CV
@@ -200,6 +210,40 @@ export default function AppliedJobs() {
           </Paper>
         )}
       </Container>
+
+      {/* CV VIEWER MODAL */}
+      <Modal open={openCvModal} onClose={() => setOpenCvModal(false)}>
+        <Box sx={{
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+          width: { xs: '95%', md: '80%', lg: '1000px' }, height: '90vh', bgcolor: 'background.paper',
+          borderRadius: 3, boxShadow: 24, display: 'flex', flexDirection: 'column', overflow: 'hidden'
+        }}>
+          <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee' }}>
+            <Typography variant="h6" fontWeight={700}>Xem CV của bạn</Typography>
+            <IconButton onClick={() => setOpenCvModal(false)}><Close /></IconButton>
+          </Box>
+          <Box sx={{ flexGrow: 1, p: 0, bgcolor: '#f1f5f9' }}>
+            {viewCvUrl ? (
+              <iframe 
+                src={viewCvUrl} 
+                width="100%" 
+                height="100%" 
+                style={{ border: 'none' }} 
+                title="CV Preview" 
+              />
+            ) : (
+              <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+                <CircularProgress />
+              </Box>
+            )}
+          </Box>
+          <Box sx={{ p: 2, borderTop: '1px solid #eee', display: 'flex', justifyContent: 'flex-end', bgcolor: 'white' }}>
+            <Button variant="outlined" onClick={() => setOpenCvModal(false)} sx={{ mr: 2 }}>Đóng</Button>
+            <Button variant="contained" component="a" href={viewCvUrl} target="_blank" download>Tải xuống</Button>
+          </Box>
+        </Box>
+      </Modal>
+
     </UserLayout>
   );
 }

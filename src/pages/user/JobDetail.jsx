@@ -112,9 +112,16 @@ export default function JobDetail() {
     if (isFetched.current) return;
 
     const fetchJobDetail = async () => {
+      const authHeader = getAuthHeader();
       try {
-        const res = await axios.get(`http://localhost:8080/api/public/jobs/${id}`);
+        const res = await axios.get(`http://localhost:8080/api/public/jobs/${id}`, {
+          headers: authHeader || {},
+        });
         setJob(res.data);
+        // Đọc trạng thái isFavorite từ response luôn
+        if (res.data.favorite !== undefined) {
+          setIsFavorite(res.data.favorite);
+        }
         isFetched.current = true;
       } catch (err) {
         console.error("Lỗi lấy chi tiết công việc:", err);
@@ -156,16 +163,36 @@ export default function JobDetail() {
       return;
     }
 
-    try {
-      await axios.post(
-        `http://localhost:8080/api/user/jobs/favorite/${id}`,
-        null,
-        { headers: authHeader }
-      );
-      setIsFavorite(!isFavorite);
-      showToast(!isFavorite ? "Đã lưu tin!" : "Đã bỏ lưu tin!", "success");
-    } catch (err) {
-      showToast("Không thể thực hiện thao tác yêu thích", "error");
+    if (isFavorite) {
+      // === BỎ YÊU THÍCH ===
+      try {
+        await axios.delete(
+          `http://localhost:8080/api/user/jobs/favorite/${id}`,
+          { headers: authHeader }
+        );
+        setIsFavorite(false);
+        showToast("Đã bỏ lưu tin!", "info");
+      } catch (err) {
+        showToast("Không thể thực hiện thao tác yêu thích", "error");
+      }
+    } else {
+      // === THÊM YÊU THÍCH ===
+      try {
+        await axios.post(
+          `http://localhost:8080/api/user/jobs/favorite/add/${id}`,
+          null,
+          { headers: authHeader }
+        );
+        setIsFavorite(true);
+        showToast("Đã lưu tin! ❤️", "success");
+      } catch (err) {
+        if (err.response?.status === 409) {
+          showToast("Công việc đã có trong danh sách việc làm yêu thích", "warning");
+          setIsFavorite(true); // Đồng bộ lại trạng thái
+        } else {
+          showToast("Không thể thực hiện thao tác yêu thích", "error");
+        }
+      }
     }
   };
 

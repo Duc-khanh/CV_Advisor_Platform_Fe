@@ -46,7 +46,7 @@ export default function FavoriteJobs() {
     e.stopPropagation();
     const authHeader = getAuthHeader();
     try {
-      await axios.post(`http://localhost:8080/api/user/jobs/favorite/${jobId}`, null, {
+      await axios.delete(`http://localhost:8080/api/user/jobs/favorite/${jobId}`, {
         headers: authHeader,
       });
       // Xóa khỏi danh sách hiển thị ngay lập tức để người dùng thấy kết quả

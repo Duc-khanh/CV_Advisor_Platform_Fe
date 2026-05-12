@@ -14,23 +14,38 @@
   import LastCvAnalysisSection from "./LastCvAnalysisSection";
   import HeroSection from "./HeroSection";
   import { migrateLegacyStorage } from "../../services/cvAnalysisStorage";
+  import { useToast } from "../../contexts/ToastContext";
 
   export default function UserHome() {
     const navigate = useNavigate();
+    const showToast = useToast();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState({ keyword: "", location: "" });
+  const [favoriteIds, setFavoriteIds] = useState(new Set());
 
-    // Migration: xoá key cũ `lastCvAnalysis` và chuyển sang key theo userId
-    useEffect(() => { migrateLegacyStorage(); }, []);
+  // Migration: xoá key cũ `lastCvAnalysis` và chuyển sang key theo userId
+  useEffect(() => { migrateLegacyStorage(); }, []);
 
-    const getAuthHeader = () => {
-      const token = localStorage.getItem("token");
-      if (!token) return null;
-      return { Authorization: `Bearer ${token}` };
-    };
+  const getAuthHeader = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    return { Authorization: `Bearer ${token}` };
+  };
 
-    // LOGIC PHÂN TRANG
+  const fetchFavoriteIds = async (authHeader) => {
+    if (!authHeader) return new Set();
+    try {
+      const res = await axios.get("http://localhost:8080/api/user/jobs/favorite/all", {
+        headers: authHeader,
+      });
+      return new Set(res.data.map((job) => job.jobId));
+    } catch (err) {
+      console.error("Lỗi lấy danh sách yêu thích:", err);
+      return new Set();
+    }
+  };
+
     const [currentPage, setCurrentPage] = useState(1);
     const jobsPerPage = 12;
     const handleViewAll = () => {
@@ -47,16 +62,22 @@
     /* ===== FETCH DANH SÁCH CÔNG VIỆC ===== */
     const fetchJobs = async () => {
       setLoading(true);
-      const authHeader = getAuthHeader(); 
+      const authHeader = getAuthHeader();
+      const favoriteIdsFromServer = await fetchFavoriteIds(authHeader);
       try {
         const response = await axios.get("http://localhost:8080/api/public/jobs", {
           params: {
             keyword: searchQuery.keyword,
-            location: searchQuery.location
+            location: searchQuery.location,
           },
-          headers: authHeader || {} // Gửi token để nhận trạng thái isFavorite từ server
+          headers: authHeader || {},
         });
-        setJobs(response.data);
+        const jobsWithFavorite = response.data.map((job) => ({
+          ...job,
+          isFavorite: favoriteIdsFromServer.has(job.jobId),
+        }));
+        setJobs(jobsWithFavorite);
+        setFavoriteIds(favoriteIdsFromServer);
         setCurrentPage(1);
       } catch (error) {
         console.error("Lỗi khi lấy danh sách công việc:", error);
@@ -70,34 +91,66 @@
     }, []);
 
 
-    /* ===== LOGIC TOGGLE FAVORITE (Đồng bộ với JobDetail) ===== */
+    /* ===== LOGIC TOGGLE FAVORITE ===== */
     const handleToggleFavorite = async (e, jobId, currentFavoriteStatus) => {
-      e.stopPropagation(); // Ngăn sự kiện click Paper chuyển sang trang chi tiết
+      e.stopPropagation();
       
       const authHeader = getAuthHeader();
       if (!authHeader) {
-        alert("Vui lòng đăng nhập để thực hiện chức năng này");
+        showToast("Vui lòng đăng nhập để thực hiện chức năng này", "warning");
         navigate("/login");
         return;
       }
 
-      try {
-        // Gọi đúng API endpoint mà JobDetail đang sử dụng
-        await axios.post(
-          `http://localhost:8080/api/user/jobs/favorite/${jobId}`,
-          null,
-          { headers: authHeader }
-        );
-
-        // Cập nhật state jobs cục bộ để giao diện thay đổi ngay lập tức
-        setJobs((prevJobs) =>
-          prevJobs.map((job) =>
-            job.jobId === jobId ? { ...job, isFavorite: !currentFavoriteStatus } : job
-          )
-        );
-      } catch (err) {
-        console.error("Lỗi toggle favorite:", err);
-        alert("Không thể thực hiện thao tác");
+      if (currentFavoriteStatus) {
+        // === BỎ YÊU THÍCH ===
+        try {
+          await axios.delete(
+            `http://localhost:8080/api/user/jobs/favorite/${jobId}`,
+            { headers: authHeader }
+          );
+          setJobs((prevJobs) =>
+            prevJobs.map((job) =>
+              job.jobId === jobId ? { ...job, isFavorite: false } : job
+            )
+          );
+          setFavoriteIds((prevIds) => {
+            const nextIds = new Set(prevIds);
+            nextIds.delete(jobId);
+            return nextIds;
+          });
+          showToast("Đã bỏ khỏi danh sách yêu thích", "info");
+        } catch (err) {
+          console.error("Lỗi bỏ yêu thích:", err);
+          showToast("Không thể thực hiện thao tác", "error");
+        }
+      } else {
+        // === THÊM YÊU THÍCH ===
+        try {
+          await axios.post(
+            `http://localhost:8080/api/user/jobs/favorite/add/${jobId}`,
+            null,
+            { headers: authHeader }
+          );
+          setJobs((prevJobs) =>
+            prevJobs.map((job) =>
+              job.jobId === jobId ? { ...job, isFavorite: true } : job
+            )
+          );
+          setFavoriteIds((prevIds) => {
+            const nextIds = new Set(prevIds);
+            nextIds.add(jobId);
+            return nextIds;
+          });
+          showToast("Đã thêm vào danh sách yêu thích! ❤️", "success");
+        } catch (err) {
+          if (err.response?.status === 409) {
+            showToast("Công việc đã có trong danh sách việc làm yêu thích", "warning");
+          } else {
+            console.error("Lỗi thêm yêu thích:", err);
+            showToast("Không thể thực hiện thao tác", "error");
+          }
+        }
       }
     };
 
