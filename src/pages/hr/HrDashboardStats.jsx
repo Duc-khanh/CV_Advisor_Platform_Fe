@@ -1,4 +1,4 @@
-import { Grid, Box, Typography, CircularProgress } from "@mui/material";
+import { Box, Typography, CircularProgress } from "@mui/material";
 import { People, AssignmentTurnedIn, TrendingUp } from "@mui/icons-material";
 import StatCard from "../admin/StatCard";
 
@@ -24,40 +24,36 @@ export default function HrDashboardStats({ jobsCount, applicationsCount, intervi
           <CircularProgress />
         </Box>
       ) : (
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Tin đang tuyển"
-              value={jobsCount.toString()}
-              icon={<AssignmentTurnedIn />}
-              color="#2d6a4f"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Ứng viên đăng ứng tuyển"
-              value={applicationsCount.toString()}
-              icon={<People />}
-              color="#0077b6"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Lịch phỏng vấn"
-              value={interviewCount.toString()}
-              icon={<TrendingUp />}
-              color="#f59e0b"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Tỷ lệ đạt"
-              value={acceptRate}
-              icon={<TrendingUp />}
-              color="#7209b7"
-            />
-          </Grid>
-        </Grid>
+        <Box sx={{ 
+          display: "grid", 
+          gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }, 
+          gap: 3 
+        }}>
+          <StatCard
+            title="Tin đang tuyển"
+            value={jobsCount.toString()}
+            icon={<AssignmentTurnedIn />}
+            color="#2d6a4f"
+          />
+          <StatCard
+            title="Ứng viên đang ứng tuyển"
+            value={applicationsCount.toString()}
+            icon={<People />}
+            color="#0077b6"
+          />
+          <StatCard
+            title="Lịch phỏng vấn"
+            value={interviewCount.toString()}
+            icon={<TrendingUp />}
+            color="#f59e0b"
+          />
+          <StatCard
+            title="Tỷ lệ đạt"
+            value={acceptRate}
+            icon={<TrendingUp />}
+            color="#7209b7"
+          />
+        </Box>
       )}
     </Box>
   );

@@ -18,6 +18,7 @@ import AIAnalysisCard from "./AIAnalysisCard";
 import api from "../../services/axios";
 import { getPublicJobs } from "../../services/publicJobService";
 import { useToast } from "../../contexts/ToastContext";
+import { saveCvAnalysis } from "../../services/cvAnalysisStorage";
 
 export default function CVAnalysis() {
   const navigate = useNavigate();
@@ -130,15 +131,12 @@ export default function CVAnalysis() {
         const matchedJobs = buildRecommendedJobs(jobs, analysis, summaryText);
         setRecommendedJobs(matchedJobs);
 
-        localStorage.setItem(
-          "lastCvAnalysis",
-          JSON.stringify({
-            analysis,
-            summary: summaryText,
-            recommendedJobs: matchedJobs,
-            createdAt: Date.now(),
-          })
-        );
+        // Lưu theo userId – dùng helper để tránh lẫn dữ liệu giữa các tài khoản
+        saveCvAnalysis({
+          analysis,
+          summary: summaryText,
+          recommendedJobs: matchedJobs,
+        });
       } finally {
         setLoadingJobs(false);
       }
@@ -239,16 +237,15 @@ export default function CVAnalysis() {
         onClick={() => jobId && navigate(`/user/job/${jobId}`)}
         elevation={0}
         sx={{
-          p: 2.5, // Giảm padding một chút cho gọn
+          p: 2.5, 
           borderRadius: 4,
           border: "1px solid #e2e8f0",
           cursor: jobId ? "pointer" : "default",
           transition: "all 0.3s ease",
           bgcolor: "#ffffff",
           
-          // Cố định kích thước
           width: '100%',
-          height: 380, // Cố định chiều cao tổng thể
+          height: 380, 
           display: "flex",
           flexDirection: "column",
           overflow: 'hidden',
@@ -260,16 +257,16 @@ export default function CVAnalysis() {
           } : {},
         }}
       >
-        {/* Header: Title & Logo */}
+       
         <Stack direction="row" spacing={1.5} alignItems="flex-start" justifyContent="space-between" mb={1.5}>
-          <Box sx={{ flex: 1, minWidth: 0 }}> {/* minWidth: 0 giúp text-overflow hoạt động */}
+          <Box sx={{ flex: 1, minWidth: 0 }}> 
             <Typography 
               fontWeight={700} 
               sx={{ 
                 mb: 0.5,
                 fontSize: '0.95rem',
                 display: '-webkit-box',
-                WebkitLineClamp: 2, // Giới hạn 2 dòng tiêu đề
+                WebkitLineClamp: 2, 
                 WebkitBoxOrient: 'vertical',
                 overflow: 'hidden',
                 lineHeight: 1.3
@@ -293,7 +290,7 @@ export default function CVAnalysis() {
           <Box sx={{ 
             width: 40, 
             height: 40, 
-            flexShrink: 0, // Không cho logo bị bóp méo
+            flexShrink: 0, 
             borderRadius: 2, 
             bgcolor: '#eef2ff', 
             color: '#4338ca', 
@@ -321,7 +318,6 @@ export default function CVAnalysis() {
           />
         </Stack>
 
-        {/* Description/Requirements: Cố định độ dài văn bản */}
         <Typography 
           variant="body2" 
           color="text.secondary" 
@@ -330,7 +326,7 @@ export default function CVAnalysis() {
             mb: 2, 
             fontSize: '0.85rem',
             display: '-webkit-box',
-            WebkitLineClamp: 4, // Giới hạn đúng 4 dòng mô tả
+            WebkitLineClamp: 4, 
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
             lineHeight: 1.5,
@@ -342,7 +338,6 @@ export default function CVAnalysis() {
 
         <Divider sx={{ mb: 2, borderStyle: 'dashed' }} />
 
-        {/* Footer: Salary & Button */}
         <Stack direction="row" justifyContent="space-between" alignItems="center">
           <Typography 
             fontWeight={700} 

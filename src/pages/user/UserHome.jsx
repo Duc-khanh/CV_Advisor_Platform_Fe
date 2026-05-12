@@ -11,15 +11,18 @@
     AccountBalance, Work, ArrowForward, CheckCircle
   } from "@mui/icons-material";
   import UserLayout from "../../components/UserLayout";
-  import AIAnalysisCard from "./AIAnalysisCard";
+  import LastCvAnalysisSection from "./LastCvAnalysisSection";
   import HeroSection from "./HeroSection";
+  import { migrateLegacyStorage } from "../../services/cvAnalysisStorage";
 
   export default function UserHome() {
     const navigate = useNavigate();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState({ keyword: "", location: "" });
-    const [lastAnalysis, setLastAnalysis] = useState(null);
+
+    // Migration: xoá key cũ `lastCvAnalysis` và chuyển sang key theo userId
+    useEffect(() => { migrateLegacyStorage(); }, []);
 
     const getAuthHeader = () => {
       const token = localStorage.getItem("token");
@@ -66,16 +69,6 @@
       fetchJobs();
     }, []);
 
-    useEffect(() => {
-      const stored = localStorage.getItem("lastCvAnalysis");
-      if (stored) {
-        try {
-          setLastAnalysis(JSON.parse(stored));
-        } catch (e) {
-          console.error("Không thể đọc lastCvAnalysis từ localStorage", e);
-        }
-      }
-    }, []);
 
     /* ===== LOGIC TOGGLE FAVORITE (Đồng bộ với JobDetail) ===== */
     const handleToggleFavorite = async (e, jobId, currentFavoriteStatus) => {
@@ -140,68 +133,8 @@
           onSearch={handleSearch} 
         />
 
-        {/* 2. AI ANALYSIS SECTION (Overlap hero section) */}
-        <Container maxWidth={false} sx={{ mt: -8, mb: 12, px: { xs: 4, md: 10 }, position: 'relative', zIndex: 2 }}>
-          {lastAnalysis ? (
-            <Paper sx={{ p: 4, borderRadius: 6, border: '1px solid #e2e8f0', bgcolor: '#ffffff' }}>
-              <Typography variant="h4" fontWeight={800} mb={2}>
-                Kết quả phân tích CV gần nhất
-              </Typography>
-              <AIAnalysisCard {...lastAnalysis.analysis} />
-              {lastAnalysis.summary && (
-                <Box sx={{ mt: 3 }}>
-                  <Typography variant="subtitle1" fontWeight={700} mb={1}>
-                    Tóm tắt phân tích
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {lastAnalysis.summary}
-                  </Typography>
-                </Box>
-              )}
-              {lastAnalysis.recommendedJobs?.length > 0 && (
-                <Box sx={{ mt: 4 }}>
-                  <Typography variant="h5" fontWeight={800} mb={2}>
-                    Việc làm đề xuất cho bạn
-                  </Typography>
-                  <Grid container spacing={2}>
-                    {lastAnalysis.recommendedJobs.slice(0, 4).map((job) => (
-                      <Grid item xs={12} md={6} key={job.jobId || job.id || job.title}>
-                        <Paper sx={{ p: 3, borderRadius: 3, bgcolor: '#f8fafc' }}>
-                          <Typography fontWeight={700} sx={{ mb: 1 }}>
-                            {job.title || job.jobTitle || 'Công việc đề xuất'}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" mb={1}>
-                            {job.companyName || job.company || 'Công ty chưa xác định'}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {job.location || 'Địa điểm chưa xác định'}
-                          </Typography>
-                        </Paper>
-                      </Grid>
-                    ))}
-                  </Grid>
-                </Box>
-              )}
-            </Paper>
-          ) : (
-            <Paper sx={{ p: 4, borderRadius: 6, border: '1px solid #e2e8f0', bgcolor: '#ffffff' }}>
-              <Typography variant="h4" fontWeight={800} mb={2}>
-                Nhận gợi ý việc làm chính xác hơn bằng AI
-              </Typography>
-              <Typography variant="body1" color="text.secondary" mb={3}>
-                Tải lên CV để hệ thống phân tích kỹ năng và đề xuất công việc phù hợp từ dữ liệu thực tế.
-              </Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => navigate('/user/cv-analysis')}
-                sx={{ textTransform: 'none', fontWeight: 700 }}
-              >
-                Phân tích CV ngay
-              </Button>
-            </Paper>
-          )}
-        </Container>
+        {/* 2. AI ANALYSIS SECTION */}
+        <LastCvAnalysisSection />
 
         {/* NEW SECTION: JOB CATEGORIES */}
         <Box sx={{ py: 8, bgcolor: '#ffffff' }}>
@@ -284,7 +217,7 @@
                   elevation={0}
                   sx={{
                     height: '100%',          // ← tất cả card cùng chiều cao trong hàng
-                    minHeight: '180px',      // ← cố định chiều cao tối thiểu để các ô đều nhau
+                    minHeight: '160px',      // ← cố định chiều cao tối thiểu để các ô đều nhau
                     width: '100%',           // ← đảm bảo chiều rộng lấp đầy container
                     p: 2.5,
                     borderRadius: 4,
@@ -326,13 +259,13 @@
                         sx={{
                           fontSize: "0.95rem",
                           lineHeight: 1.4,
-                          height: "2.8rem",      // 2 dòng × 1.4 line-height
+                          height: "2.8rem",      
                           display: "-webkit-box",
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: "vertical",
                           overflow: "hidden",
                           color: '#1e293b',
-                          wordBreak: 'break-word' // ← chữ dài không làm vỡ layout
+                          wordBreak: 'break-word' 
                         }}
                       >
                         {job.title}
