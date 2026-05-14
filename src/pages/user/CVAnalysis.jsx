@@ -107,11 +107,7 @@ export default function CVAnalysis() {
       const formData = new FormData();
       formData.append("cv", file);
 
-      const res = await api.post("/api/v1/ai/evaluate-cv", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const res = await api.post("/api/v1/ai/evaluate-cv", formData);
 
       const data = res.data;
       const analysis = {
@@ -247,7 +243,7 @@ export default function CVAnalysis() {
                           bgcolor: '#ffffff',
                           cursor: jobId ? 'pointer' : 'default',
                           display: 'flex', flexDirection: 'column',
-                          height: 220,           // ← chiều cao cố định như UserHome
+                          height: 110,           // ← chiều cao cố định như UserHome
                           overflow: 'hidden',
                           transition: 'all 0.3s ease',
                           '&:hover': jobId ? {

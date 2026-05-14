@@ -6,35 +6,583 @@ import {
   Typography,
   Button,
   Stack,
-  LinearProgress,
   Paper,
   TextField,
   Alert,
   Card,
   CardContent,
-  Chip,
   Divider,
   CircularProgress,
-  Stepper,
-  Step,
-  StepLabel,
-  StepContent,
 } from "@mui/material";
 import {
   CloudUpload,
   CheckCircle,
-  School,
   TrendingUp,
   Timeline,
   AutoAwesome,
 } from "@mui/icons-material";
 import UserLayout from "../../components/UserLayout";
-import { generateCareerRoadmap } from "../../services/aiService";
+import { evaluateCvFile, generateCareerRoadmap } from "../../services/aiService";
+
+const UploadFormSection = ({ cvFile, targetRole, desiredRoadmap, error, isAnalyzing, onFileUpload, onTargetRoleChange, onDesiredRoadmapChange, onAnalyze, onReset }) => (
+  <Paper
+    sx={{
+      p: 4,
+      borderRadius: "20px",
+      border: "1px solid #e2e8f0",
+      bgcolor: "#ffffff",
+      boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+    }}
+  >
+    <Typography
+      variant="h6"
+      fontWeight="700"
+      mb={3}
+      sx={{ display: "flex", alignItems: "center", gap: 1 }}
+    >
+      <CloudUpload color="primary" />
+      Tải lên CV của bạn
+    </Typography>
+
+    <Grid container spacing={4} alignItems="flex-start">
+      {/* Left: Upload Area */}
+      <Grid item xs={12} md={6}>
+        <Box
+          sx={{
+            textAlign: "center",
+            p: 3,
+            borderRadius: "12px",
+            border: "2px dashed #cbd5e1",
+            bgcolor: "#f8fafc",
+            transition: "all 0.3s ease",
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            "&:hover": {
+              borderColor: "#4f46e5",
+              bgcolor: "#f0f4ff",
+            },
+          }}
+        >
+          <Button
+            variant="text"
+            component="label"
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              width: "100%",
+              textTransform: "none",
+              "&:hover": { bgcolor: "transparent" },
+            }}
+          >
+            <CloudUpload
+              sx={{
+                fontSize: 48,
+                color: "#4f46e5",
+                mb: 1,
+              }}
+            />
+            <Typography variant="body1" fontWeight="600" color="#0f172a">
+              Chọn file CV
+            </Typography>
+            <Typography variant="caption" color="#64748b">
+              PDF, DOC, DOCX (tối đa 5MB)
+            </Typography>
+            <input
+              type="file"
+              hidden
+              accept=".pdf,.doc,.docx"
+              onChange={onFileUpload}
+            />
+          </Button>
+        </Box>
+
+        {cvFile && (
+          <Alert
+            severity="success"
+            sx={{
+              mt: 2,
+              bgcolor: "#dcfce7",
+              color: "#166534",
+              border: "1px solid #86efac",
+              "& .MuiAlert-icon": { color: "#16a34a" },
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <CheckCircle sx={{ fontSize: 20 }} />
+              <Typography
+                variant="body2"
+                sx={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  maxWidth: "300px",
+                }}
+              >
+                Đã tải lên: {cvFile.name}
+              </Typography>
+            </Box>
+          </Alert>
+        )}
+      </Grid>
+
+      {/* Right: Form Inputs */}
+      <Grid item xs={12} md={6}>
+        <Stack spacing={2} sx={{ height: "100%", justifyContent: "flex-start" }}>
+          <TextField
+            fullWidth
+            label="Vị trí mục tiêu (tùy chọn)"
+            placeholder="VD: Frontend Developer, Data Scientist..."
+            value={targetRole}
+            onChange={(e) => onTargetRoleChange(e.target.value)}
+            size="small"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+              },
+            }}
+          />
+          <TextField
+            fullWidth
+            label="Lộ trình mong muốn"
+            placeholder="VD: Fullstack, AI/ML, Product Manager..."
+            value={desiredRoadmap}
+            onChange={(e) => onDesiredRoadmapChange(e.target.value)}
+            size="small"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+              },
+            }}
+          />
+
+          {error && (
+            <Alert
+              severity="error"
+              sx={{
+                bgcolor: "#fee2e2",
+                color: "#991b1b",
+                border: "1px solid #fca5a5",
+                "& .MuiAlert-icon": { color: "#dc2626" },
+              }}
+            >
+              {error}
+            </Alert>
+          )}
+
+          <Stack direction="row" spacing={2}>
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={onAnalyze}
+              disabled={isAnalyzing || !cvFile}
+              startIcon={isAnalyzing ? <CircularProgress size={20} color="inherit" /> : <AutoAwesome />}
+              sx={{
+                py: 1.5,
+                borderRadius: "8px",
+                textTransform: "none",
+                fontWeight: "600",
+                bgcolor: "#4f46e5",
+                "&:hover": { bgcolor: "#4338ca" },
+                "&:disabled": { bgcolor: "#cbd5e1", color: "#f1f5f9" },
+              }}
+            >
+              {isAnalyzing ? "Đang phân tích..." : "Phân tích CV"}
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={onReset}
+              sx={{
+                py: 1.5,
+                borderRadius: "8px",
+                textTransform: "none",
+                fontWeight: "600",
+                borderColor: "#e2e8f0",
+                color: "#0f172a",
+                "&:hover": { borderColor: "#cbd5e1", bgcolor: "#f8fafc" },
+              }}
+            >
+              Làm mới
+            </Button>
+          </Stack>
+        </Stack>
+      </Grid>
+    </Grid>
+  </Paper>
+);
+
+const EvaluationCard = ({ evaluation, targetRole, desiredRoadmap }) => (
+  <Paper
+    sx={{
+      p: 4,
+      borderRadius: "20px",
+      border: "1px solid #e2e8f0",
+      bgcolor: "#ffffff",
+      boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+      height: "100%",
+    }}
+  >
+    <Typography
+      variant="h6"
+      fontWeight="700"
+      mb={3}
+      sx={{ display: "flex", alignItems: "center", gap: 1 }}
+    >
+      <Timeline color="primary" />
+      Đánh giá CV
+    </Typography>
+
+    {evaluation && (
+      <>
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle2" fontWeight="700" mb={2} color="#64748b" sx={{ textTransform: "uppercase", fontSize: "0.75rem", letterSpacing: "0.5px" }}>
+            Điểm số
+          </Typography>
+          {evaluation.score != null && (
+            <Typography
+              variant="h3"
+              fontWeight="900"
+              mb={2}
+              color="#4f46e5"
+              sx={{ lineHeight: 1 }}
+            >
+              {evaluation.score}
+              <span style={{ fontSize: "0.6em", fontWeight: "600", marginLeft: "4px" }}>/ 100</span>
+            </Typography>
+          )}
+          {evaluation.summary && (
+            <Typography variant="body2" color="#64748b" sx={{ lineHeight: 1.6 }}>
+              {evaluation.summary}
+            </Typography>
+          )}
+        </Box>
+
+        <Divider sx={{ my: 3 }} />
+
+        <Box>
+          <Typography variant="subtitle2" fontWeight="700" mb={2} color="#64748b" sx={{ textTransform: "uppercase", fontSize: "0.75rem", letterSpacing: "0.5px" }}>
+            Mục tiêu của bạn
+          </Typography>
+          <Stack spacing={2}>
+            <Box>
+              <Typography variant="caption" fontWeight="600" color="#64748b">
+                Vị trí mục tiêu
+              </Typography>
+              <Typography variant="body2" color="#0f172a" fontWeight="500" mt={0.5}>
+                {targetRole || "Chưa nhập vị trí mục tiêu"}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="caption" fontWeight="600" color="#64748b">
+                Lộ trình mong muốn
+              </Typography>
+              <Typography variant="body2" color="#0f172a" fontWeight="500" mt={0.5}>
+                {desiredRoadmap || "AI sẽ đề xuất lộ trình theo mục tiêu của bạn"}
+              </Typography>
+            </Box>
+          </Stack>
+        </Box>
+      </>
+    )}
+  </Paper>
+);
+
+const SkillGroup = ({ title, skills, color, bgColor, icon }) => (
+  <Box
+    sx={{
+      p: 3,
+      borderRadius: "12px",
+      border: "1px solid #e2e8f0",
+      bgcolor: bgColor,
+    }}
+  >
+    <Typography variant="subtitle2" fontWeight="700" mb={2} color={color} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      {title}
+    </Typography>
+    <Stack spacing={1.5}>
+      {skills.map((skill, index) => (
+        <Box
+          key={`${title}-${index}`}
+          sx={{
+            p: 1.5,
+            borderRadius: "8px",
+            bgcolor: "white",
+            border: `1px solid ${color}`,
+            color: color,
+            fontWeight: "500",
+            fontSize: "0.875rem",
+            wordBreak: "break-word",
+            overflow: "visible",
+          }}
+        >
+          {skill}
+        </Box>
+      ))}
+    </Stack>
+  </Box>
+);
+
+const SkillAnalysisCard = ({ evaluation }) => (
+  <Paper
+    sx={{
+      p: 4,
+      borderRadius: "20px",
+      border: "1px solid #e2e8f0",
+      bgcolor: "#ffffff",
+      boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+      height: "100%",
+    }}
+  >
+    <Typography
+      variant="h6"
+      fontWeight="700"
+      mb={3}
+      sx={{ display: "flex", alignItems: "center", gap: 1 }}
+    >
+      <AutoAwesome color="primary" />
+      Phân tích kỹ năng
+    </Typography>
+
+    <Stack spacing={2.5}>
+      {evaluation.strengths?.length > 0 && (
+        <SkillGroup
+          title="Điểm mạnh"
+          skills={evaluation.strengths}
+          color="#16a34a"
+          bgColor="#f0fdf4"
+        />
+      )}
+      {evaluation.weaknesses?.length > 0 && (
+        <SkillGroup
+          title="Điểm cần cải thiện"
+          skills={evaluation.weaknesses}
+          color="#f97316"
+          bgColor="#fff7ed"
+        />
+      )}
+      {evaluation.missingSkills?.length > 0 && (
+        <SkillGroup
+          title="Kỹ năng thiếu"
+          skills={evaluation.missingSkills}
+          color="#dc2626"
+          bgColor="#fef2f2"
+        />
+      )}
+    </Stack>
+  </Paper>
+);
+
+const RoadmapItemCard = ({ phase, index }) => (
+  <Card
+    variant="outlined"
+    sx={{
+      borderRadius: "12px",
+      border: "1px solid #e2e8f0",
+      bgcolor: "#ffffff",
+      overflow: "hidden",
+      transition: "all 0.3s ease",
+      "&:hover": {
+        boxShadow: "0 10px 30px rgba(15, 23, 42, 0.08)",
+        borderColor: "#cbd5e1",
+      },
+    }}
+  >
+    <CardContent sx={{ p: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "flex-start",
+          gap: 2,
+          mb: 2,
+        }}
+      >
+        <Box
+          sx={{
+            minWidth: "32px",
+            width: "32px",
+            height: "32px",
+            borderRadius: "8px",
+            bgcolor: "#4f46e5",
+            color: "white",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: "700",
+            fontSize: "0.875rem",
+            flexShrink: 0,
+          }}
+        >
+          {index + 1}
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="subtitle1" fontWeight="700" color="#0f172a">
+            {phase.title || phase.name || `Bước ${index + 1}`}
+          </Typography>
+          {phase.description && (
+            <Typography variant="body2" color="#64748b" sx={{ mt: 1, lineHeight: 1.6 }}>
+              {phase.description}
+            </Typography>
+          )}
+        </Box>
+      </Box>
+
+      {phase.skills?.length > 0 && (
+        <Box sx={{ mt: 2.5, mb: 2 }}>
+          <Stack spacing={1}>
+            {phase.skills.map((skill, skillIndex) => (
+              <Box
+                key={skillIndex}
+                sx={{
+                  p: 1,
+                  borderRadius: "6px",
+                  bgcolor: "#ede9fe",
+                  color: "#4f46e5",
+                  fontWeight: "500",
+                  fontSize: "0.875rem",
+                  wordBreak: "break-word",
+                }}
+              >
+                {skill}
+              </Box>
+            ))}
+          </Stack>
+        </Box>
+      )}
+
+      {phase.duration && (
+        <Typography
+          variant="caption"
+          sx={{
+            display: "inline-block",
+            mt: 1,
+            px: 2,
+            py: 0.75,
+            borderRadius: "6px",
+            bgcolor: "#f0f4ff",
+            color: "#4f46e5",
+            fontWeight: "600",
+          }}
+        >
+          ⏱ {phase.duration}
+        </Typography>
+      )}
+    </CardContent>
+  </Card>
+);
+
+const RoadmapSection = ({ roadmap }) => (
+  <Paper
+    sx={{
+      p: 4,
+      borderRadius: "20px",
+      border: "1px solid #e2e8f0",
+      bgcolor: "#ffffff",
+      boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+    }}
+  >
+    <Typography
+      variant="h6"
+      fontWeight="700"
+      mb={3}
+      sx={{ display: "flex", alignItems: "center", gap: 1 }}
+    >
+      <Timeline color="primary" />
+      Lộ trình học tập đề xuất
+    </Typography>
+
+    <Grid container spacing={2.5}>
+      {(roadmap.learningPath || roadmap.roadmap || []).map((phase, index) => (
+        <Grid item xs={12} sm={6} key={index}>
+          <RoadmapItemCard phase={phase} index={index} />
+        </Grid>
+      ))}
+
+      {!roadmap.learningPath?.length && !roadmap.roadmap?.length && roadmap.summary && (
+        <Grid item xs={12}>
+          <Typography variant="body2" color="#64748b" sx={{ p: 2, bgcolor: "#f8fafc", borderRadius: "12px", borderLeft: "4px solid #4f46e5" }}>
+            {roadmap.summary}
+          </Typography>
+        </Grid>
+      )}
+    </Grid>
+  </Paper>
+);
+
+const MarketTrendsSection = ({ roadmap }) => (
+  <Paper
+    sx={{
+      p: 4,
+      borderRadius: "20px",
+      border: "1px solid #e2e8f0",
+      bgcolor: "#ffffff",
+      boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+    }}
+  >
+    <Typography
+      variant="h6"
+      fontWeight="700"
+      mb={3}
+      sx={{ display: "flex", alignItems: "center", gap: 1 }}
+    >
+      <TrendingUp color="success" />
+      Xu hướng thị trường
+    </Typography>
+
+    <Grid container spacing={2.5}>
+      {(roadmap.marketTrends || []).map((trend, index) => (
+        <Grid item xs={12} sm={6} key={index}>
+          <Card
+            variant="outlined"
+            sx={{
+              borderRadius: "12px",
+              border: "1px solid #e2e8f0",
+              bgcolor: "#f8fafc",
+              height: "100%",
+              transition: "all 0.3s ease",
+              "&:hover": {
+                borderColor: "#16a34a",
+                boxShadow: "0 8px 20px rgba(22, 163, 74, 0.08)",
+              },
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <Typography
+                variant="body2"
+                fontWeight="700"
+                color="#16a34a"
+                mb={1.5}
+              >
+                {trend.skill || trend.topic}
+              </Typography>
+              <Stack spacing={0.75}>
+                {trend.demand && (
+                  <Typography variant="caption" color="#64748b" display="block">
+                    <strong>Nhu cầu:</strong> {trend.demand}
+                  </Typography>
+                )}
+                {trend.salary && (
+                  <Typography variant="caption" color="#64748b" display="block">
+                    <strong>Lương:</strong> {trend.salary}
+                  </Typography>
+                )}
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+      ))}
+    </Grid>
+  </Paper>
+);
 
 const CareerRoadmap = () => {
   const [cvFile, setCvFile] = useState(null);
   const [targetRole, setTargetRole] = useState("");
+  const [desiredRoadmap, setDesiredRoadmap] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [evaluation, setEvaluation] = useState(null);
   const [roadmap, setRoadmap] = useState(null);
   const [error, setError] = useState("");
 
@@ -56,61 +604,20 @@ const CareerRoadmap = () => {
 
     setIsAnalyzing(true);
     setError("");
+    setEvaluation(null);
+    setRoadmap(null);
 
     try {
-      // Đọc nội dung file (giả lập - trong thực tế cần xử lý PDF/Word)
-      const cvContent = "Nội dung CV sẽ được trích xuất từ file"; // Placeholder
-      const currentSkills = "JavaScript, React, Node.js"; // Placeholder từ CV
+      const evaluationResult = await evaluateCvFile(cvFile, targetRole.trim());
+      setEvaluation(evaluationResult);
 
-      // Mock data cho demo - thay thế bằng API call thực tế
-      const mockRoadmap = {
-        currentSkills: [
-          { name: "JavaScript", level: "intermediate" },
-          { name: "React", level: "intermediate" },
-          { name: "Node.js", level: "beginner" },
-          { name: "HTML/CSS", level: "advanced" },
-        ],
-        learningPath: [
-          {
-            title: "Tháng 1-2: Nâng cao Frontend Skills",
-            description: "Tập trung vào các kỹ năng frontend hiện đại và best practices",
-            skills: ["TypeScript", "Next.js", "Tailwind CSS", "Testing (Jest)"],
-            duration: "2 tháng"
-          },
-          {
-            title: "Tháng 3-4: Backend Development",
-            description: "Học các framework backend và database design",
-            skills: ["Express.js", "MongoDB", "REST APIs", "Authentication"],
-            duration: "2 tháng"
-          },
-          {
-            title: "Tháng 5-6: DevOps & Deployment",
-            description: "Học về deployment, CI/CD và cloud platforms",
-            skills: ["Docker", "AWS/GCP", "CI/CD", "Monitoring"],
-            duration: "2 tháng"
-          }
-        ],
-        marketTrends: [
-          { skill: "React/TypeScript", demand: "Cao", salary: "25-35 triệu/tháng" },
-          { skill: "Node.js", demand: "Cao", salary: "20-30 triệu/tháng" },
-          { skill: "Cloud (AWS/GCP)", demand: "Rất cao", salary: "30-45 triệu/tháng" },
-          { skill: "DevOps", demand: "Cao", salary: "25-40 triệu/tháng" }
-        ]
-      };
-
-      // Uncomment khi có API thực tế:
-      // const result = await generateCareerRoadmap(cvContent, currentSkills, targetRole);
-      // setRoadmap(result);
-
-      // Sử dụng mock data tạm thời
-      setTimeout(() => {
-        setRoadmap(mockRoadmap);
-        setIsAnalyzing(false);
-      }, 2000); // Giả lập thời gian xử lý
-
+      const roadmapResult = await generateCareerRoadmap(cvFile, targetRole.trim(), desiredRoadmap.trim());
+      setRoadmap(roadmapResult);
     } catch (err) {
-      setError("Có lỗi xảy ra khi phân tích CV. Vui lòng thử lại.");
+      const message = err.response?.data?.message || err.message || "Có lỗi xảy ra khi phân tích CV. Vui lòng thử lại.";
+      setError(message);
       console.error("Lỗi phân tích CV:", err);
+    } finally {
       setIsAnalyzing(false);
     }
   };
@@ -118,6 +625,8 @@ const CareerRoadmap = () => {
   const handleReset = () => {
     setCvFile(null);
     setTargetRole("");
+    setDesiredRoadmap("");
+    setEvaluation(null);
     setRoadmap(null);
     setError("");
   };
@@ -128,200 +637,65 @@ const CareerRoadmap = () => {
         <Container maxWidth="lg">
           {/* Header Section */}
           <Box sx={{ textAlign: "center", mb: 6 }}>
-            <Typography variant="h3" fontWeight="900" color="primary" mb={2}>
+            <Typography
+              variant="h3"
+              fontWeight="900"
+              color="#4f46e5"
+              mb={2}
+              sx={{ lineHeight: 1.2 }}
+            >
               AI Career Mentor
             </Typography>
-            <Typography variant="h6" color="text.secondary" mb={4}>
-              Nhận đề xuất lộ trình học tập dựa trên CV của bạn và xu hướng thị trường
+            <Typography
+              variant="body1"
+              color="#64748b"
+              mb={4}
+              sx={{ fontSize: "1.125rem", fontWeight: "500", maxWidth: "600px", mx: "auto" }}
+            >
+              Nhận đề xuất lộ trình học tập cá nhân hóa dựa trên CV của bạn và xu hướng thị trường
             </Typography>
           </Box>
 
-          <Grid container spacing={4}>
-            {/* Upload Section */}
-            <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 4, borderRadius: 3, border: "2px dashed #e2e8f0" }}>
-                <Typography variant="h6" fontWeight="700" mb={3} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <CloudUpload color="primary" />
-                  Tải lên CV của bạn
-                </Typography>
-
-                <Box sx={{ textAlign: "center", mb: 3 }}>
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    sx={{
-                      border: "2px dashed #6366f1",
-                      borderRadius: 2,
-                      py: 4,
-                      px: 6,
-                      display: "block",
-                      "&:hover": { borderColor: "#4f46e5" }
-                    }}
-                  >
-                    <CloudUpload sx={{ fontSize: 48, color: "#6366f1", mb: 2 }} />
-                    <Typography variant="body1" fontWeight="600">
-                      Chọn file CV
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      PDF, DOC, DOCX (tối đa 5MB)
-                    </Typography>
-                    <input
-                      type="file"
-                      hidden
-                      accept=".pdf,.doc,.docx"
-                      onChange={handleFileUpload}
-                    />
-                  </Button>
-                </Box>
-
-                {cvFile && (
-                  <Alert severity="success" sx={{ mb: 3 }}>
-                    <CheckCircle sx={{ mr: 1 }} />
-                    Đã tải lên: {cvFile.name}
-                  </Alert>
-                )}
-
-                <TextField
-                  fullWidth
-                  label="Vị trí mục tiêu (tùy chọn)"
-                  placeholder="VD: Frontend Developer, Data Scientist..."
-                  value={targetRole}
-                  onChange={(e) => setTargetRole(e.target.value)}
-                  sx={{ mb: 3 }}
-                />
-
-                {error && (
-                  <Alert severity="error" sx={{ mb: 3 }}>
-                    {error}
-                  </Alert>
-                )}
-
-                <Stack direction="row" spacing={2}>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    onClick={handleAnalyze}
-                    disabled={isAnalyzing || !cvFile}
-                    startIcon={isAnalyzing ? <CircularProgress size={20} /> : <AutoAwesome />}
-                    sx={{ py: 1.5 }}
-                  >
-                    {isAnalyzing ? "Đang phân tích..." : "Phân tích CV"}
-                  </Button>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    onClick={handleReset}
-                    sx={{ py: 1.5 }}
-                  >
-                    Làm mới
-                  </Button>
-                </Stack>
-              </Paper>
-            </Grid>
+          <Stack spacing={4}>
+            {/* Upload Form - Full Width */}
+            <UploadFormSection
+              cvFile={cvFile}
+              targetRole={targetRole}
+              desiredRoadmap={desiredRoadmap}
+              error={error}
+              isAnalyzing={isAnalyzing}
+              onFileUpload={handleFileUpload}
+              onTargetRoleChange={setTargetRole}
+              onDesiredRoadmapChange={setDesiredRoadmap}
+              onAnalyze={handleAnalyze}
+              onReset={handleReset}
+            />
 
             {/* Results Section */}
-            <Grid item xs={12} md={6}>
-              {roadmap ? (
-                <Paper sx={{ p: 4, borderRadius: 3, height: "fit-content" }}>
-                  <Typography variant="h6" fontWeight="700" mb={3} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Timeline color="primary" />
-                    Lộ trình học tập đề xuất
-                  </Typography>
+            {evaluation && roadmap && (
+              <>
+                {/* CV Evaluation & Skills Analysis */}
+                <Grid container spacing={4} alignItems="flex-start">
+                  <Grid item xs={12} md={4}>
+                    <EvaluationCard
+                      evaluation={evaluation}
+                      targetRole={targetRole}
+                      desiredRoadmap={desiredRoadmap}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={8}>
+                    <SkillAnalysisCard evaluation={evaluation} />
+                  </Grid>
+                </Grid>
 
-                  {/* Current Skills Assessment */}
-                  <Box sx={{ mb: 4 }}>
-                    <Typography variant="subtitle1" fontWeight="600" mb={2}>
-                      Đánh giá kỹ năng hiện tại
-                    </Typography>
-                    <Stack direction="row" spacing={1} flexWrap="wrap" mb={2}>
-                      {roadmap.currentSkills?.map((skill, index) => (
-                        <Chip
-                          key={index}
-                          label={skill.name}
-                          color={skill.level === "advanced" ? "success" : skill.level === "intermediate" ? "warning" : "error"}
-                          size="small"
-                        />
-                      ))}
-                    </Stack>
-                  </Box>
+                {/* Roadmap Section */}
+                <RoadmapSection roadmap={roadmap} />
 
-                  <Divider sx={{ my: 3 }} />
-
-                  {/* Learning Roadmap */}
-                  <Box sx={{ mb: 4 }}>
-                    <Typography variant="subtitle1" fontWeight="600" mb={3}>
-                      Lộ trình học tập (6 tháng)
-                    </Typography>
-
-                    <Stepper orientation="vertical">
-                      {roadmap.learningPath?.map((phase, index) => (
-                        <Step key={index} active={true}>
-                          <StepLabel>
-                            <Typography variant="subtitle2" fontWeight="600">
-                              {phase.title}
-                            </Typography>
-                          </StepLabel>
-                          <StepContent>
-                            <Typography variant="body2" color="text.secondary" mb={2}>
-                              {phase.description}
-                            </Typography>
-                            <Stack direction="row" spacing={1} flexWrap="wrap">
-                              {phase.skills?.map((skill, skillIndex) => (
-                                <Chip
-                                  key={skillIndex}
-                                  label={skill}
-                                  size="small"
-                                  variant="outlined"
-                                  color="primary"
-                                />
-                              ))}
-                            </Stack>
-                            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
-                              Thời gian: {phase.duration}
-                            </Typography>
-                          </StepContent>
-                        </Step>
-                      ))}
-                    </Stepper>
-                  </Box>
-
-                  <Divider sx={{ my: 3 }} />
-
-                  {/* Market Trends */}
-                  <Box>
-                    <Typography variant="subtitle1" fontWeight="600" mb={2} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <TrendingUp color="success" />
-                      Xu hướng thị trường
-                    </Typography>
-                    <Stack spacing={2}>
-                      {roadmap.marketTrends?.map((trend, index) => (
-                        <Card key={index} variant="outlined" sx={{ bgcolor: "#f8fafc" }}>
-                          <CardContent sx={{ py: 2 }}>
-                            <Typography variant="body2" fontWeight="600" color="primary">
-                              {trend.skill}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              Nhu cầu: {trend.demand} • Lương trung bình: {trend.salary}
-                            </Typography>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </Stack>
-                  </Box>
-                </Paper>
-              ) : (
-                <Paper sx={{ p: 4, borderRadius: 3, textAlign: "center", bgcolor: "#f8fafc" }}>
-                  <School sx={{ fontSize: 64, color: "#e2e8f0", mb: 2 }} />
-                  <Typography variant="h6" color="text.secondary" mb={2}>
-                    Chưa có kết quả phân tích
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Tải lên CV và nhấn "Phân tích CV" để nhận lộ trình học tập cá nhân hóa
-                  </Typography>
-                </Paper>
-              )}
-            </Grid>
-          </Grid>
+                {/* Market Trends */}
+                <MarketTrendsSection roadmap={roadmap} />
+              </>
+            )}
+          </Stack>
         </Container>
       </Box>
     </UserLayout>

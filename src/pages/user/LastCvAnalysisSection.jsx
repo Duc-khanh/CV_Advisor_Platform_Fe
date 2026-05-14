@@ -12,27 +12,15 @@ import {
 import AIAnalysisCard from './AIAnalysisCard';
 import { loadCvAnalysis, clearCvAnalysis, getCurrentUserId } from '../../services/cvAnalysisStorage';
 
-/**
- * LastCvAnalysisSection
- * ─────────────────────────────────────────────────────────────────
- * Hiển thị kết quả phân tích CV gần nhất của người dùng hiện tại.
- *
- * Logic:
- * - Nếu chưa đăng nhập → hiển thị CTA "Phân tích CV ngay"
- * - Nếu đã đăng nhập nhưng chưa từng phân tích → hiển thị CTA
- * - Nếu đã đăng nhập và có kết quả → hiển thị kết quả của TÀI KHOẢN đó
- */
 export default function LastCvAnalysisSection() {
   const navigate = useNavigate();
   const [lastAnalysis, setLastAnalysis] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    // Kiểm tra đăng nhập
     const userId = getCurrentUserId();
     setIsLoggedIn(!!userId);
 
-    // Đọc kết quả phân tích theo userId
     const data = loadCvAnalysis();
     setLastAnalysis(data || null);
   }, []);
@@ -42,10 +30,9 @@ export default function LastCvAnalysisSection() {
     setLastAnalysis(null);
   };
 
-  /* ── Chưa đăng nhập hoặc chưa phân tích CV ── */
   if (!lastAnalysis) {
     return (
-      <Container maxWidth={false} sx={{ mt: -8, mb: 12, px: { xs: 4, md: 10 }, position: 'relative', zIndex: 2 }}>
+      <Container maxWidth={false} sx={{ mt: -8, mb: 4, px: { xs: 4, md: 10 }, position: 'relative', zIndex: 2 }}>
         <Paper
           elevation={0}
           sx={{
@@ -121,7 +108,7 @@ export default function LastCvAnalysisSection() {
     : '';
 
   return (
-    <Container maxWidth={false} sx={{ mt: -8, mb: 12, px: { xs: 4, md: 10 }, position: 'relative', zIndex: 2 }}>
+    <Container maxWidth={false} sx={{ mt: -8, mb: 4, px: { xs: 4, md: 10 }, position: 'relative', zIndex: 2 }}>
       <Paper
         elevation={0}
         sx={{
@@ -220,7 +207,7 @@ export default function LastCvAnalysisSection() {
                         bgcolor: '#ffffff',
                         cursor: jobId ? 'pointer' : 'default',
                         display: 'flex', flexDirection: 'column',
-                        height: 200,              // ← chiều cao cố định
+                        height: 100,              // ← chiều cao cố định
                         overflow: 'hidden',
                         transition: 'all 0.3s ease',
                         '&:hover': jobId ? {
