@@ -9,6 +9,8 @@ import {
   Menu,
   MenuItem,
   Fade,
+  Divider,
+  MenuList,
 } from "@mui/material";
 import {
   NotificationsNone,
@@ -17,8 +19,10 @@ import {
   FavoriteBorder,
   AssignmentTurnedIn,
   Search,
+  Person,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { getCurrentUser } from "../../services/currentUser";
 
 export default function CandidateHeader() {
   const navigate = useNavigate();
@@ -40,16 +44,21 @@ export default function CandidateHeader() {
   // ===== FETCH USER =====
   useEffect(() => {
     if (token) {
-      fetch("http://localhost:8080/api/users/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => setUser(data))
-        .catch((err) => console.error(err));
+      getCurrentUser()
+        .then((res) => {
+          const userData = res.data.data || res.data;
+          setUser(userData);
+        })
+        .catch((err) => {
+          const status = err.response?.status;
+          if (status === 401 || status === 403) {
+            localStorage.removeItem("token");
+            navigate("/login");
+          }
+          console.error("Lỗi khi tải thông tin user:", err);
+        });
     }
-  }, [token]);
+  }, [token, navigate]);
 
   // ===== GET INITIALS =====
   const getInitials = (name) => {
@@ -140,18 +149,60 @@ export default function CandidateHeader() {
                   Việc làm <KeyboardArrowDown fontSize="small" />
                 </Typography>
 
-                {["Phân tích CV", "Cộng đồng"].map((item) => (
-                  <Typography
-                    key={item}
-                    sx={{
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      "&:hover": { color: "#6366f1" },
-                    }}
-                  >
-                    {item}
-                  </Typography>
-                ))}
+                <Typography
+                  onClick={() => goTo("/user/cv-analysis")}
+                  sx={{
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    color: "inherit",
+                    "&:hover": { color: "#6366f1" },
+                  }}
+                >
+                  Phân tích CV
+                </Typography>
+                
+                <Typography
+                  onClick={() => goTo("/user/cv-builder")}
+                  sx={{
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    color: "inherit",
+                    "&:hover": { color: "#6366f1" },
+                  }}
+                >
+                  Tạo CV
+                </Typography>
+
+                <Typography
+                  onClick={() => goTo("/user/career-roadmap")}
+                  sx={{
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    color: "inherit",
+                    "&:hover": { color: "#6366f1" },
+                  }}
+                >
+                  Lộ trình học tập
+                </Typography>
+
+                {/* <Typography
+                  sx={{
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    "&:hover": { color: "#6366f1" },
+                  }}
+                >
+                  Cộng đồng
+                </Typography> */}
               </Box>
 
               {/* ICON */}
@@ -207,15 +258,34 @@ export default function CandidateHeader() {
       </Box>
 
       {/* MENU VIỆC LÀM */}
-      <Menu anchorEl={anchorEl} open={openMenu} onClose={handleCloseMenu}>
-        <MenuItem onClick={() => goTo("/jobs")}>
-          <Search fontSize="small" /> Tìm việc
+      <Menu
+        anchorEl={anchorEl}
+        open={openMenu}
+        onClose={handleCloseMenu}
+        TransitionComponent={Fade}
+        PaperProps={{
+          sx: {
+            mt: 1.5,
+            minWidth: 240,
+            borderRadius: 3,
+            boxShadow: "0 20px 60px rgba(15, 23, 42, 0.08)",
+          },
+        }}
+      >
+        {/* <Box sx={{ px: 2, py: 1.5 }}>
+          <Typography fontWeight={700} sx={{ mb: 1 }}>
+            Chọn tính năng
+          </Typography>
+        </Box> */}
+        <Divider />
+        <MenuItem onClick={() => goTo("/user")}> 
+          <Search fontSize="small" sx={{ mr: 1 }} /> Tìm việc
         </MenuItem>
         <MenuItem onClick={() => goTo("/user/favorite-jobs")}>
-          <FavoriteBorder fontSize="small" /> Yêu thích
+          <FavoriteBorder fontSize="small" sx={{ mr: 1 }} /> Việc làm yêu thích
         </MenuItem>
         <MenuItem onClick={() => goTo("/user/applied-jobs")}>
-          <AssignmentTurnedIn fontSize="small" /> Đã ứng tuyển
+          <AssignmentTurnedIn fontSize="small" sx={{ mr: 1 }} /> Việc làm đã ứng tuyển
         </MenuItem>
       </Menu>
 
@@ -224,18 +294,63 @@ export default function CandidateHeader() {
         anchorEl={anchorUser}
         open={openUserMenu}
         onClose={handleCloseUserMenu}
+        TransitionComponent={Fade}
+        PaperProps={{
+          sx: {
+            mt: 1.5,
+            minWidth: 280,
+            borderRadius: 3,
+            boxShadow: "0 20px 60px rgba(15, 23, 42, 0.08)",
+          },
+        }}
       >
-        <MenuItem disabled>
-          {user?.fullName || "User"}
-        </MenuItem>
+        <Box sx={{ px: 2, py: 1.5, display: "flex", gap: 1.5, alignItems: "center" }}>
+          <Avatar
+            src={user?.avatar}
+            sx={{ bgcolor: "#6366f1", width: 44, height: 44, fontSize: "1rem" }}
+          >
+            {!user?.avatar && getInitials(user?.fullName)}
+          </Avatar>
+          <Box>
+            <Typography fontWeight={800} fontSize="0.95rem">
+              {user?.fullName || "Người dùng"}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {user?.email || "Chưa có email"}
+            </Typography>
+          </Box>
+        </Box>
 
-        <MenuItem onClick={() => goTo("/profile")}>
-          Thông tin tài khoản
-        </MenuItem>
+        <Divider />
 
-        <MenuItem onClick={handleLogout}>
-          Đăng xuất
-        </MenuItem>
+        <MenuList dense>
+          <MenuItem onClick={() => goTo("/user/profile") }>
+            <Person fontSize="small" sx={{ mr: 1 }} /> Hồ sơ cá nhân
+          </MenuItem>
+          <MenuItem onClick={() => goTo("/user/favorite-jobs")}> 
+            <FavoriteBorder fontSize="small" sx={{ mr: 1 }} /> Việc làm yêu thích
+          </MenuItem>
+          <MenuItem onClick={() => goTo("/user/applied-jobs")}> 
+            <AssignmentTurnedIn fontSize="small" sx={{ mr: 1 }} /> Việc làm đã ứng tuyển
+          </MenuItem>
+          <MenuItem onClick={() => goTo("/user/cv-analysis")}> 
+            <Search fontSize="small" sx={{ mr: 1 }} /> Phân tích CV
+          </MenuItem>
+        </MenuList>
+
+        <Divider />
+
+        <Box sx={{ px: 2, py: 1 }}>
+          <Button
+            fullWidth
+            variant="outlined"
+            color="error"
+            onClick={handleLogout}
+            sx={{ textTransform: "none", fontWeight: 700 }}
+          >
+            Đăng xuất
+          </Button>
+        </Box>
       </Menu>
     </AppBar>
   );

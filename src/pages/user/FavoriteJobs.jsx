@@ -7,11 +7,13 @@ import {
 } from "@mui/material";
 import { Favorite, ArrowForward, FavoriteBorder } from "@mui/icons-material";
 import UserLayout from "../../components/UserLayout";
+import { useToast } from "../../contexts/ToastContext";
 
 export default function FavoriteJobs() {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const showToast = useToast();
 
   const getAuthHeader = () => {
     const token = localStorage.getItem("token");
@@ -30,6 +32,7 @@ export default function FavoriteJobs() {
       setFavorites(favoriteData);
     } catch (err) {
       console.error("Lỗi lấy danh sách yêu thích", err);
+      showToast("Lỗi tải danh sách yêu thích", "error");
     } finally {
       setLoading(false);
     }
@@ -48,8 +51,10 @@ export default function FavoriteJobs() {
       });
       // Xóa khỏi danh sách hiển thị ngay lập tức để người dùng thấy kết quả
       setFavorites((prev) => prev.filter((job) => job.jobId !== jobId));
+      showToast("Đã bỏ lưu tin!", "success");
     } catch (err) {
       console.error("Lỗi xóa yêu thích:", err);
+      showToast("Lỗi bỏ lưu tin", "error");
     }
   };
 

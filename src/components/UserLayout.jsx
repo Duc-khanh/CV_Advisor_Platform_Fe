@@ -1,8 +1,8 @@
 // UserLayout.jsx
 import React from "react";
 import { Box, Container } from "@mui/material";
-import CandidateHeader from "../pages/user/CandidateHeader"; // Giả sử CandidateHeader nằm trong cùng thư mục
-import UserFooter from "../pages/user/UserFooter"; // Footer mới sẽ tạo ở bước 2
+import CandidateHeader from "../pages/user/CandidateHeader.jsx"; // Giả sử CandidateHeader nằm trong cùng thư mục
+import UserFooter from "../pages/user/UserFooter.jsx"; // Footer mới sẽ tạo ở bước 2
 
 const UserLayout = ({ children }) => {
   return (

@@ -1,5 +1,6 @@
 import React from "react";
 import { Paper, Typography, Grid, Stack, Box } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import {
   PeopleAlt,
   WorkHistory,
@@ -77,6 +78,7 @@ const AdminFeatureCard = ({ title, description, icon, gradient, onClick }) => {
 };
 
 export default function AdminFeatureSection() {
+  const navigate = useNavigate();
   const features = [
     {
       title: "Quản lý Người dùng",
@@ -137,6 +139,7 @@ export default function AdminFeatureSection() {
   xs={6}
   sm={4}
   md={3}
+  key={index}
   sx={{ display: "flex" }}
 >
 
@@ -145,7 +148,7 @@ export default function AdminFeatureSection() {
               description={item.desc}
               icon={item.icon}
               gradient={item.bg}
-              onClick={() => console.log(item.title)}
+              onClick={() => item.path ? navigate(item.path) : console.log(item.title)}
             />
           </Grid>
         ))}

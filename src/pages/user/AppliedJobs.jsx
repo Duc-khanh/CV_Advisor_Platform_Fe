@@ -9,11 +9,13 @@ import {
 } from "@mui/material";
 import { ArrowForward, WorkHistoryOutlined, Description, Visibility, FilterList } from "@mui/icons-material";
 import UserLayout from "../../components/UserLayout";
+import { useToast } from "../../contexts/ToastContext";
 
 export default function AppliedJobs() {
   const [appliedJobs, setAppliedJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const showToast = useToast();
 
   // ----- STATE PHÂN TRANG & LỌC -----
   const [page, setPage] = useState(0);
@@ -33,6 +35,7 @@ export default function AppliedJobs() {
       setPage(0); // Reset về trang đầu khi lọc
     } catch (err) {
       console.error("Lỗi lấy danh sách ứng tuyển", err);
+      showToast("Lỗi tải danh sách ứng tuyển", "error");
     } finally {
       setTimeout(() => setLoading(false), 500);
     }

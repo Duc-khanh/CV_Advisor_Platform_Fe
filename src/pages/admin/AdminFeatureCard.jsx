@@ -6,7 +6,7 @@ export default function AdminFeatureCard({ title, description, icon, gradient, o
       onClick={onClick}
       elevation={0}
       sx={{
-        width: "100%",
+        width: "100%",  
         height: 160,              // ✅ TIẾP TỤC THU NHỎ (Từ 180px xuống 160px)
         display: "flex",
         flexDirection: "column",
