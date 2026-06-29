@@ -18,35 +18,35 @@ import { Close, ArrowForward, AccessTime, Book } from "@mui/icons-material";
 const ARTICLES = [
   {
     id: 1,
-    title: "7 kỹ năng lập trình viên cần có trong năm 2024",
-    desc: "Những kỹ năng quan trọng giúp bạn trở thành lập trình viên xuất sắc và bứt phá trong sự nghiệp.",
+    title: "7 kỹ năng mềm giúp bạn bứt phá sự nghiệp trong năm 2024",
+    desc: "Những kỹ năng quan trọng giúp bạn làm việc hiệu quả, thích ứng tốt và thăng tiến vượt bậc trong mọi ngành nghề.",
     category: "Phát triển bản thân",
     readTime: "5 phút đọc",
     imageUrl: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=300&h=200&fit=crop",
-    content: `Trong thế giới công nghệ thay đổi nhanh chóng, việc liên tục cập nhật và nâng cao kỹ năng là bắt buộc đối với mỗi lập trình viên. Dưới đây là 7 kỹ năng quan trọng nhất mà bạn cần trang bị trong năm 2024:
+    content: `Trong thị trường lao động thay đổi nhanh chóng, việc liên tục cập nhật và nâng cao kỹ năng là bắt buộc đối với mọi nhân sự. Dưới đây là 7 kỹ năng mềm quan trọng nhất mà bạn cần trang bị trong năm 2024:
 
 1. Tư duy giải quyết vấn đề (Problem Solving)
-Viết mã chỉ là bước cuối cùng. Khả năng phân tích một bài toán lớn, chia nhỏ nó ra và tìm ra phương án tối ưu mới là kỹ năng định hình một kỹ sư phần mềm xuất sắc.
+Khả năng phân tích một tình huống khó khăn, chia nhỏ nó ra và tìm ra phương án tối ưu là kỹ năng định hình một nhân sự xuất sắc trong mọi vai trò.
 
-2. Làm chủ hệ thống Git & Version Control
-Việc quản lý nhánh, giải quyết xung đột (conflict resolution) và làm việc cộng tác hiệu quả qua GitHub/GitLab là kỹ năng cơ bản nhưng cực kỳ quan trọng đối với các dự án lớn.
+2. Làm việc nhóm và hợp tác (Collaboration)
+Khả năng phối hợp nhịp nhàng với đồng nghiệp, tôn trọng ý kiến khác biệt và cùng nhau hướng tới mục tiêu chung của tập thể.
 
-3. Kỹ năng giao tiếp và làm việc nhóm (Soft Skills)
-Lập trình viên không chỉ làm việc với máy tính. Bạn cần giải thích ý tưởng kỹ thuật cho đồng nghiệp phi kỹ thuật (HR, Product Manager) và lắng nghe ý kiến phản hồi một cách cởi mở.
+3. Kỹ năng giao tiếp hiệu quả (Communication)
+Truyền đạt thông tin rõ ràng, súc tích qua cả văn bản lẫn lời nói, đồng thời biết lắng nghe tích cực để hiểu rõ mong muốn của khách hàng và đối tác.
 
-4. Hiểu biết về Cloud & Containerization
-AWS, Azure, Docker và Kubernetes không còn là nhiệm vụ riêng của DevOps. Một nhà phát triển hiện đại cần biết cách đóng gói ứng dụng và vận hành cơ bản trên hạ tầng đám mây.
+4. Quản lý thời gian và sắp xếp công việc
+Biết cách phân bổ thời gian hợp lý, đặt thứ tự ưu tiên cho các đầu việc quan trọng và hoàn thành đúng hạn (deadline) mà không bị quá tải.
 
-5. Viết mã sạch và tối ưu (Clean Code & Refactoring)
-Mã của bạn viết ra phải dễ đọc và dễ bảo trì đối với người khác. Hãy thực hành các nguyên lý SOLID, viết Unit Test đầy đủ và không ngừng cải tiến cấu trúc code của mình.
+5. Khả năng thích ứng nhanh (Adaptability)
+Không ngại thay đổi khi công ty áp dụng quy trình mới, công nghệ mới hoặc có sự điều chỉnh định hướng chiến lược.
 
-6. Khả năng tự học và cập nhật công nghệ
-Các công nghệ, thư viện và framework mới xuất hiện liên tục. Hãy rèn luyện kỹ năng đọc tài liệu tiếng Anh, thử nghiệm cái mới để không bị tụt lại phía sau.
+6. Tư duy học hỏi suốt đời (Continuous Learning)
+Liên tục tự trau dồi kiến thức mới liên quan đến ngành nghề, rèn luyện kỹ năng sử dụng các công cụ mới để nâng cao năng suất làm việc.
 
-7. Tiếng Anh chuyên ngành tốt
-Hầu hết tài liệu, API và giải pháp cho các lỗi lập trình đều bằng tiếng Anh. Thành thạo tiếng Anh giúp bạn tiếp cận kho tàng tri thức thế giới nhanh hơn gấp nhiều lần.
+7. Trí tuệ cảm xúc (EQ)
+Thấu hiểu cảm xúc của bản thân và đồng nghiệp, giữ bình tĩnh trước áp lực và xây dựng các mối quan hệ cực kỳ tích cực nơi công sở.
 
-Hãy bắt đầu lên kế hoạch học tập và rèn luyện các kỹ năng này ngay hôm nay để sẵn sàng cho những cơ hội nghề nghiệp lớn trong năm nay!`
+Hãy bắt đầu lên kế hoạch học tập và rèn luyện các kỹ năng này ngay hôm nay để sẵn sàng cho những cơ hội thăng tiến lớn trong năm nay!`
   },
   {
     id: 2,
@@ -64,7 +64,7 @@ Sắp xếp thông tin theo thứ tự thời gian đảo ngược (mới nhất
 Đừng viết mơ hồ: "Tham gia phát triển dự án web". Hãy viết có số liệu rõ ràng: "Phát triển 3 tính năng cốt lõi cho trang web bán hàng, giúp tăng tốc độ tải trang lên 30% và cải thiện tỷ lệ chuyển đổi thêm 15%".
 
 3. Tối ưu hóa CV theo JD (Job Description)
-Đọc kỹ mô tả công việc của công ty và đưa các từ khóa kỹ năng yêu cầu (ví dụ: React, Spring Boot, MySQL...) vào CV của bạn một cách tự nhiên. Hệ thống lọc CV tự động (ATS) thường quét các từ khóa này để chấm điểm.
+Đọc kỹ mô tả công việc của công ty và đưa các từ khóa kỹ năng yêu cầu vào CV của bạn một cách tự nhiên. Hệ thống lọc CV tự động (ATS) thường quét các từ khóa này để chấm điểm.
 
 4. Phần Dự án cá nhân (Projects) phải có sản phẩm chạy thực tế
 Nhà tuyển dụng rất thích các ứng viên chủ động. Hãy mô tả chi tiết các dự án bạn tự làm: Công nghệ sử dụng là gì, vai trò của bạn, kèm link GitHub và đường dẫn chạy Demo thực tế.
@@ -79,29 +79,29 @@ Một chiếc CV chuẩn chỉnh chính là 50% sự thành công của buổi x
   },
   {
     id: 3,
-    title: "Xu hướng việc làm IT năm 2024",
-    desc: "Những công nghệ và vị trí đang được săn đón nhiều nhất trong thị trường tuyển dụng hiện nay.",
+    title: "Xu hướng tuyển dụng và thị trường việc làm năm 2024",
+    desc: "Khám phá các xu hướng tuyển dụng mới nhất, yêu cầu của doanh nghiệp và những cơ hội phát triển nghề nghiệp mở ra trong năm nay.",
     category: "Thị trường lao động",
     readTime: "6 phút đọc",
     imageUrl: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300&h=200&fit=crop",
-    content: `Năm 2024 chứng kiến những bước chuyển dịch mạnh mẽ trong ngành Công nghệ Thông tin tại Việt Nam và toàn cầu. Dưới đây là những xu hướng tuyển dụng nổi bật nhất:
+    content: `Năm 2024 chứng kiến những bước chuyển dịch mạnh mẽ trong thị trường lao động tại Việt Nam và toàn cầu. Dưới đây là những xu hướng tuyển dụng nổi bật nhất mà người tìm việc cần lưu ý:
 
-1. Trí tuệ nhân tạo (AI) và Machine Learning lên ngôi
-Sự bùng nổ của các mô hình ngôn ngữ lớn (LLM) như ChatGPT đã thúc đẩy các doanh nghiệp tích hợp AI vào sản phẩm. Nhu cầu tuyển dụng kỹ sư AI, kỹ sư Prompt và chuyên viên phân tích dữ liệu tăng trưởng vượt bậc.
+1. Ứng dụng AI và công nghệ vào công việc
+Các doanh nghiệp thuộc mọi lĩnh vực từ marketing, tài chính, nhân sự cho đến sản xuất đang tích cực đưa các công cụ trí tuệ nhân tạo (AI) vào quy trình vận hành. Nhân sự biết ứng dụng AI để tối ưu hóa năng suất sẽ có lợi thế cạnh tranh cực kỳ lớn.
 
-2. Lập trình viên Full Stack đa năng được ưu tiên
-Để tối ưu chi phí vận hành, các doanh nghiệp, đặc biệt là các công ty Startup, có xu hướng săn đón các lập trình viên có thể làm tốt cả Frontend (React, Vue) lẫn Backend (NodeJS, Java, Go).
+2. Ưu tiên nhân sự đa năng (T-shaped Skills)
+Doanh nghiệp có xu hướng tuyển dụng những ứng viên sở hữu kiến thức rộng ở nhiều lĩnh vực và có chuyên môn sâu ở một lĩnh vực cụ thể để tối ưu chi phí và tăng tính linh hoạt.
 
-3. Chuyển dịch mạnh mẽ lên Điện toán đám mây (Cloud)
-Hạ tầng vật lý đang dần được thay thế bằng hạ tầng đám mây. Kỹ sư Cloud, DevOps với chứng chỉ AWS, Azure hay GCP đang nhận được mức đãi ngộ cực kỳ hấp dẫn.
+3. Chú trọng sức khỏe tinh thần nơi công sở
+Chăm sóc sức khỏe tinh thần của nhân viên đang trở thành chiến lược giữ chân nhân tài của nhiều doanh nghiệp. Các chính sách bảo hiểm sức khỏe, ngày nghỉ phép linh hoạt và hoạt động gắn kết tập thể ngày càng được đầu tư.
 
-4. An toàn thông tin (Cybersecurity) là ưu tiên hàng đầu
-Khi các cuộc tấn công mạng ngày càng tinh vi, việc bảo mật dữ liệu khách hàng và hệ thống doanh nghiệp trở thành yếu tố sống còn. Các vị trí chuyên gia kiểm thử bảo mật (Penetration Tester), kỹ sư SecOps đang rất khan hiếm nhân lực.
+4. Mô hình làm việc kết hợp (Hybrid Work) tiếp tục duy trì
+Làm việc linh hoạt giữa văn phòng và tại nhà đã trở thành một tiêu chuẩn mới, giúp doanh nghiệp tuyển dụng được nhân sự giỏi ở khắp mọi miền địa lý mà không bị giới hạn khoảng cách.
 
-5. Xu hướng làm việc kết hợp (Hybrid Work)
-Chế độ làm việc linh hoạt (lên văn phòng 2-3 ngày, làm việc tại nhà các ngày còn lại) đã trở thành tiêu chuẩn chung của các công ty IT hàng đầu, giúp thu hút nhân tài từ khắp nơi.
+5. Đánh giá cao kỹ năng thực chiến hơn bằng cấp thuần túy
+Các nhà tuyển dụng ngày càng chú trọng vào kết quả thực tế, kinh nghiệm giải quyết dự án và thái độ làm việc của ứng viên hơn là chỉ nhìn vào tên trường đại học hay bằng cấp học thuật.
 
-Để duy trì lợi thế cạnh tranh trong năm 2024, các bạn lập trình viên hãy chủ động nâng cấp bản thân với các từ khóa công nghệ mới và học cách cộng tác hiệu quả với các công cụ AI hỗ trợ code nhé!`
+Để duy trì lợi thế cạnh tranh trong năm 2024, hãy chủ động làm mới CV, kết nối mạng lưới quan hệ chất lượng và không ngừng nâng cao năng lực tự học của mình!`
   }
 ];
 
@@ -135,20 +135,30 @@ export default function CareerGuideSection() {
           </Link>
         </Stack>
 
-        <Grid container spacing={3.5}>
+        <Grid container spacing={2}>
           {ARTICLES.map((article) => (
-            <Grid item key={article.id} xs={12} md={4}>
+            <Grid
+              item
+              key={article.id}
+              sx={{
+                display: 'flex',
+                flexBasis: 'calc(33.3333% - 20px)',
+                maxWidth: 'calc(33.3333% - 20px)',
+                flexGrow: 0,
+              }}
+            >
               <Paper
                 elevation={0}
                 onClick={() => setSelectedArticle(article)}
                 sx={{
-                  p: 2.2,
+                  p: 1.2,
                   borderRadius: "16px",
                   border: "1px solid #e2e8f0",
                   bgcolor: "#ffffff",
                   display: "flex",
-                  gap: 2,
-                  height: "100%",
+                  flex: 1,
+                  gap: 1.25,
+                  minHeight: 100,
                   cursor: "pointer",
                   transition: "all 0.25s ease",
                   "&:hover": {
@@ -164,8 +174,8 @@ export default function CareerGuideSection() {
                   src={article.imageUrl}
                   alt={article.title}
                   sx={{
-                    width: 100,
-                    height: 100,
+                    width: 60,
+                    height: 60,
                     borderRadius: "10px",
                     objectFit: "cover",
                     flexShrink: 0,
@@ -199,7 +209,7 @@ export default function CareerGuideSection() {
                         fontSize: "0.78rem",
                         lineHeight: 1.4,
                         display: "-webkit-box",
-                        WebkitLineClamp: 2,
+                        WebkitLineClamp: 1,
                         WebkitBoxOrient: "vertical",
                         overflow: "hidden",
                       }}

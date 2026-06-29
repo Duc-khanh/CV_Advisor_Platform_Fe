@@ -40,7 +40,7 @@ const TargetRoleInput = ({ value, onChange }) => (
 
     <TextField
       fullWidth
-      placeholder="VD: Frontend Developer, Data Scientist..."
+      placeholder="VD: Nhân viên Marketing, Kế toán trưởng, Kỹ sư phần mềm..."
       value={value}
       onChange={(e) => onChange(e.target.value)}
       InputProps={{

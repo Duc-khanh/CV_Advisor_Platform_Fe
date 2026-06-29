@@ -19,6 +19,7 @@ import {
   Assessment,
   Settings,
   Logout,
+  Book,
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "../../contexts/ToastContext";
@@ -49,6 +50,7 @@ export default function AdminSidebar({ mobileOpen, handleDrawerToggle }) {
     { text: "Dashboard", icon: <Dashboard />, path: "/admin_dashboard", color: "#0ea5e9" },
     { text: "Quản lý Người dùng", icon: <People />, path: "/admin/users", color: "#8b5cf6" },
     { text: "Quản lý Công ty", icon: <Business />, path: "/admin/companies", color: "#10b981" },
+    { text: "Quản lý Cẩm nang", icon: <Book />, path: "/admin/articles", color: "#ec4899" },
     { text: "Thống kê", icon: <Assessment />, path: "/admin/stats", color: "#f59e0b" },
     { text: "Cài đặt", icon: <Settings />, path: "/admin/settings", color: "#64748b" },
   ];

@@ -225,6 +225,23 @@ export default function CandidateHeader() {
                 </Typography>
 
                 <Typography
+                  onClick={() => goTo("/career-guide")}
+                  sx={{
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    color: "#475569",
+                    fontSize: "0.9rem",
+                    "&:hover": { color: "#2563eb" },
+                    transition: "color 0.2s",
+                  }}
+                >
+                  Cẩm nang
+                </Typography>
+
+                <Typography
                   onClick={() => goTo("/for-employers")}
                   sx={{
                     fontWeight: 700,

@@ -19,6 +19,9 @@ import UserProfile from "./pages/user/UserProfile";
 import CVBuilder from "./pages/user/CVBuilder";
 import CareerRoadmap from "./pages/user/CareerRoadmap";
 import ForEmployers from "./pages/public/ForEmployers";
+import CareerGuide from "./pages/user/CareerGuide";
+import CareerGuideDetail from "./pages/user/CareerGuideDetail";
+import ArticleManagement from "./pages/admin/ArticleManagement";
 
 
 export default function App() {
@@ -41,6 +44,8 @@ export default function App() {
       <Route path="/applied-jobs" element={<AppliedJobs />} />
       <Route path="applications" element={<CompanyApplications />} />
       <Route path="/for-employers" element={<ForEmployers />} />
+      <Route path="/career-guide" element={<CareerGuide />} />
+      <Route path="/career-guide/:id" element={<CareerGuideDetail />} />
 
 
 {/* <Route path="profile" element={<Profile />} /> */}
@@ -97,6 +102,17 @@ export default function App() {
   element={
     <ProtectedRoute role="ADMIN">
       <div>Cài đặt hệ thống</div>
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/admin/articles"
+  element={
+    <ProtectedRoute role="ADMIN">
+      <AdminLayout>
+        <ArticleManagement />
+      </AdminLayout>
     </ProtectedRoute>
   }
 />
