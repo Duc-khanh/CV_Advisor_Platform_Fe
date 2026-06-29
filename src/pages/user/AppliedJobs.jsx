@@ -11,6 +11,7 @@ import {
 import { ArrowForward, WorkHistoryOutlined, Description, Visibility, FilterList, Close } from "@mui/icons-material";
 import UserLayout from "../../components/UserLayout";
 import { useToast } from "../../contexts/ToastContext";
+import { getMediaUrl, getCvUrl } from "../../utils/urlHelpers";
 
 export default function AppliedJobs() {
   const [appliedJobs, setAppliedJobs] = useState([]);
@@ -28,7 +29,7 @@ export default function AppliedJobs() {
   const [openCvModal, setOpenCvModal] = useState(false);
 
   const handleViewCv = (cvFileUrl) => {
-    setViewCvUrl(`http://localhost:8080/uploads/cv/${cvFileUrl}`);
+    setViewCvUrl(getCvUrl(cvFileUrl));
     setOpenCvModal(true);
   };
 
@@ -89,13 +90,13 @@ export default function AppliedJobs() {
           <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ md: 'flex-end' }} spacing={2}>
             <Box>
               <Typography variant="h4" fontWeight="900" sx={{ color: "#1e293b", mb: 1 }}>
-                Quản lý <span style={{ color: '#6366f1' }}>đơn ứng tuyển</span>
+                Quản lý <span style={{ color: '#2563eb' }}>đơn ứng tuyển</span>
               </Typography>
               <Typography variant="body1" sx={{ color: "#64748b" }}>
                 Bạn có {appliedJobs.length} đơn ứng tuyển {statusFilter !== "ALL" ? `trạng thái ${statusFilter}` : ""}
               </Typography>
             </Box>
-            <Button onClick={() => navigate("/")} endIcon={<ArrowForward />} variant="outlined" sx={{ color: '#6366f1', borderColor: '#6366f1', textTransform: 'none', fontWeight: 700 }}>
+            <Button onClick={() => navigate("/")} endIcon={<ArrowForward />} variant="outlined" sx={{ color: '#2563eb', borderColor: '#2563eb', textTransform: 'none', fontWeight: 700 }}>
               Tìm thêm việc làm
             </Button>
           </Stack>
@@ -159,7 +160,7 @@ export default function AppliedJobs() {
                         </TableCell>
                         <TableCell>
                           <Stack direction="row" spacing={2} alignItems="center">
-                            <Avatar src={app.job.companyLogo} variant="rounded" sx={{ width: 40, height: 40, bgcolor: "#f1f5f9", color: "#6366f1", fontSize: '0.9rem', fontWeight: 800 }}>
+                            <Avatar src={getMediaUrl(app.job.companyLogo)} variant="rounded" sx={{ width: 40, height: 40, bgcolor: "#f1f5f9", color: "#2563eb", fontSize: '0.9rem', fontWeight: 800 }}>
                               {app.job.companyName?.charAt(0)}
                             </Avatar>
                             <Box>
@@ -177,7 +178,7 @@ export default function AppliedJobs() {
                         <TableCell>{getStatusChip(app.status)}</TableCell>
                         <TableCell align="right">
                           <Stack direction="row" spacing={1} justifyContent="flex-end">
-                            <Button size="small" startIcon={<Visibility />} onClick={() => navigate(`/user/job/${app.job.jobId}`)} sx={{ textTransform: 'none', fontWeight: 600 }}>
+                            <Button size="small" startIcon={<Visibility />} onClick={() => navigate(`/job/${app.job.jobId}`)} sx={{ textTransform: 'none', fontWeight: 600 }}>
                               Chi tiết
                             </Button>
                             <Button 

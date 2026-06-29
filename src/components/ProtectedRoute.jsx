@@ -4,7 +4,6 @@ import { jwtDecode } from "jwt-decode";
 export default function ProtectedRoute({ children, role }) {
   const token = localStorage.getItem("token");
 
-  // Chưa đăng nhập
   if (!token) {
     return <Navigate to="/login" replace />;
   }
@@ -12,14 +11,12 @@ export default function ProtectedRoute({ children, role }) {
   try {
     const decoded = jwtDecode(token);
 
-    // Token không đúng role
     if (role && decoded.role !== role) {
-      return <Navigate to="/user" replace />;
+      return <Navigate to="/" replace />;
     }
 
     return children;
   } catch (err) {
-    // Token lỗi / hết hạn
     localStorage.removeItem("token");
     return <Navigate to="/login" replace />;
   }

@@ -18,6 +18,7 @@ import {
 } from "../../services/adminUserService";
 import UserForm from "./UserForm";
 import { useToast } from "../../contexts/ToastContext";
+import { getMediaUrl } from "../../utils/urlHelpers";
 
 export default function UserManagement() {
   const location = useLocation();
@@ -209,7 +210,7 @@ export default function UserManagement() {
                       <TableCell align="center">{filters.page * filters.size + index + 1}</TableCell>
                       <TableCell>
                         <Stack direction="row" spacing={2} alignItems="center">
-                          <Avatar src={u.avatar ? `http://localhost:8080${u.avatar}` : ""}>
+                          <Avatar src={getMediaUrl(u.avatar)}>
                             {u.fullName?.charAt(0)}
                           </Avatar>
                           <Typography variant="subtitle2" fontWeight={600}>{u.fullName}</Typography>

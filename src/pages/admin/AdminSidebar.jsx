@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Drawer,
   List,
@@ -21,6 +21,8 @@ import {
   Logout,
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useToast } from "../../contexts/ToastContext";
+import LogoutConfirmDialog from "../../components/LogoutConfirmDialog";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
@@ -31,14 +33,20 @@ export default function AdminSidebar({ mobileOpen, handleDrawerToggle }) {
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const showToast = useToast();
 
   const handleLogout = () => {
+    setLogoutDialogOpen(false);
     localStorage.removeItem("token");
-    navigate("/login");
+    showToast("Đăng xuất thành công!", "success");
+    setTimeout(() => {
+      navigate("/login");
+    }, 400);
   };
 
   const menuItems = [
-    { text: "Dashboard", icon: <Dashboard />, path: "/admin", color: "#0ea5e9" },
+    { text: "Dashboard", icon: <Dashboard />, path: "/admin_dashboard", color: "#0ea5e9" },
     { text: "Quản lý Người dùng", icon: <People />, path: "/admin/users", color: "#8b5cf6" },
     { text: "Quản lý Công ty", icon: <Business />, path: "/admin/companies", color: "#10b981" },
     { text: "Thống kê", icon: <Assessment />, path: "/admin/stats", color: "#f59e0b" },
@@ -102,7 +110,7 @@ export default function AdminSidebar({ mobileOpen, handleDrawerToggle }) {
           fullWidth
           variant="outlined"
           startIcon={<Logout />}
-          onClick={handleLogout}
+          onClick={() => setLogoutDialogOpen(true)}
           sx={{
             borderRadius: 2.5,
             textTransform: "none",
@@ -128,22 +136,29 @@ export default function AdminSidebar({ mobileOpen, handleDrawerToggle }) {
   );
 
   return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        left: 0,
-        top: 0,
-        "& .MuiDrawer-paper": {
-          width: drawerWidth,
-          boxSizing: "border-box",
-          mt: "64px", // Né Header
-          height: "calc(100% - 64px)",
-          borderTop: "none", // Loại bỏ border phía trên
-          boxShadow: "none", // Loại bỏ shadow nếu có
-        },
-      }}
-    >
-      {drawerContent}
-    </Drawer>
+    <>
+      <Drawer
+        variant="permanent"
+        sx={{
+          left: 0,
+          top: 0,
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
+            boxSizing: "border-box",
+            mt: "64px", // Né Header
+            height: "calc(100% - 64px)",
+            borderTop: "none", // Loại bỏ border phía trên
+            boxShadow: "none", // Loại bỏ shadow nếu có
+          },
+        }}
+      >
+        {drawerContent}
+      </Drawer>
+      <LogoutConfirmDialog
+        open={logoutDialogOpen}
+        onClose={() => setLogoutDialogOpen(false)}
+        onConfirm={handleLogout}
+      />
+    </>
   );
 }

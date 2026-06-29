@@ -14,8 +14,8 @@ import {
 } from "@mui/material";
 import { createJob, updateJob } from "../../services/hrJobService";
 import { useToast } from "../../contexts/ToastContext";
+import { getMediaUrl } from "../../utils/urlHelpers";
 const DEFAULT_IMAGE = "https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg";
-const API_BASE_URL = "http://localhost:8080";
 
 export default function HrJobForm({ job, onClose, onSuccess }) {
   const showToast = useToast();
@@ -301,9 +301,7 @@ const handleSubmit = async (e) => {
                   </Typography>
                   <img
                   src={
-                    preview 
-                      ? (preview.startsWith("blob:") ? preview : `${API_BASE_URL}${preview}`) 
-                      : DEFAULT_IMAGE
+                    preview ? getMediaUrl(preview) : DEFAULT_IMAGE
                   }
                   alt="preview"
                   style={{ 

@@ -3,6 +3,9 @@ import {
   Menu, MenuItem, IconButton
 } from "@mui/material";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "../../contexts/ToastContext";
+import LogoutConfirmDialog from "../../components/LogoutConfirmDialog";
 import { getCurrentUser } from "../../services/currentUser";
 import ProfileDialog from "./ProfileDialog";
 
@@ -12,6 +15,9 @@ export default function AdminHeader() {
   const [user, setUser] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [openProfile, setOpenProfile] = useState(false);
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const navigate = useNavigate();
+  const showToast = useToast();
 
   useEffect(() => {
     getCurrentUser()
@@ -24,8 +30,12 @@ export default function AdminHeader() {
   }, []);
 
   const handleLogout = () => {
+    setLogoutDialogOpen(false);
     localStorage.removeItem("token");
-    window.location.href = "/login";
+    showToast("Đăng xuất thành công!", "success");
+    setTimeout(() => {
+      navigate("/login");
+    }, 400);
   };
 
   return (
@@ -50,8 +60,7 @@ export default function AdminHeader() {
             <Box sx={{ display: "flex", alignItems: "center" }}>
               <Typography mr={1}>{user.fullName}</Typography>
               <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
-                <Avatar src={user.avatarUrl ? `http://localhost:8080${user.avatarUrl}` : ""}>
-                  {user.fullName?.charAt(0)}
+<Avatar src={user.avatarUrl || user.avatar}>                  {user.fullName?.charAt(0)}
                 </Avatar>
               </IconButton>
 
@@ -66,7 +75,10 @@ export default function AdminHeader() {
                 }}>
                   Thông tin tài khoản
                 </MenuItem>
-                <MenuItem onClick={handleLogout} sx={{ color: "red" }}>
+                <MenuItem onClick={() => {
+                  setLogoutDialogOpen(true);
+                  setAnchorEl(null);
+                }} sx={{ color: "red" }}>
                   Đăng xuất
                 </MenuItem>
               </Menu>
@@ -80,6 +92,11 @@ export default function AdminHeader() {
         onClose={() => setOpenProfile(false)}
         user={user}
         onUpdated={setUser}
+      />
+      <LogoutConfirmDialog
+        open={logoutDialogOpen}
+        onClose={() => setLogoutDialogOpen(false)}
+        onConfirm={handleLogout}
       />
     </>
   );

@@ -20,6 +20,7 @@ import {
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 import HrJobForm from "./HrJobForm";
 import HrJobDetail from "./HrJobDetail";
@@ -32,11 +33,10 @@ import {
 } from "../../services/hrJobService";
 
 import { useToast } from "../../contexts/ToastContext";
+import { getMediaUrl } from "../../utils/urlHelpers";
 
 const DEFAULT_IMAGE =
   "https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg";
-
-const API_BASE_URL = "http://localhost:8080";
 
 const PAGE_SIZE = 5;
 
@@ -75,8 +75,6 @@ export default function HrJobManagement() {
       setJobs(data || []);
 
     } catch (error) {
-
-      console.error(error);
 
       console.error(error);
 
@@ -150,13 +148,16 @@ export default function HrJobManagement() {
 
       console.error(error);
 
-      console.error(error);
-
       showToast(
         "Xóa thất bại",
         "error"
       );
     }
+  };
+
+  const handleRefresh = async () => {
+    await loadJobs();
+    showToast("Làm mới danh sách thành công", "success");
   };
 
   /* ================= RENDER ================= */
@@ -167,8 +168,21 @@ export default function HrJobManagement() {
 
       <Stack spacing={3}>
 
-        {/* HEADER */}
+        {/* BLUE BANNER */}
+        <Box
+          sx={{
+            backgroundColor: "#0066CC",
+            borderRadius: "8px",
+            padding: "16px 20px",
+            color: "white"
+          }}
+        >
+          <Typography variant="body1" fontWeight={500}>
+            Theo dõi trạng thái tuyển dụng và quản lý các tin tuyển dụng hiệu quả
+          </Typography>
+        </Box>
 
+        {/* HEADER WITH CREATE BUTTON */}
         <Stack
           direction="row"
           justifyContent="space-between"
@@ -191,21 +205,26 @@ export default function HrJobManagement() {
 
         </Stack>
 
-        {/* SEARCH */}
-
+        {/* SEARCH & FILTER ROW */}
         <Stack
           direction="row"
           spacing={2}
+          alignItems="center"
         >
 
           <TextField
             size="small"
-            placeholder="Tìm theo tiêu đề..."
+            placeholder="Tìm theo job, địa điểm, user..."
             value={keyword}
             onChange={(e) =>
               setKeyword(e.target.value)
             }
+            sx={{ flex: 1 }}
           />
+
+          <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
+            Lọc trạng thái
+          </Typography>
 
           <TextField
             size="small"
@@ -218,7 +237,7 @@ export default function HrJobManagement() {
           >
 
             <MenuItem value="ALL">
-              Tất cả kinh nghiệm
+              ALL
             </MenuItem>
 
             <MenuItem value="INTERN">
@@ -234,6 +253,15 @@ export default function HrJobManagement() {
             </MenuItem>
 
           </TextField>
+
+          <Button
+            variant="outlined"
+            startIcon={<RefreshIcon />}
+            onClick={handleRefresh}
+            sx={{ whiteSpace: "nowrap" }}
+          >
+            LÀM MỚI
+          </Button>
 
         </Stack>
 
@@ -257,34 +285,44 @@ export default function HrJobManagement() {
 
               <TableHead>
 
-                <TableRow>
+                <TableRow
+                  sx={{
+                    backgroundColor: "#0066CC",
+                    "& th": {
+                      backgroundColor: "#0066CC",
+                      color: "white",
+                      fontWeight: 700,
+                      fontSize: "14px"
+                    }
+                  }}
+                >
 
-                  <TableCell align="center">
-                    <b>STT</b>
+                  <TableCell align="center" sx={{ color: "white", fontWeight: 700 }}>
+                    STT
                   </TableCell>
 
-                  <TableCell align="center">
-                    <b>Hình ảnh</b>
+                  <TableCell align="center" sx={{ color: "white", fontWeight: 700 }}>
+                    Hình ảnh
                   </TableCell>
 
-                  <TableCell align="center">
-                    <b>Tiêu đề</b>
+                  <TableCell align="center" sx={{ color: "white", fontWeight: 700 }}>
+                    Tiêu đề
                   </TableCell>
 
-                  <TableCell align="center">
-                    <b>Kinh nghiệm</b>
+                  <TableCell align="center" sx={{ color: "white", fontWeight: 700 }}>
+                    Kinh nghiệm
                   </TableCell>
 
-                  <TableCell align="center">
-                    <b>Mô tả</b>
+                  <TableCell align="center" sx={{ color: "white", fontWeight: 700 }}>
+                    Mô tả
                   </TableCell>
 
-                  <TableCell align="center">
-                    <b>Ngày đăng</b>
+                  <TableCell align="center" sx={{ color: "white", fontWeight: 700 }}>
+                    Ngày đăng
                   </TableCell>
 
-                  <TableCell align="center">
-                    <b>Hành động</b>
+                  <TableCell align="center" sx={{ color: "white", fontWeight: 700 }}>
+                    Hành động
                   </TableCell>
 
                 </TableRow>
@@ -300,6 +338,7 @@ export default function HrJobManagement() {
                     <TableCell
                       colSpan={7}
                       align="center"
+                      sx={{ padding: "20px" }}
                     >
 
                       Không có tin tuyển dụng
@@ -328,11 +367,7 @@ export default function HrJobManagement() {
                     <TableCell align="center">
 
                       <img
-                        src={
-                          job.imageUrl
-                            ? `${API_BASE_URL}${job.imageUrl}`
-                            : DEFAULT_IMAGE
-                        }
+                        src={job.imageUrl ? getMediaUrl(job.imageUrl) : DEFAULT_IMAGE}
                         alt="job"
                         style={{
                           width: 70,
@@ -390,6 +425,7 @@ export default function HrJobManagement() {
                       >
 
                         <IconButton
+                          size="small"
                           onClick={() =>
                             setViewJob(job)
                           }
@@ -398,6 +434,7 @@ export default function HrJobManagement() {
                         </IconButton>
 
                         <IconButton
+                          size="small"
                           color="warning"
                           onClick={() =>
                             handleOpenEdit(job)
@@ -407,6 +444,7 @@ export default function HrJobManagement() {
                         </IconButton>
 
                         <IconButton
+                          size="small"
                           color="error"
                           onClick={() =>
                             handleDelete(job.jobId)
@@ -429,20 +467,25 @@ export default function HrJobManagement() {
           </Paper>
         )}
 
-        {/* PAGINATION */}
+        {/* PAGINATION INFO & CONTROLS */}
 
-        {totalPages > 1 && (
-
-          <Stack alignItems="center">
-
-            <Pagination
-              count={totalPages}
-              page={page}
-              onChange={(_, value) =>
-                setPage(value)
-              }
-            />
-
+        {!loading && jobs.length > 0 && (
+          <Stack spacing={2} alignItems="flex-start">
+            <Typography variant="body2">
+              Tổng công việc: {jobs.length}
+            </Typography>
+            
+            {totalPages > 1 && (
+              <Stack alignItems="center" width="100%">
+                <Pagination
+                  count={totalPages}
+                  page={page}
+                  onChange={(_, value) =>
+                    setPage(value)
+                  }
+                />
+              </Stack>
+            )}
           </Stack>
         )}
 
@@ -470,17 +513,17 @@ export default function HrJobManagement() {
 
           onSuccess={async () => {
 
-  await loadJobs();
+            await loadJobs();
 
-  setOpenModal(false);
+            setOpenModal(false);
 
-  showToast(
-    editingJob
-      ? "Cập nhật thành công"
-      : "Đăng tin thành công",
-    "success"
-  );
-}}
+            showToast(
+              editingJob
+                ? "Cập nhật thành công"
+                : "Đăng tin thành công",
+              "success"
+            );
+          }}
         />
       )}
 

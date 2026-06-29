@@ -48,9 +48,9 @@ export default function LastCvAnalysisSection() {
             <Box sx={{
               width: 80, height: 80, flexShrink: 0,
               borderRadius: 4,
-              background: 'linear-gradient(135deg,#667eea,#764ba2)',
+              background: 'linear-gradient(135deg,#3b82f6,#2563eb)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 10px 30px rgba(102,126,234,0.3)',
+              boxShadow: '0 10px 30px rgba(37,99,235,0.3)',
             }}>
               <AIIcon sx={{ fontSize: 40, color: '#fff' }} />
             </Box>
@@ -69,12 +69,12 @@ export default function LastCvAnalysisSection() {
                 <Button
                   variant="contained"
                   startIcon={<AIIcon />}
-                  onClick={() => navigate(isLoggedIn ? '/user/cv-analysis' : '/login')}
+                  onClick={() => navigate(isLoggedIn ? '/cv-analysis' : '/login')}
                   sx={{
                     textTransform: 'none', fontWeight: 700, px: 3, py: 1.2, borderRadius: 50,
-                    background: 'linear-gradient(135deg,#667eea,#764ba2)',
-                    boxShadow: '0 4px 14px rgba(102,126,234,0.4)',
-                    '&:hover': { boxShadow: '0 6px 20px rgba(102,126,234,0.5)' },
+                    background: 'linear-gradient(135deg,#3b82f6,#2563eb)',
+                    boxShadow: '0 4px 14px rgba(37,99,235,0.4)',
+                    '&:hover': { boxShadow: '0 6px 20px rgba(37,99,235,0.5)' },
                   }}
                 >
                   {isLoggedIn ? 'Phân tích CV ngay' : 'Đăng nhập để phân tích'}
@@ -93,7 +93,7 @@ export default function LastCvAnalysisSection() {
               {['Phân tích kỹ năng AI', 'Gợi ý việc làm phù hợp', 'Điểm mạnh & điểm yếu'].map((f) => (
                 <Chip key={f} label={f} size="small"
                   icon={<TrendingUpIcon />}
-                  sx={{ bgcolor: '#f0f4ff', color: '#4338ca', fontWeight: 600, borderRadius: 50 }} />
+                  sx={{ bgcolor: '#eff6ff', color: '#2563eb', fontWeight: 600, borderRadius: 50 }} />
               ))}
             </Stack>
           </Stack>
@@ -121,7 +121,7 @@ export default function LastCvAnalysisSection() {
         {/* Header bar */}
         <Box sx={{
           px: 4, py: 2.5,
-          background: 'linear-gradient(135deg,#667eea,#764ba2)',
+          background: 'linear-gradient(135deg,#3b82f6,#2563eb)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <Stack direction="row" alignItems="center" spacing={1.5}>
@@ -139,7 +139,7 @@ export default function LastCvAnalysisSection() {
           </Stack>
           <Stack direction="row" spacing={1}>
             <Button size="small" startIcon={<RefreshIcon />}
-              onClick={() => navigate('/user/cv-analysis')}
+              onClick={() => navigate('/cv-analysis')}
               sx={{
                 color: '#fff', borderColor: 'rgba(255,255,255,0.5)',
                 textTransform: 'none', fontWeight: 600, border: '1px solid',
@@ -163,10 +163,10 @@ export default function LastCvAnalysisSection() {
 
           {/* Summary */}
           {lastAnalysis.summary && (
-            <Paper elevation={0} sx={{ mt: 3, p: 3, borderRadius: 3, bgcolor: '#f8f9ff', border: '1px solid #e8eaf6' }}>
+            <Paper elevation={0} sx={{ mt: 3, p: 3, borderRadius: 3, bgcolor: '#eff6ff', border: '1px solid #dbeafe' }}>
               <Stack direction="row" spacing={1} alignItems="center" mb={1}>
-                <TrendingUpIcon sx={{ color: '#667eea', fontSize: 18 }} />
-                <Typography variant="subtitle2" fontWeight={700} color="#4a3f9f">
+                <TrendingUpIcon sx={{ color: '#2563eb', fontSize: 18 }} />
+                <Typography variant="subtitle2" fontWeight={700} color="#2563eb">
                   Tóm tắt phân tích
                 </Typography>
               </Stack>
@@ -180,12 +180,12 @@ export default function LastCvAnalysisSection() {
           {lastAnalysis.recommendedJobs?.length > 0 && (
             <Box sx={{ mt: 4 }}>
               <Stack direction="row" alignItems="center" spacing={1} mb={2}>
-                <WorkIcon sx={{ color: '#667eea' }} />
+                <WorkIcon sx={{ color: '#2563eb' }} />
                 <Typography variant="h6" fontWeight={800} color="#1e293b">
                   Việc làm đề xuất cho bạn
                 </Typography>
                 <Chip label={`${Math.min(lastAnalysis.recommendedJobs.length, 4)} gợi ý`}
-                  size="small" sx={{ bgcolor: '#f0f4ff', color: '#4338ca', fontWeight: 600 }} />
+                  size="small" sx={{ bgcolor: '#eff6ff', color: '#2563eb', fontWeight: 600 }} />
               </Stack>
 
               <Box sx={{
@@ -200,7 +200,7 @@ export default function LastCvAnalysisSection() {
                     <Paper
                       key={jobId || idx}
                       elevation={0}
-                      onClick={() => jobId && navigate(`/user/job/${jobId}`)}
+                      onClick={() => jobId && navigate(`/job/${jobId}`)}
                       sx={{
                         p: 2.5, borderRadius: 3,
                         border: '1px solid #e2e8f0',
@@ -211,9 +211,9 @@ export default function LastCvAnalysisSection() {
                         overflow: 'hidden',
                         transition: 'all 0.3s ease',
                         '&:hover': jobId ? {
-                          borderColor: '#4f46e5',
+                          borderColor: '#2563eb',
                           transform: 'translateY(-4px)',
-                          boxShadow: '0 12px 24px rgba(79,70,229,0.1)',
+                          boxShadow: '0 12px 24px rgba(37,99,235,0.1)',
                         } : {},
                       }}
                     >
@@ -221,7 +221,7 @@ export default function LastCvAnalysisSection() {
                       <Stack direction="row" spacing={1.5} alignItems="flex-start" mb={1.5}>
                         <Box sx={{
                           width: 40, height: 40, flexShrink: 0,
-                          borderRadius: 2, bgcolor: '#eef2ff', color: '#4338ca',
+                          borderRadius: 2, bgcolor: '#eff6ff', color: '#2563eb',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontWeight: 800, fontSize: '0.95rem',
                         }}>
@@ -276,7 +276,7 @@ export default function LastCvAnalysisSection() {
                           </Typography>
                           <Button
                             size="small" variant="contained" disableElevation
-                            onClick={(e) => { e.stopPropagation(); if (jobId) navigate(`/user/job/${jobId}`); }}
+                            onClick={(e) => { e.stopPropagation(); if (jobId) navigate(`/job/${jobId}`); }}
                             sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.72rem', px: 1.2, flexShrink: 0, minWidth: 56 }}
                           >
                             Chi tiết
@@ -290,8 +290,8 @@ export default function LastCvAnalysisSection() {
 
               {lastAnalysis.recommendedJobs.length > 4 && (
                 <Box sx={{ textAlign: 'center', mt: 2 }}>
-                  <Button variant="text" onClick={() => navigate('/user/cv-analysis')}
-                    sx={{ textTransform: 'none', color: '#667eea', fontWeight: 600 }}>
+                  <Button variant="text" onClick={() => navigate('/cv-analysis')}
+                    sx={{ textTransform: 'none', color: '#2563eb', fontWeight: 600 }}>
                     Xem thêm {lastAnalysis.recommendedJobs.length - 4} gợi ý khác →
                   </Button>
                 </Box>

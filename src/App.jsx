@@ -10,6 +10,7 @@ import AdminLayout from "./components/AdminLayout";
 import HrJobManagement from "./pages/hr/HrJobManagement";
 import CompanyApplications from "./pages/hr/CompanyApplications";
 import JobDetail from "./pages/user/JobDetail";
+import SearchResults from "./pages/user/SearchResults";
 import PrivacyPolicy from "./pages/user/PrivacyPolicy";
 import FavoriteJobs from "./pages/user/FavoriteJobs";
 import AppliedJobs from "./pages/user/AppliedJobs";
@@ -17,29 +18,29 @@ import CVAnalysis from "./pages/user/CVAnalysis";
 import UserProfile from "./pages/user/UserProfile";
 import CVBuilder from "./pages/user/CVBuilder";
 import CareerRoadmap from "./pages/user/CareerRoadmap";
+import ForEmployers from "./pages/public/ForEmployers";
 
 
 export default function App() {
   return (
     <Routes>
       {/* Mặc định vào USER */}
-      <Route path="/" element={<Navigate to="/user" />} />
-
-      {/* USER – public */}
-      <Route path="/user" element={<UserHome />} />
+      <Route path="/" element={<UserHome />} />
 
       {/* Auth */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/user/job/:id" element={<JobDetail />} />
-<Route path="/user/cv-analysis" element={<CVAnalysis />} />
-<Route path="/user/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-<Route path="/user/cv-builder" element={<ProtectedRoute><CVBuilder /></ProtectedRoute>} />
-<Route path="/user/career-roadmap" element={<ProtectedRoute><CareerRoadmap /></ProtectedRoute>} />
-<Route path="/privacy-policy" element={<PrivacyPolicy />} />
-<Route path="/user/favorite-jobs" element={<FavoriteJobs />} />
-<Route path="/user/applied-jobs" element={<AppliedJobs />} />
- <Route path="applications" element={<CompanyApplications />} />
+      <Route path="/job/:id" element={<JobDetail />} />
+      <Route path="/search" element={<SearchResults />} />
+      <Route path="/cv-analysis" element={<CVAnalysis />} />
+      <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+      <Route path="/cv-builder" element={<ProtectedRoute><CVBuilder /></ProtectedRoute>} />
+      <Route path="/career-roadmap" element={<ProtectedRoute><CareerRoadmap /></ProtectedRoute>} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/favorite-jobs" element={<FavoriteJobs />} />
+      <Route path="/applied-jobs" element={<AppliedJobs />} />
+      <Route path="applications" element={<CompanyApplications />} />
+      <Route path="/for-employers" element={<ForEmployers />} />
 
 
 {/* <Route path="profile" element={<Profile />} /> */}
@@ -47,7 +48,7 @@ export default function App() {
       {/* Protected */}
     {/* ADMIN */}
 <Route
-  path="/admin"
+  path="/admin_dashboard"
   element={
     <ProtectedRoute role="ADMIN">
       <AdminLayout>
@@ -55,6 +56,11 @@ export default function App() {
       </AdminLayout>
     </ProtectedRoute>
   }
+/>
+
+<Route
+  path="/admin"
+  element={<Navigate to="/admin_dashboard" replace />}
 />
 
 <Route
@@ -97,12 +103,17 @@ export default function App() {
 
 
      <Route
-  path="/hr"
+  path="/hr_dashboard"
   element={
     <ProtectedRoute role="HR">
       <HrDashboard />
     </ProtectedRoute>
   }
+/>
+
+<Route
+  path="/hr"
+  element={<Navigate to="/hr_dashboard" replace />}
 />
 
 <Route

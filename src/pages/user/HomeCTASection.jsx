@@ -1,60 +1,105 @@
 import React from "react";
 import { Box, Button, Container, Stack, Typography } from "@mui/material";
+import { ArrowForward, BusinessCenter } from "@mui/icons-material";
 
 export default function HomeCTASection({ onCreateCv }) {
   return (
-    <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: "#4f46e5", position: "relative", overflow: "hidden" }}>
-      <Box
-        sx={{
-          position: "absolute",
-          top: "-50%",
-          right: "-10%",
-          width: "600px",
-          height: "600px",
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)",
-        }}
-      />
-      <Container maxWidth="md" sx={{ position: "relative", zIndex: 1, textAlign: "center" }}>
-        <Typography variant="h3" fontWeight="900" sx={{ color: "#ffffff", mb: 3, fontSize: { xs: "2rem", md: "3rem" } }}>
-          Sẵn sàng nâng tầm sự nghiệp?
-        </Typography>
-        <Typography variant="h6" sx={{ color: "#e0e7ff", mb: 5, fontWeight: 400 }}>
-          Hàng ngàn nhà tuyển dụng đang chờ đợi hồ sơ của bạn. Hãy để AI giúp bạn kết nối với họ ngay hôm nay.
-        </Typography>
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="center">
-          <Button
-            onClick={onCreateCv}
-            variant="contained"
-            size="large"
+    <Box sx={{ py: 6, bgcolor: "#ffffff" }}>
+      <Container maxWidth="xl">
+        <Box
+          sx={{
+            background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+            borderRadius: "24px",
+            p: { xs: 4, md: 6 },
+            position: "relative",
+            overflow: "hidden",
+            boxShadow: "0 15px 35px rgba(37,99,235,0.15)",
+          }}
+        >
+          {/* Subtle glowing circular backgrounds */}
+          <Box
             sx={{
-              bgcolor: "#ffffff",
-              color: "#4f46e5",
-              fontWeight: 800,
-              px: 5,
-              py: 2,
-              borderRadius: 50,
-              "&:hover": { bgcolor: "#f8fafc" },
+              position: "absolute",
+              top: "-50%",
+              right: "-10%",
+              width: "400px",
+              height: "400px",
+              borderRadius: "50%",
+              background: "radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%)",
             }}
+          />
+
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            justifyContent="space-between"
+            alignItems="center"
+            spacing={4}
+            sx={{ position: "relative", zIndex: 1 }}
           >
-            Tạo CV Ngay
-          </Button>
-          <Button
-            variant="outlined"
-            size="large"
-            sx={{
-              borderColor: "rgba(255,255,255,0.5)",
-              color: "#ffffff",
-              fontWeight: 800,
-              px: 5,
-              py: 2,
-              borderRadius: 50,
-              "&:hover": { borderColor: "#ffffff", bgcolor: "rgba(255,255,255,0.1)" },
-            }}
-          >
-            Tìm Việc Làm
-          </Button>
-        </Stack>
+            {/* Left Content with briefcase icon */}
+            <Stack direction="row" spacing={3} alignItems="center">
+              <Box
+                sx={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: "16px",
+                  bgcolor: "rgba(255,255,255,0.15)",
+                  color: "#ffffff",
+                  display: { xs: "none", sm: "flex" },
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "2rem",
+                }}
+              >
+                <BusinessCenter />
+              </Box>
+
+              <Box>
+                <Typography
+                  variant="h5"
+                  fontWeight={900}
+                  sx={{ color: "#ffffff", mb: 1, fontSize: "1.45rem", letterSpacing: "-0.01em" }}
+                >
+                  Sẵn sàng tìm công việc phù hợp với bạn?
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ color: "rgba(255,255,255,0.85)", fontWeight: 600, fontSize: "0.92rem" }}
+                >
+                  Tạo hồ sơ ngay hôm nay và nhận những cơ hội tốt nhất từ các nhà tuyển dụng hàng đầu!
+                </Typography>
+              </Box>
+            </Stack>
+
+            {/* Right Action Button */}
+            <Box sx={{ width: { xs: "100%", md: "auto" } }}>
+              <Button
+                onClick={onCreateCv}
+                variant="contained"
+                endIcon={<ArrowForward />}
+                sx={{
+                  bgcolor: "#ffffff",
+                  color: "#2563eb",
+                  fontWeight: 900,
+                  px: 4,
+                  py: 1.8,
+                  borderRadius: "12px",
+                  textTransform: "none",
+                  fontSize: "0.95rem",
+                  boxShadow: "0 4px 15px rgba(0,0,0,0.06)",
+                  width: { xs: "100%", md: "auto" },
+                  "&:hover": {
+                    bgcolor: "#eff6ff",
+                    boxShadow: "0 6px 20px rgba(0,0,0,0.1)",
+                  },
+                  transition: "all 0.2s ease",
+                }}
+              >
+                Tạo hồ sơ miễn phí
+              </Button>
+            </Box>
+          </Stack>
+        </Box>
       </Container>
     </Box>
   );

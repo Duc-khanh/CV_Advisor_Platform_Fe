@@ -21,7 +21,7 @@ import {
 } from "@mui/icons-material";
 
 const UserFooter = () => {
-  const primaryPurple = "#6366f1";
+  const primaryColor = "#2563eb";
 
   const footerLinks = {
     candidate: [
@@ -47,8 +47,9 @@ const UserFooter = () => {
   return (
     <Box
       sx={{
-        bgcolor: "#0f172a",
-        color: "#ffffff",
+        bgcolor: "#f8fafc",
+        borderTop: "1px solid #e2e8f0",
+        color: "#1e293b",
         pt: 10,
         pb: 4,
         mt: 10,
@@ -58,24 +59,40 @@ const UserFooter = () => {
         <Grid container spacing={6}>
           {/* BRAND */}
           <Grid item xs={12} md={5}>
-            <Typography
-              variant="h4"
-              fontWeight="900"
-              sx={{
-                mb: 2,
-                display: "flex",
-                alignItems: "center",
-                letterSpacing: 1,
-              }}
-            >
-              <span style={{ color: primaryPurple }}>AI</span>
-              <span style={{ marginLeft: 8 }}>RECRUIT</span>
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, mb: 3.5 }}>
+              <Box
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #3b82f6, #2563eb)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "white",
+                  fontWeight: 900,
+                  fontSize: "1.1rem",
+                  boxShadow: "0 4px 10px rgba(37,99,235,0.2)",
+                }}
+              >
+                R
+              </Box>
+              <Typography
+                variant="h5"
+                fontWeight="900"
+                sx={{
+                  color: "#0f172a",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                Recruit<span style={{ color: "#2563eb" }}></span>
+              </Typography>
+            </Box>
 
             <Typography
               variant="body2"
               sx={{
-                color: "#cbd5e1",
+                color: "#475569",
                 lineHeight: 1.9,
                 maxWidth: 450,
                 mb: 4,
@@ -93,13 +110,13 @@ const UserFooter = () => {
                   <IconButton
                     key={index}
                     sx={{
-                      bgcolor: "#1e293b",
-                      color: "#cbd5e1",
+                      bgcolor: "#e2e8f0",
+                      color: "#475569",
                       width: 42,
                       height: 42,
                       transition: "0.3s",
                       "&:hover": {
-                        bgcolor: primaryPurple,
+                        bgcolor: primaryColor,
                         color: "#fff",
                         transform: "translateY(-3px)",
                       },
@@ -117,7 +134,7 @@ const UserFooter = () => {
             <Typography
               variant="subtitle1"
               fontWeight="700"
-              sx={{ mb: 3 }}
+              sx={{ mb: 3, color: "#0f172a" }}
             >
               Ứng Viên
             </Typography>
@@ -129,11 +146,11 @@ const UserFooter = () => {
                   href="#"
                   underline="none"
                   sx={{
-                    color: "#cbd5e1",
+                    color: "#475569",
                     fontSize: "0.9rem",
                     transition: "0.2s",
                     "&:hover": {
-                      color: primaryPurple,
+                      color: primaryColor,
                       pl: 0.5,
                     },
                   }}
@@ -149,7 +166,7 @@ const UserFooter = () => {
             <Typography
               variant="subtitle1"
               fontWeight="700"
-              sx={{ mb: 3 }}
+              sx={{ mb: 3, color: "#0f172a" }}
             >
               Doanh Nghiệp
             </Typography>
@@ -161,11 +178,11 @@ const UserFooter = () => {
                   href="#"
                   underline="none"
                   sx={{
-                    color: "#cbd5e1",
+                    color: "#475569",
                     fontSize: "0.9rem",
                     transition: "0.2s",
                     "&:hover": {
-                      color: primaryPurple,
+                      color: primaryColor,
                       pl: 0.5,
                     },
                   }}
@@ -181,7 +198,7 @@ const UserFooter = () => {
             <Typography
               variant="subtitle1"
               fontWeight="700"
-              sx={{ mb: 3 }}
+              sx={{ mb: 3, color: "#0f172a" }}
             >
               Liên Hệ
             </Typography>
@@ -191,13 +208,13 @@ const UserFooter = () => {
                 <LocationOn
                   sx={{
                     mr: 1.5,
-                    color: primaryPurple,
+                    color: primaryColor,
                   }}
                 />
 
                 <Typography
                   variant="body2"
-                  sx={{ color: "#cbd5e1", lineHeight: 1.7 }}
+                  sx={{ color: "#475569", lineHeight: 1.7 }}
                 >
                   QTSC Innovation Building,
                   Quận 12, TP. Hồ Chí Minh
@@ -208,13 +225,13 @@ const UserFooter = () => {
                 <Phone
                   sx={{
                     mr: 1.5,
-                    color: primaryPurple,
+                    color: primaryColor,
                   }}
                 />
 
                 <Typography
                   variant="body2"
-                  sx={{ color: "#cbd5e1" }}
+                  sx={{ color: "#475569" }}
                 >
                   1900 123 456
                 </Typography>
@@ -224,15 +241,15 @@ const UserFooter = () => {
                 <Email
                   sx={{
                     mr: 1.5,
-                    color: primaryPurple,
+                    color: primaryColor,
                   }}
                 />
 
                 <Typography
                   variant="body2"
-                  sx={{ color: "#cbd5e1" }}
+                  sx={{ color: "#475569" }}
                 >
-                  contact@airecruit.vn
+                  contact@jobify.vn
                 </Typography>
               </Box>
             </Stack>
@@ -242,7 +259,7 @@ const UserFooter = () => {
         {/* DIVIDER */}
         <Divider
           sx={{
-            borderColor: "#1e293b",
+            borderColor: "#e2e8f0",
             my: 6,
           }}
         />
@@ -257,11 +274,11 @@ const UserFooter = () => {
           <Typography
             variant="body2"
             sx={{
-              color: "#94a3b8",
+              color: "#64748b",
               textAlign: { xs: "center", md: "left" },
             }}
           >
-            © {new Date().getFullYear()} AI RECRUIT.
+            © {new Date().getFullYear()} HireAI.
             All rights reserved.
           </Typography>
 
@@ -272,10 +289,10 @@ const UserFooter = () => {
                 href="#"
                 underline="none"
                 sx={{
-                  color: "#94a3b8",
+                  color: "#64748b",
                   fontSize: "0.85rem",
                   "&:hover": {
-                    color: primaryPurple,
+                    color: primaryColor,
                   },
                 }}
               >

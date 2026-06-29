@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import {
@@ -14,6 +14,9 @@ import JobCategoriesSection from "./JobCategoriesSection";
 import JobListSection from "./JobListSection";
 import HowItWorksSection from "./HowItWorksSection";
 import HomeCTASection from "./HomeCTASection";
+import TopCompaniesSection from "./TopCompaniesSection";
+import CompanyDetailModal from "./CompanyDetailModal";
+import CareerGuideSection from "./CareerGuideSection";
 import { migrateLegacyStorage } from "../../services/cvAnalysisStorage";
 import { useToast } from "../../contexts/ToastContext";
 
@@ -28,6 +31,15 @@ export default function UserHome() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showAllJobs, setShowAllJobs] = useState(false);
   const jobsPerPage = showAllJobs ? Math.max(jobs.length, 12) : 12;
+
+  // Selected company state for detail view modal
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [companyModalOpen, setCompanyModalOpen] = useState(false);
+
+  const handleCompanyClick = (company) => {
+    setSelectedCompany(company);
+    setCompanyModalOpen(true);
+  };
 
   const handleShowAllJobs = () => {
     setShowAllJobs(true);
@@ -156,9 +168,12 @@ export default function UserHome() {
   };
 
   const handleSearch = (e) => {
-    e.preventDefault();
+    e && e.preventDefault();
+    const params = new URLSearchParams();
+    if (searchQuery.keyword) params.set("keyword", searchQuery.keyword);
+    if (searchQuery.location) params.set("location", searchQuery.location);
     setShowAllJobs(false);
-    fetchJobs();
+    navigate(`/search?${params.toString()}`);
   };
 
   const jobCategories = [
@@ -173,6 +188,8 @@ export default function UserHome() {
       <HeroSection searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={handleSearch} />
       <LastCvAnalysisSection />
       <JobCategoriesSection jobCategories={jobCategories} />
+      
+      {/* Job list with filter tabs */}
       <JobListSection
         jobs={jobs}
         currentPage={currentPage}
@@ -182,9 +199,26 @@ export default function UserHome() {
         handleToggleFavorite={handleToggleFavorite}
         handlePageChange={handlePageChange}
         navigate={navigate}
+        isHomePage={true}
       />
+
+      {/* Top Recruiting Companies from database */}
+      <TopCompaniesSection onCompanyClick={handleCompanyClick} />
+
+      {/* Career handbook guide articles */}
+      <CareerGuideSection />
+
       <HowItWorksSection />
-      <HomeCTASection onCreateCv={() => navigate("/user/cv-builder")} />
+      <HomeCTASection onCreateCv={() => navigate("/cv-builder")} />
+
+      {/* Company Detail popup modal */}
+      <CompanyDetailModal
+        company={selectedCompany}
+        open={companyModalOpen}
+        onClose={() => setCompanyModalOpen(false)}
+        navigate={navigate}
+        handleToggleFavorite={handleToggleFavorite}
+      />
     </UserLayout>
   );
 }

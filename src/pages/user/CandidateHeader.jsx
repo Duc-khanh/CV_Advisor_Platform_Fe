@@ -20,9 +20,16 @@ import {
   AssignmentTurnedIn,
   Search,
   Person,
+  Home,
+  FilePresent,
+  Work,
+  Settings,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../../contexts/ToastContext";
+import LogoutConfirmDialog from "../../components/LogoutConfirmDialog";
 import { getCurrentUser } from "../../services/currentUser";
+import { getMediaUrl } from "../../utils/urlHelpers";
 
 export default function CandidateHeader() {
   const navigate = useNavigate();
@@ -39,9 +46,13 @@ export default function CandidateHeader() {
 
   // ===== MENU USER =====
   const [anchorUser, setAnchorUser] = useState(null);
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const openUserMenu = Boolean(anchorUser);
 
+  const showToast = useToast();
+
   // ===== FETCH USER =====
+
   useEffect(() => {
     if (token) {
       getCurrentUser()
@@ -89,8 +100,12 @@ export default function CandidateHeader() {
   };
 
   const handleLogout = () => {
+    setLogoutDialogOpen(false);
     localStorage.removeItem("token");
-    window.location.href = "/login";
+    showToast("Đăng xuất thành công!", "success");
+    setTimeout(() => {
+      navigate("/login");
+    }, 400);
   };
 
   const goTo = (path) => {
@@ -120,14 +135,38 @@ export default function CandidateHeader() {
             }}
           >
             {/* LOGO */}
-            <Typography
-              variant="h5"
-              fontWeight="900"
+            <Box
               onClick={() => navigate("/")}
-              sx={{ color: "#6366f1", cursor: "pointer" }}
+              sx={{ display: "flex", alignItems: "center", gap: 1.2, cursor: "pointer" }}
             >
-              AI RECRUIT
-            </Typography>
+              <Box
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #3b82f6, #2563eb)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "white",
+                  fontWeight: 900,
+                  fontSize: "1.1rem",
+                  boxShadow: "0 4px 10px rgba(37,99,235,0.2)",
+                }}
+              >
+                H
+              </Box>
+              <Typography
+                variant="h5"
+                fontWeight="900"
+                sx={{
+                  color: "#0f172a",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                Recruit<Box component="span" sx={{ color: "#2563eb" }}></Box>
+              </Typography>
+            </Box>
 
             {/* RIGHT SIDE */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
@@ -135,80 +174,72 @@ export default function CandidateHeader() {
               {/* MENU */}
               <Box sx={{ display: { xs: "none", md: "flex" }, gap: 3 }}>
                 <Typography
-                  onClick={handleClickJob}
+                  onClick={() => goTo("/cv-analysis")}
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 700,
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     gap: 0.5,
-                    color: openMenu ? "#6366f1" : "inherit",
-                    "&:hover": { color: "#6366f1" },
-                  }}
-                >
-                  Việc làm <KeyboardArrowDown fontSize="small" />
-                </Typography>
-
-                <Typography
-                  onClick={() => goTo("/user/cv-analysis")}
-                  sx={{
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 0.5,
-                    color: "inherit",
-                    "&:hover": { color: "#6366f1" },
+                    color: "#475569",
+                    fontSize: "0.9rem",
+                    "&:hover": { color: "#2563eb" },
+                    transition: "color 0.2s",
                   }}
                 >
                   Phân tích CV
                 </Typography>
                 
                 <Typography
-                  onClick={() => goTo("/user/cv-builder")}
+                  onClick={() => goTo("/cv-builder")}
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 700,
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     gap: 0.5,
-                    color: "inherit",
-                    "&:hover": { color: "#6366f1" },
+                    color: "#475569",
+                    fontSize: "0.9rem",
+                    "&:hover": { color: "#2563eb" },
+                    transition: "color 0.2s",
                   }}
                 >
                   Tạo CV
                 </Typography>
 
                 <Typography
-                  onClick={() => goTo("/user/career-roadmap")}
+                  onClick={() => goTo("/career-roadmap")}
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 700,
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     gap: 0.5,
-                    color: "inherit",
-                    "&:hover": { color: "#6366f1" },
+                    color: "#475569",
+                    fontSize: "0.9rem",
+                    "&:hover": { color: "#2563eb" },
+                    transition: "color 0.2s",
                   }}
                 >
                   Lộ trình học tập
                 </Typography>
 
-                {/* <Typography
+                <Typography
+                  onClick={() => goTo("/for-employers")}
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 700,
                     cursor: "pointer",
-                    "&:hover": { color: "#6366f1" },
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    color: "#475569",
+                    fontSize: "0.9rem",
+                    "&:hover": { color: "#2563eb" },
+                    transition: "color 0.2s",
                   }}
                 >
-                  Cộng đồng
-                </Typography> */}
-              </Box>
-
-              {/* ICON */}
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <NotificationsNone sx={{ color: "#64748b", cursor: "pointer" }} />
-                <ChatBubbleOutline sx={{ color: "#64748b", cursor: "pointer" }} />
+                  Nhà tuyển dụng
+                </Typography>
               </Box>
 
               {/* USER */}
@@ -216,41 +247,50 @@ export default function CandidateHeader() {
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 1.5,
+                  gap: 2,
                   borderLeft: "1px solid #e2e8f0",
-                  pl: 2,
+                  pl: 2.5,
                 }}
               >
                 {/* AVATAR */}
                 <Avatar
-                  src={user?.avatar}
+                  src={getMediaUrl(user?.avatarUrl || user?.avatar)}
                   onClick={handleOpenUserMenu}
                   sx={{
-                    bgcolor: "#6366f1",
-                    width: 32,
-                    height: 32,
+                    bgcolor: "#2563eb",
+                    width: 34,
+                    height: 34,
                     fontSize: "0.8rem",
                     cursor: "pointer",
+                    boxShadow: "0 2px 6px rgba(37,99,235,0.15)",
                   }}
                 >
-                  {!user?.avatar && getInitials(user?.fullName)}
+                  {!user?.avatarUrl && !user?.avatar && getInitials(user?.fullName)}
                 </Avatar>
 
-                {/* LOGIN / LOGOUT */}
-                <Button
-                  size="small"
-                  onClick={() => {
-                    if (isLoggedIn) handleLogout();
-                    else navigate("/login");
-                  }}
-                  sx={{
-                    fontWeight: 700,
-                    textTransform: "none",
-                    color: isLoggedIn ? "#ef4444" : "#6366f1",
-                  }}
-                >
-                  {isLoggedIn ? "ĐĂNG XUẤT" : "ĐĂNG NHẬP"}
-                </Button>
+               {/* LOGIN BUTTON - chỉ hiện khi chưa đăng nhập */}
+{!isLoggedIn && (
+  <Button
+    size="small"
+    onClick={() => navigate("/login")}
+    sx={{
+      fontWeight: 800,
+      textTransform: "none",
+      color: "#ffffff",
+      bgcolor: "#2563eb",
+      px: 2.5,
+      py: 0.8,
+      borderRadius: "20px",
+      boxShadow: "0 4px 10px rgba(37,99,235,0.2)",
+      "&:hover": {
+        bgcolor: "#1d4ed8",
+      },
+      transition: "all 0.2s ease",
+    }}
+  >
+    Đăng nhập
+  </Button>
+)}
               </Box>
             </Box>
           </Toolbar>
@@ -278,13 +318,13 @@ export default function CandidateHeader() {
           </Typography>
         </Box> */}
         <Divider />
-        <MenuItem onClick={() => goTo("/user")}> 
+        <MenuItem onClick={() => goTo("/")}> 
           <Search fontSize="small" sx={{ mr: 1 }} /> Tìm việc
         </MenuItem>
-        <MenuItem onClick={() => goTo("/user/favorite-jobs")}>
+        <MenuItem onClick={() => goTo("/favorite-jobs")}>
           <FavoriteBorder fontSize="small" sx={{ mr: 1 }} /> Việc làm yêu thích
         </MenuItem>
-        <MenuItem onClick={() => goTo("/user/applied-jobs")}>
+        <MenuItem onClick={() => goTo("/applied-jobs")}>
           <AssignmentTurnedIn fontSize="small" sx={{ mr: 1 }} /> Việc làm đã ứng tuyển
         </MenuItem>
       </Menu>
@@ -306,10 +346,10 @@ export default function CandidateHeader() {
       >
         <Box sx={{ px: 2, py: 1.5, display: "flex", gap: 1.5, alignItems: "center" }}>
           <Avatar
-            src={user?.avatar}
-            sx={{ bgcolor: "#6366f1", width: 44, height: 44, fontSize: "1rem" }}
+            src={getMediaUrl(user?.avatarUrl || user?.avatar)}
+            sx={{ bgcolor: "#2563eb", width: 44, height: 44, fontSize: "1rem" }}
           >
-            {!user?.avatar && getInitials(user?.fullName)}
+            {!user?.avatarUrl && !user?.avatar && getInitials(user?.fullName)}
           </Avatar>
           <Box>
             <Typography fontWeight={800} fontSize="0.95rem">
@@ -324,17 +364,23 @@ export default function CandidateHeader() {
         <Divider />
 
         <MenuList dense>
-          <MenuItem onClick={() => goTo("/user/profile") }>
-            <Person fontSize="small" sx={{ mr: 1 }} /> Hồ sơ cá nhân
+          <MenuItem onClick={() => goTo("/profile?tab=overview")}>
+            <Home fontSize="small" sx={{ mr: 1.5, color: "#64748b" }} /> Tổng quan
           </MenuItem>
-          <MenuItem onClick={() => goTo("/user/favorite-jobs")}> 
-            <FavoriteBorder fontSize="small" sx={{ mr: 1 }} /> Việc làm yêu thích
+          <MenuItem onClick={() => goTo("/profile?tab=attached_cv")}>
+            <FilePresent fontSize="small" sx={{ mr: 1.5, color: "#64748b" }} /> Hồ sơ đính kèm
           </MenuItem>
-          <MenuItem onClick={() => goTo("/user/applied-jobs")}> 
-            <AssignmentTurnedIn fontSize="small" sx={{ mr: 1 }} /> Việc làm đã ứng tuyển
+          <MenuItem onClick={() => goTo("/profile?tab=profile_itviec")}>
+            <Person fontSize="small" sx={{ mr: 1.5, color: "#64748b" }} /> Hồ sơ ITviec
           </MenuItem>
-          <MenuItem onClick={() => goTo("/user/cv-analysis")}> 
-            <Search fontSize="small" sx={{ mr: 1 }} /> Phân tích CV
+          <MenuItem onClick={() => goTo("/profile?tab=my_jobs")}>
+            <Work fontSize="small" sx={{ mr: 1.5, color: "#64748b" }} /> Việc làm của tôi
+          </MenuItem>
+          <MenuItem onClick={() => goTo("/profile?tab=email_subscribe")}>
+            <AssignmentTurnedIn fontSize="small" sx={{ mr: 1.5, color: "#64748b" }} /> Đăng ký nhận email
+          </MenuItem>
+          <MenuItem onClick={() => goTo("/profile?tab=settings")}>
+            <Settings fontSize="small" sx={{ mr: 1.5, color: "#64748b" }} /> Cài đặt
           </MenuItem>
         </MenuList>
 
@@ -345,13 +391,21 @@ export default function CandidateHeader() {
             fullWidth
             variant="outlined"
             color="error"
-            onClick={handleLogout}
+            onClick={() => {
+              setLogoutDialogOpen(true);
+              setAnchorUser(null);
+            }}
             sx={{ textTransform: "none", fontWeight: 700 }}
           >
             Đăng xuất
           </Button>
         </Box>
       </Menu>
+      <LogoutConfirmDialog
+        open={logoutDialogOpen}
+        onClose={() => setLogoutDialogOpen(false)}
+        onConfirm={handleLogout}
+      />
     </AppBar>
   );
 }
