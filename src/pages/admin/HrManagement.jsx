@@ -14,13 +14,14 @@ import {
   getUsers,
   createUser,
   updateUser,
-  toggleUserStatus
+  toggleUserStatus,
+  approveHr
 } from "../../services/adminUserService";
 import UserForm from "./UserForm";
 import { useToast } from "../../contexts/ToastContext";
 import { getMediaUrl } from "../../utils/urlHelpers";
 
-export default function UserManagement() {
+export default function HrManagement() {
   const location = useLocation();
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
@@ -31,25 +32,23 @@ export default function UserManagement() {
 
   const [filters, setFilters] = useState({
     search: "",
-    role: "",
+    role: "HR",
     enabled: "",
     page: 0,
     size: 10,
   });
-  
 
   const loadUsers = useCallback(async () => {
     try {
       const params = {
         ...filters,
         enabled: filters.enabled === "" ? null : filters.enabled === "true",
-        excludeHr: true,
       };
       const data = await getUsers(params);
       setUsers(data.content || []);
       setTotalElements(data.totalElements || 0);
     } catch (error) {
-      showToast("Lỗi tải danh sách người dùng", "error");
+      showToast("Lỗi tải danh sách nhà tuyển dụng", "error");
     }
   }, [filters]);
 
@@ -57,29 +56,23 @@ export default function UserManagement() {
     loadUsers();
   }, [loadUsers]);
 
-  // Tự động mở Dialog Thêm người dùng nếu có tín hiệu từ trang khác
-  useEffect(() => {
-    if (location.state?.action === "addUser") {
-      setSelectedUser(null);
-      setOpen(true);
-      // Xóa state an toàn bằng React Router để khi F5 không bị mở lại form
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [location.state, navigate, location.pathname]);
-
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value, page: 0 }));
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value,
+      page: 0,
+    }));
   };
 
-  const handleChangePage = (_, newPage) => {
+  const handleChangePage = (event, newPage) => {
     setFilters((prev) => ({ ...prev, page: newPage }));
   };
 
-  const handleChangeRowsPerPage = (e) => {
+  const handleChangeRowsPerPage = (event) => {
     setFilters((prev) => ({
       ...prev,
-      size: parseInt(e.target.value, 10),
+      size: parseInt(event.target.value, 10),
       page: 0,
     }));
   };
@@ -88,37 +81,48 @@ export default function UserManagement() {
     try {
       if (selectedUser) {
         await updateUser(selectedUser.userId || selectedUser.id, formData);
-        showToast("Cập nhật người dùng thành công!", "success");
+        showToast("Cập nhật tài khoản HR thành công!", "success");
       } else {
         await createUser(formData);
-        showToast("Thêm người dùng thành công!", "success");
+        showToast("Tạo tài khoản HR thành công!", "success");
       }
       setOpen(false);
       loadUsers();
-    } catch {
-      showToast("Thao tác thất bại!", "error");
+    } catch (error) {
+      showToast("Thao tác thất bại! Vui lòng kiểm tra lại thông tin.", "error");
     }
   };
 
   const handleToggleStatus = async (user) => {
     const action = user.enabled ? "KHÓA" : "MỞ";
-    if (window.confirm(`Bạn có chắc muốn ${action} tài khoản này?`)) {
+    if (window.confirm(`Bạn có chắc muốn ${action} tài khoản nhà tuyển dụng này?`)) {
       await toggleUserStatus(user.userId || user.id);
       showToast(`Đã ${action.toLowerCase()} tài khoản thành công!`, "success");
       loadUsers();
     }
   };
 
+  const handleApproveHr = async (user, status) => {
+    const actionLabel = status === "APPROVED" ? "phê duyệt" : "từ chối";
+    if (window.confirm(`Bạn có chắc muốn ${actionLabel} yêu cầu đăng ký của nhà tuyển dụng này?`)) {
+      try {
+        await approveHr(user.userId || user.id, status);
+        showToast(`Đã ${actionLabel} tài khoản thành công!`, "success");
+        loadUsers();
+      } catch (error) {
+        showToast("Thao tác thất bại!", "error");
+      }
+    }
+  };
 
   return (
     <>
-      {/* CĂN CHỈNH TẠI ĐÂY */}
       <Box 
         sx={{ 
           width: "100%", 
-          margin: "0 auto",   // CĂN GIỮA MÀN HÌNH
-          pt: 0,              // ĐẨY LÊN TRÊN CÙNG
-          px: { xs: 2, md: 4 }, // Khoảng đệm hai bên để không dính sát lề
+          margin: "0 auto",
+          pt: 0,
+          px: { xs: 2, md: 4 },
           display: "block" 
         }}
       >
@@ -129,10 +133,10 @@ export default function UserManagement() {
             direction={{ xs: "column", sm: "row" }}
             justifyContent="space-between"
             alignItems={{ xs: "flex-start", sm: "center" }}
-            sx={{ mt: 2 }} // Khoảng cách nhỏ với đỉnh trang
+            sx={{ mt: 2 }}
           >
             <Typography variant="h4" fontWeight={800} color="#1e293b">
-              Quản lý người dùng
+              Quản lý Nhà tuyển dụng (HR)
             </Typography>
             <Button
               variant="contained"
@@ -150,7 +154,7 @@ export default function UserManagement() {
                 bgcolor: "#3b82f6"
               }}
             >
-              Thêm User
+              Thêm HR
             </Button>
           </Stack>
 
@@ -173,14 +177,6 @@ export default function UserManagement() {
                 }}
               />
               <FormControl size="small" sx={{ minWidth: 150 }}>
-                <InputLabel>Quyền</InputLabel>
-                <Select name="role" value={filters.role} label="Quyền" onChange={handleFilterChange}>
-                  <MenuItem value="">Tất cả</MenuItem>
-                  <MenuItem value="ADMIN">ADMIN</MenuItem>
-                  <MenuItem value="USER">USER</MenuItem>
-                </Select>
-              </FormControl>
-              <FormControl size="small" sx={{ minWidth: 150 }}>
                 <InputLabel>Trạng thái</InputLabel>
                 <Select name="enabled" value={filters.enabled} label="Trạng thái" onChange={handleFilterChange}>
                   <MenuItem value="">Tất cả</MenuItem>
@@ -192,17 +188,17 @@ export default function UserManagement() {
           </Paper>
 
           {/* TABLE */}
-          <Paper sx={{ borderRadius: 3, overflow: "hidden", boxShadow: "0 4px 15px rgba(0,0,0,0.05)" }}>
-            <Box sx={{ width: '100%', overflowX: 'auto' }}>
-              <Table>
+          <Paper sx={{ width: "100%", overflow: "hidden", borderRadius: 3, boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+            <Box sx={{ overflowX: "auto" }}>
+              <Table sx={{ minWidth: 800 }}>
                 <TableHead sx={{ bgcolor: "#f8fafc" }}>
                   <TableRow>
-                    <TableCell align="center" sx={{ fontWeight: 700 }}>STT</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Người dùng</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Vai trò</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Trạng thái</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 700 }}>Hành động</TableCell>
+                    <TableCell align="center" width="70" sx={{ fontWeight: 700, color: "#475569" }}>STT</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Người dùng</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Email</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Vai trò</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Trạng thái</TableCell>
+                    <TableCell align="right" sx={{ pr: 3, fontWeight: 700, color: "#475569" }}>Hành động</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -216,30 +212,76 @@ export default function UserManagement() {
                           </Avatar>
                           <Box>
                             <Typography variant="subtitle2" fontWeight={600}>{u.fullName}</Typography>
+                            {u.companyName && (
+                              <Typography variant="caption" color="textSecondary" sx={{ display: "block" }}>
+                                Cty: {u.companyName}
+                              </Typography>
+                            )}
                           </Box>
                         </Stack>
                       </TableCell>
                       <TableCell>{u.email}</TableCell>
                       <TableCell><Chip label={u.role} size="small" variant="outlined" /></TableCell>
                       <TableCell>
-                        <Chip
-                          label={u.enabled ? "Hoạt động" : "Đã khóa"}
-                          color={u.enabled ? "success" : "error"}
-                          size="small"
-                          sx={{ fontWeight: 700 }}
-                        />
+                        {u.role === "HR" && u.hrApprovalStatus === "PENDING" ? (
+                          <Chip
+                            label="Chờ duyệt"
+                            color="warning"
+                            size="small"
+                            sx={{ fontWeight: 700 }}
+                          />
+                        ) : u.role === "HR" && u.hrApprovalStatus === "REJECTED" ? (
+                          <Chip
+                            label="Từ chối"
+                            color="error"
+                            size="small"
+                            sx={{ fontWeight: 700 }}
+                          />
+                        ) : (
+                          <Chip
+                            label={u.enabled ? "Hoạt động" : "Đã khóa"}
+                            color={u.enabled ? "success" : "error"}
+                            size="small"
+                            sx={{ fontWeight: 700 }}
+                          />
+                        )}
                       </TableCell>
                       <TableCell align="right">
                         <Stack direction="row" spacing={1} justifyContent="flex-end">
-                          <Button size="small" onClick={() => { setSelectedUser(u); setOpen(true); }}>Sửa</Button>
-                          <Button 
-                            size="small" 
-                            variant="outlined" 
-                            color={u.enabled ? "error" : "success"}
-                            onClick={() => handleToggleStatus(u)}
-                          >
-                            {u.enabled ? "Khóa" : "Mở"}
-                          </Button>
+                          {u.role === "HR" && u.hrApprovalStatus === "PENDING" ? (
+                            <>
+                              <Button
+                                size="small"
+                                variant="contained"
+                                color="success"
+                                sx={{ textTransform: "none", fontWeight: 700 }}
+                                onClick={() => handleApproveHr(u, "APPROVED")}
+                              >
+                                Duyệt
+                              </Button>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                color="error"
+                                sx={{ textTransform: "none", fontWeight: 700 }}
+                                onClick={() => handleApproveHr(u, "REJECTED")}
+                              >
+                                Từ chối
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button size="small" onClick={() => { setSelectedUser({ ...u, role: "HR" }); setOpen(true); }}>Sửa</Button>
+                              <Button 
+                                size="small" 
+                                variant="outlined" 
+                                color={u.enabled ? "error" : "success"}
+                                onClick={() => handleToggleStatus(u)}
+                              >
+                                {u.enabled ? "Khóa" : "Mở"}
+                              </Button>
+                            </>
+                          )}
                         </Stack>
                       </TableCell>
                     </TableRow>
@@ -259,11 +301,11 @@ export default function UserManagement() {
             />
           </Paper>
 
-          {/* DIALOG giữ nguyên logic */}
+          {/* DIALOG */}
           <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
-            <DialogTitle fontWeight={800}>{selectedUser ? "Cập nhật User" : "Thêm User"}</DialogTitle>
+            <DialogTitle fontWeight={800}>{selectedUser ? "Cập nhật Nhà tuyển dụng" : "Thêm Nhà tuyển dụng"}</DialogTitle>
             <DialogContent dividers>
-              <UserForm initialData={selectedUser} onSubmit={handleSubmit} onCancel={() => setOpen(false)} />
+              <UserForm initialData={selectedUser ? { ...selectedUser, role: "HR" } : { role: "HR" }} onSubmit={handleSubmit} onCancel={() => setOpen(false)} />
             </DialogContent>
           </Dialog>
 

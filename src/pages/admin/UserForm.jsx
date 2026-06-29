@@ -85,7 +85,6 @@ export default function UserForm({ onSubmit, onCancel, initialData }) {
         onChange={handleChange}
       >
         <MenuItem value="USER">USER</MenuItem>
-        <MenuItem value="HR">HR</MenuItem>
         <MenuItem value="ADMIN">ADMIN</MenuItem>
       </TextField>
 

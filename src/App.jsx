@@ -22,6 +22,7 @@ import ForEmployers from "./pages/public/ForEmployers";
 import CareerGuide from "./pages/user/CareerGuide";
 import CareerGuideDetail from "./pages/user/CareerGuideDetail";
 import ArticleManagement from "./pages/admin/ArticleManagement";
+import HrManagement from "./pages/admin/HrManagement";
 
 
 export default function App() {
@@ -74,6 +75,17 @@ export default function App() {
     <ProtectedRoute role="ADMIN">
       <AdminLayout>
         <UserManagement />
+      </AdminLayout>
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/admin/hrs"
+  element={
+    <ProtectedRoute role="ADMIN">
+      <AdminLayout>
+        <HrManagement />
       </AdminLayout>
     </ProtectedRoute>
   }

@@ -49,6 +49,7 @@ export default function AdminSidebar({ mobileOpen, handleDrawerToggle }) {
   const menuItems = [
     { text: "Dashboard", icon: <Dashboard />, path: "/admin_dashboard", color: "#0ea5e9" },
     { text: "Quản lý Người dùng", icon: <People />, path: "/admin/users", color: "#8b5cf6" },
+    { text: "Quản lý Nhà tuyển dụng", icon: <People />, path: "/admin/hrs", color: "#f43f5e" },
     { text: "Quản lý Công ty", icon: <Business />, path: "/admin/companies", color: "#10b981" },
     { text: "Quản lý Cẩm nang", icon: <Book />, path: "/admin/articles", color: "#ec4899" },
     { text: "Thống kê", icon: <Assessment />, path: "/admin/stats", color: "#f59e0b" },

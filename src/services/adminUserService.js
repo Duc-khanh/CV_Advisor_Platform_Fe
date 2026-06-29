@@ -35,6 +35,15 @@
     // Khớp với @PutMapping("/{id}/toggle-status") trong Controller của bạn
     await axios.put(`${API_URL}/${id}/toggle-status`, {}, getAuthHeader());
   };
+
+  export const approveHr = async (id, status) => {
+    const res = await axios.put(`${API_URL}/${id}/hr-approval`, {}, {
+      ...getAuthHeader(),
+      params: { status }
+    });
+    return res.data;
+  };
+
   export const getUsers = async (params) => {
     const res = await axios.get(API_URL, {
       ...getAuthHeader(),
