@@ -62,30 +62,31 @@ const UserFooter = () => {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, mb: 3.5 }}>
               <Box
                 sx={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: "50%",
+                  width: 34,
+                  height: 34,
+                  borderRadius: "10px",
                   background: "linear-gradient(135deg, #3b82f6, #2563eb)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   color: "white",
                   fontWeight: 900,
-                  fontSize: "1.1rem",
-                  boxShadow: "0 4px 10px rgba(37,99,235,0.2)",
+                  fontSize: "1rem",
+                  boxShadow: "0 4px 10px rgba(37,99,235,0.25)",
+                  letterSpacing: "-0.5px"
                 }}
               >
-                R
+                CG
               </Box>
               <Typography
                 variant="h5"
                 fontWeight="900"
                 sx={{
                   color: "#0f172a",
-                  letterSpacing: "0.5px",
+                  letterSpacing: "-0.3px",
                 }}
               >
-                Recruit<span style={{ color: "#2563eb" }}></span>
+                Career<span style={{ color: "#2563eb" }}>Go</span>
               </Typography>
             </Box>
 
@@ -98,9 +99,9 @@ const UserFooter = () => {
                 mb: 4,
               }}
             >
-              Nền tảng tuyển dụng thông minh ứng dụng AI giúp ứng viên
-              phát triển sự nghiệp và hỗ trợ doanh nghiệp tìm kiếm nhân tài
-              phù hợp nhanh chóng, chính xác và hiệu quả.
+              CareerGo — Nền tảng phát triển sự nghiệp thông minh ứng dụng AI,
+              giúp ứng viên tìm việc, xây dựng CV chuyên nghiệp và hỗ trợ doanh nghiệp
+              tuyển dụng nhân tài phù hợp nhanh chóng và hiệu quả.
             </Typography>
 
             {/* SOCIAL */}
@@ -249,7 +250,7 @@ const UserFooter = () => {
                   variant="body2"
                   sx={{ color: "#475569" }}
                 >
-                  contact@jobify.vn
+                  contact@careergo.vn
                 </Typography>
               </Box>
             </Stack>
@@ -278,7 +279,7 @@ const UserFooter = () => {
               textAlign: { xs: "center", md: "left" },
             }}
           >
-            © {new Date().getFullYear()} HireAI.
+            © {new Date().getFullYear()} CareerGo.
             All rights reserved.
           </Typography>
 

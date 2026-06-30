@@ -141,30 +141,31 @@ export default function CandidateHeader() {
             >
               <Box
                 sx={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: "50%",
+                  width: 34,
+                  height: 34,
+                  borderRadius: "10px",
                   background: "linear-gradient(135deg, #3b82f6, #2563eb)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   color: "white",
                   fontWeight: 900,
-                  fontSize: "1.1rem",
-                  boxShadow: "0 4px 10px rgba(37,99,235,0.2)",
+                  fontSize: "1rem",
+                  boxShadow: "0 4px 10px rgba(37,99,235,0.25)",
+                  letterSpacing: "-0.5px"
                 }}
               >
-                H
+                CG
               </Box>
               <Typography
                 variant="h5"
                 fontWeight="900"
                 sx={{
                   color: "#0f172a",
-                  letterSpacing: "0.5px",
+                  letterSpacing: "-0.3px",
                 }}
               >
-                Recruit<Box component="span" sx={{ color: "#2563eb" }}></Box>
+                Career<Box component="span" sx={{ color: "#2563eb" }}>Go</Box>
               </Typography>
             </Box>
 
