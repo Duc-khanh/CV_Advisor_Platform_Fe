@@ -5,6 +5,7 @@ import {
 import { useEffect, useState } from "react";
 import { updateCurrentUser } from "../../services/currentUser";
 import { useToast } from "../../contexts/ToastContext";
+import { getMediaUrl } from "../../utils/urlHelpers";
 
 export default function ProfileDialog({ open, onClose, user, onUpdated }) {
   const showToast = useToast();
@@ -21,7 +22,7 @@ export default function ProfileDialog({ open, onClose, user, onUpdated }) {
         fullName: user.fullName || "",
         email: user.email || ""
       });
-      setPreviewUrl(user.avatarUrl ? `http://localhost:8080${user.avatarUrl}` : "");
+      setPreviewUrl(getMediaUrl(user.avatarUrl || user.avatar));
     }
   }, [user]);
 

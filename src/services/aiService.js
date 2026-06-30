@@ -1,20 +1,24 @@
 import axios from './axios'; // Assuming this is an axios instance with baseUrl configured
 
 /**
- * Gọi API để AI đánh giá CV
- * @param {string} cvContent - Nội dung text của CV ứng viên
- * @param {string} jobDescription - Nội dung text của mô tả công việc (JD)
+ * Gọi API để AI đánh giá CV bằng file upload.
+ * @param {File} cvFile - File CV (PDF/DOC/DOCX)
+ * @param {string} jobDescription - Mô tả vị trí mục tiêu hoặc vai trò mong muốn
  * @returns {Promise} - Kết quả trả về từ AI
  */
-export const evaluateCv = async (cvContent, jobDescription) => {
+export const evaluateCvFile = async (cvFile, jobDescription = '') => {
     try {
-        const response = await axios.post('/ai/evaluate-cv', {
-            cvContent,
-            jobDescription
-        });
+        const formData = new FormData();
+        formData.append('cv', cvFile);
+        if (jobDescription) {
+            formData.append('targetRole', jobDescription);
+            formData.append('jobDescription', jobDescription);
+        }
+
+        const response = await axios.post('/api/v1/ai/evaluate-cv', formData);
         return response.data;
     } catch (error) {
-        console.error("Lỗi khi gọi AI:", error);
+        console.error("Lỗi khi gọi AI đánh giá CV:", error);
         throw error;
     }
 };
@@ -28,20 +32,26 @@ export const filterCvs = async (cvContents, criteria) => {
 };
 
 /**
- * Gọi API để tạo lộ trình học tập dựa trên CV và xu hướng thị trường
- * @param {string} cvContent - Nội dung text của CV ứng viên
- * @param {string} currentSkills - Kỹ năng hiện tại từ CV
+ * Gọi API để tạo lộ trình học tập dựa trên CV file và vị trí mục tiêu.
+ * @param {File} cvFile - File CV upload
  * @param {string} targetRole - Vị trí mục tiêu (tùy chọn)
+ * @param {string} desiredRoadmap - Lộ trình mong muốn của người dùng
  * @returns {Promise} - Lộ trình học tập được đề xuất
  */
-export const generateCareerRoadmap = async (cvContent, currentSkills, targetRole = '') => {
+export const generateCareerRoadmap = async (cvFile, targetRole = '', desiredRoadmap = '') => {
     try {
-        const response = await axios.post('/api/v1/ai/career-roadmap', {
-            cvContent,
-            currentSkills,
-            targetRole,
-            marketTrends: "AI, Machine Learning, Cloud Computing, DevOps, Cybersecurity" // Có thể làm động sau
-        });
+        const formData = new FormData();
+        formData.append('cv', cvFile);
+        if (targetRole) {
+            formData.append('targetRole', targetRole);
+            formData.append('jobDescription', targetRole);
+        }
+        if (desiredRoadmap) {
+            formData.append('desiredRoadmap', desiredRoadmap);
+            formData.append('roadmapGoal', desiredRoadmap);
+        }
+
+        const response = await axios.post('/api/v1/ai/career-roadmap', formData);
         return response.data;
     } catch (error) {
         console.error("Lỗi khi tạo lộ trình học tập:", error);

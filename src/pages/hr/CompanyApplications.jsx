@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import api from "../../services/axios";
+import { getCvUrl } from "../../utils/urlHelpers";
 
 import {
   Box,
@@ -25,7 +26,8 @@ import {
   FormControl,
   InputLabel,
   Button,
-  Divider
+  Divider,
+  Modal
 } from "@mui/material";
 
 import {
@@ -33,7 +35,9 @@ import {
   Refresh,
   Description,
   Person,
-  Work
+  Work,
+  Close,
+  AutoAwesome
 } from "@mui/icons-material";
 
 import HRLayout from "../../components/HRLayout";
@@ -42,7 +46,6 @@ import { useToast } from "../../contexts/ToastContext";
 const STATUS_OPTIONS = [
   "ALL",
   "PENDING",
-  "REVIEWING",
   "INTERVIEW",
   "ACCEPTED",
   "REJECTED"
@@ -67,7 +70,18 @@ export default function HRApplications() {
 
   const [updatingId, setUpdatingId] = useState(null);
 
+  const [viewCvUrl, setViewCvUrl] = useState(null);
+  const [openCvModal, setOpenCvModal] = useState(false);
+  const [fitLoadingId, setFitLoadingId] = useState(null);
+  const [fitModalData, setFitModalData] = useState(null);
+  const [openFitModal, setOpenFitModal] = useState(false);
+
   const rowsPerPage = 5;
+
+  const handleViewCv = (cvFileUrl) => {
+    setViewCvUrl(getCvUrl(cvFileUrl));
+    setOpenCvModal(true);
+  };
 
   useEffect(() => {
     fetchApplications();
@@ -102,6 +116,57 @@ export default function HRApplications() {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getFitStatus = (score) => {
+    if (score == null) {
+      return { label: "Chưa đánh giá", color: "default" };
+    }
+
+    if (score >= 80) {
+      return { label: "Rất phù hợp", color: "success" };
+    }
+
+    if (score >= 60) {
+      return { label: "Phù hợp", color: "warning" };
+    }
+
+    return { label: "Ít phù hợp", color: "error" };
+  };
+
+  const evaluateCandidateFit = async (application) => {
+    try {
+      setFitLoadingId(application.applicationId);
+      const jobDescription =
+        application.jobDescription ||
+        application.description ||
+        application.jobTitle ||
+        "";
+
+      const res = await api.post(
+        `/api/hr/applications/${application.applicationId}/fit`,
+        { jobDescription },
+        getAuthHeader()
+      );
+
+      const aiFit = res.data;
+
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.applicationId === application.applicationId
+            ? { ...app, aiFit }
+            : app
+        )
+      );
+
+      setFitModalData({ application, aiFit });
+      setOpenFitModal(true);
+    } catch (err) {
+      console.error(err);
+      showToast("Đánh giá AI thất bại", "error");
+    } finally {
+      setFitLoadingId(null);
     }
   };
 
@@ -326,6 +391,10 @@ export default function HRApplications() {
                 </TableCell>
 
                 <TableCell sx={{ color: "white" }}>
+                  AI Fit
+                </TableCell>
+
+                <TableCell sx={{ color: "white" }}>
                   Trạng thái
                 </TableCell>
 
@@ -436,11 +505,8 @@ export default function HRApplications() {
                           <Button
                             variant="outlined"
                             size="small"
-                            startIcon={
-                              <Description />
-                            }
-                            href={`http://localhost:8080/uploads/cv/${app.cvFileUrl}`}
-                            target="_blank"
+                            startIcon={<Description />}
+                            onClick={() => handleViewCv(app.cvFileUrl)}
                           >
                             Xem CV
                           </Button>
@@ -453,6 +519,75 @@ export default function HRApplications() {
                           app.appliedAt
                         ).toLocaleDateString(
                           "vi-VN"
+                        )}
+                      </TableCell>
+
+                      {/* AI FIT */}
+                      <TableCell>
+                        {app.aiFit?.score != null ? (
+                          <Stack spacing={1}>
+                            <Chip
+                              label={`${app.aiFit.score}%`}
+                              color={
+                                getFitStatus(app.aiFit.score)
+                                  .color
+                              }
+                              sx={{
+                                fontWeight: 700,
+                                minWidth: 90
+                              }}
+                            />
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() => {
+                                setFitModalData({
+                                  application: app,
+                                  aiFit: app.aiFit
+                                });
+                                setOpenFitModal(true);
+                              }}
+                              sx={{
+                                textTransform: "none",
+                                minWidth: 90
+                              }}
+                            >
+                              Chi tiết
+                            </Button>
+                          </Stack>
+                        ) : (
+                          <Button
+                            size="small"
+                            variant="contained"
+                            disableElevation
+                            onClick={() =>
+                              evaluateCandidateFit(app)
+                            }
+                            disabled={
+                              fitLoadingId ===
+                              app.applicationId
+                            }
+                            startIcon={
+                              fitLoadingId ===
+                              app.applicationId ? (
+                                <CircularProgress
+                                  size={16}
+                                  color="inherit"
+                                />
+                              ) : (
+                                <AutoAwesome />
+                              )
+                            }
+                            sx={{
+                              textTransform: "none",
+                              minWidth: 90
+                            }}
+                          >
+                            {fitLoadingId ===
+                            app.applicationId
+                              ? "Đang đánh giá"
+                              : "Đánh giá"}
+                          </Button>
                         )}
                       </TableCell>
 
@@ -546,6 +681,98 @@ export default function HRApplications() {
           </Stack>
         </Paper>
       </Box>
+
+      {/* CV VIEWER MODAL */}
+      <Modal open={openCvModal} onClose={() => setOpenCvModal(false)}>
+        <Box sx={{
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+          width: { xs: '95%', md: '80%', lg: '1000px' }, height: '90vh', bgcolor: 'background.paper',
+          borderRadius: 3, boxShadow: 24, display: 'flex', flexDirection: 'column', overflow: 'hidden'
+        }}>
+          <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee' }}>
+            <Typography variant="h6" fontWeight={700}>Xem trước CV ứng viên</Typography>
+            <IconButton onClick={() => setOpenCvModal(false)}><Close /></IconButton>
+          </Box>
+          <Box sx={{ flexGrow: 1, p: 0, bgcolor: '#f1f5f9' }}>
+            {viewCvUrl ? (
+              <iframe 
+                src={viewCvUrl} 
+                width="100%" 
+                height="100%" 
+                style={{ border: 'none' }} 
+                title="CV Preview" 
+              />
+            ) : (
+              <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+                <CircularProgress />
+              </Box>
+            )}
+          </Box>
+          <Box sx={{ p: 2, borderTop: '1px solid #eee', display: 'flex', justifyContent: 'flex-end', bgcolor: 'white' }}>
+            <Button variant="outlined" onClick={() => setOpenCvModal(false)} sx={{ mr: 2 }}>Đóng</Button>
+            <Button variant="contained" component="a" href={viewCvUrl} target="_blank" download>Tải xuống</Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      {/* AI FIT DETAIL MODAL */}
+      <Modal open={openFitModal} onClose={() => setOpenFitModal(false)}>
+        <Box sx={{
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+          width: { xs: '95%', md: '600px' }, bgcolor: 'background.paper',
+          borderRadius: 3, boxShadow: 24, p: 3
+        }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6" fontWeight={700}>Đánh giá AI ứng viên</Typography>
+            <IconButton onClick={() => setOpenFitModal(false)}><Close /></IconButton>
+          </Box>
+
+          {fitModalData?.aiFit ? (
+            <Stack spacing={2}>
+              <Chip
+                label={`${fitModalData.aiFit.score ?? 0}% - ${getFitStatus(fitModalData.aiFit.score).label}`}
+                color={getFitStatus(fitModalData.aiFit.score).color}
+                sx={{ fontWeight: 700, mb: 1 }}
+              />
+
+              {fitModalData.aiFit.summary && (
+                <Box>
+                  <Typography fontWeight={700} mb={1}>Tóm tắt</Typography>
+                  <Typography color="text.secondary">{fitModalData.aiFit.summary}</Typography>
+                </Box>
+              )}
+
+              {fitModalData.aiFit.strengths?.length > 0 && (
+                <Box>
+                  <Typography fontWeight={700} mb={1}>Điểm mạnh</Typography>
+                  {fitModalData.aiFit.strengths.map((item, index) => (
+                    <Chip key={index} label={item} variant="outlined" sx={{ mr: 1, mb: 1 }} />
+                  ))}
+                </Box>
+              )}
+
+              {fitModalData.aiFit.weaknesses?.length > 0 && (
+                <Box>
+                  <Typography fontWeight={700} mb={1}>Điểm cần cải thiện</Typography>
+                  {fitModalData.aiFit.weaknesses.map((item, index) => (
+                    <Chip key={index} label={item} variant="outlined" color="warning" sx={{ mr: 1, mb: 1 }} />
+                  ))}
+                </Box>
+              )}
+
+              {fitModalData.aiFit.recommendations && (
+                <Box>
+                  <Typography fontWeight={700} mb={1}>Gợi ý</Typography>
+                  <Typography color="text.secondary">{fitModalData.aiFit.recommendations}</Typography>
+                </Box>
+              )}
+            </Stack>
+          ) : (
+            <Typography>Không có dữ liệu đánh giá.</Typography>
+          )}
+        </Box>
+      </Modal>
+
     </HRLayout>
   );
 }

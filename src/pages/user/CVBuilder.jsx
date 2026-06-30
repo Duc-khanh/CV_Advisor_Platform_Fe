@@ -148,26 +148,26 @@ export default function CVBuilder() {
     <UserLayout>
       {/* ── Header ── */}
       <Box sx={{
-        background: 'linear-gradient(135deg,#667eea,#764ba2)',
+        background: 'linear-gradient(135deg,#2563eb,#3b82f6)',
         px: 4, py: 2.5,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         flexShrink: 0,
       }}>
         <Box>
-          <Typography variant="h5" fontWeight={800} color="#fff">✨ CV Builder</Typography>
-          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.75)' }}>
+          <Typography variant="h5" fontWeight={800} color="#fff"> Thiết Kế CV</Typography>
+          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.85)' }}>
             Tạo CV chuyên nghiệp – xem trước trực tiếp
           </Typography>
         </Box>
         <Stack direction="row" spacing={1.5}>
           <Button variant="outlined" startIcon={<SaveIcon />} disabled={isSaving} onClick={handleSave}
-            sx={{ color:'#fff', borderColor:'rgba(255,255,255,0.5)', textTransform:'none', fontWeight:700,
+            sx={{ color:'#fff', borderColor:'rgba(255,255,255,0.6)', textTransform:'none', fontWeight:700,
               '&:hover':{ borderColor:'#fff', bgcolor:'rgba(255,255,255,0.1)' } }}>
             {isSaving ? 'Đang lưu...' : 'Lưu CV'}
           </Button>
           <Button variant="contained" startIcon={<DownloadIcon />} onClick={() => handlePrint()}
-            sx={{ bgcolor:'#fff', color:'#667eea', fontWeight:700, textTransform:'none',
-              boxShadow:'0 4px 14px rgba(0,0,0,0.15)', '&:hover':{ bgcolor:'#f0f0ff' } }}>
+            sx={{ bgcolor:'#fff', color:'#2563eb', fontWeight:700, textTransform:'none',
+              boxShadow:'0 4px 14px rgba(0,0,0,0.15)', '&:hover':{ bgcolor:'#f0f4ff' } }}>
             Tải PDF
           </Button>
         </Stack>
@@ -178,9 +178,9 @@ export default function CVBuilder() {
 
         {/* ───────── LEFT: Form ───────── */}
         <Box sx={{
-          width:'50%', overflowY:'auto', bgcolor:'#f8f9ff', borderRight:'1px solid #e0e0f0',
+          width:'50%', overflowY:'auto', bgcolor:'#f8fafc', borderRight:'1px solid #e2e8f0',
           '&::-webkit-scrollbar':{ width:6 },
-          '&::-webkit-scrollbar-thumb':{ bgcolor:'#c7c7e0', borderRadius:3 },
+          '&::-webkit-scrollbar-thumb':{ bgcolor:'#cbd5e1', borderRadius:3 },
         }}>
           <Box sx={{ p: 3 }}>
             {/* Tabs */}
@@ -188,8 +188,8 @@ export default function CVBuilder() {
               <Tabs value={tabIndex} onChange={(_,v) => setTabIndex(v)} variant="fullWidth"
                 sx={{
                   '& .MuiTab-root':{ textTransform:'none', fontWeight:600, fontSize:'0.82rem', minHeight:52 },
-                  '& .MuiTabs-indicator':{ background:'linear-gradient(90deg,#667eea,#764ba2)', height:3, borderRadius:'3px 3px 0 0' },
-                  '& .Mui-selected':{ color:'#667eea !important' },
+                  '& .MuiTabs-indicator':{ background:'linear-gradient(90deg,#2563eb,#3b82f6)', height:3, borderRadius:'3px 3px 0 0' },
+                  '& .Mui-selected':{ color:'#2563eb !important' },
                 }}>
                 {TABS.map((t,i) => <Tab key={i} label={t.label} icon={t.icon} iconPosition="start" />)}
               </Tabs>
@@ -204,14 +204,14 @@ export default function CVBuilder() {
                     <Box sx={{ position:'relative' }}>
                       <Avatar
                         src={avatarPreview}
-                        sx={{ width:90, height:90, border:'3px solid #667eea', fontSize:'2rem',
-                          bgcolor: avatarPreview ? 'transparent' : '#e8eaf6' }}>
-                        {!avatarPreview && <PersonIcon sx={{ fontSize:40, color:'#667eea' }} />}
+                        sx={{ width:90, height:90, border:'3px solid #2563eb', fontSize:'2rem',
+                          bgcolor: avatarPreview ? 'transparent' : '#eff6ff' }}>
+                        {!avatarPreview && <PersonIcon sx={{ fontSize:40, color:'#2563eb' }} />}
                       </Avatar>
                       <Tooltip title="Thay đổi ảnh">
                         <IconButton size="small" onClick={() => avatarInputRef.current?.click()}
-                          sx={{ position:'absolute', bottom:-4, right:-4, bgcolor:'#667eea', color:'#fff',
-                            width:28, height:28, '&:hover':{ bgcolor:'#5a6fd6' } }}>
+                          sx={{ position:'absolute', bottom:-4, right:-4, bgcolor:'#2563eb', color:'#fff',
+                            width:28, height:28, '&:hover':{ bgcolor:'#1d4ed8' } }}>
                           <CameraIcon sx={{ fontSize:14 }} />
                         </IconButton>
                       </Tooltip>
@@ -219,7 +219,7 @@ export default function CVBuilder() {
                     </Box>
                     <Box>
                       <Button variant="outlined" size="small" onClick={() => avatarInputRef.current?.click()}
-                        sx={{ textTransform:'none', borderColor:'#667eea', color:'#667eea', mb:0.5, display:'block' }}>
+                        sx={{ textTransform:'none', borderColor:'#2563eb', color:'#2563eb', mb:0.5, display:'block' }}>
                         Chọn ảnh
                       </Button>
                       {avatarFile && (
@@ -333,15 +333,15 @@ export default function CVBuilder() {
                       onChange={(e) => setSkillInput(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && addSkill()} />
                     <Button variant="contained" onClick={addSkill}
-                      sx={{ textTransform:'none', fontWeight:700, px:3, background:'linear-gradient(135deg,#667eea,#764ba2)' }}>
+                      sx={{ textTransform:'none', fontWeight:700, px:3, background:'linear-gradient(135deg,#2563eb,#3b82f6)' }}>
                       Thêm
                     </Button>
                   </Stack>
                   <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                     {skills.map((skill, idx) => (
                       <Chip key={idx} label={skill} onDelete={() => removeSkill(idx)}
-                        sx={{ background:'linear-gradient(135deg,#667eea22,#764ba222)',
-                          border:'1px solid #667eea66', fontWeight:600, color:'#4a3f9f' }} />
+                        sx={{ background:'#eff6ff',
+                          border:'1px solid #bfdbfe', fontWeight:600, color:'#1e40af' }} />
                     ))}
                     {skills.length === 0 && (
                       <Typography variant="body2" color="text.disabled" sx={{ fontStyle:'italic' }}>
@@ -357,20 +357,20 @@ export default function CVBuilder() {
 
         {/* ───────── RIGHT: CV Preview ───────── */}
         <Box sx={{
-          width:'50%', overflowY:'auto', bgcolor:'#eef0f8', p:3,
+          width:'50%', overflowY:'auto', bgcolor:'#f1f5f9', p:3,
           '&::-webkit-scrollbar':{ width:6 },
-          '&::-webkit-scrollbar-thumb':{ bgcolor:'#c7c7e0', borderRadius:3 },
+          '&::-webkit-scrollbar-thumb':{ bgcolor:'#cbd5e1', borderRadius:3 },
         }}>
-          <Typography variant="caption" fontWeight={700} color="#667eea"
+          <Typography variant="caption" fontWeight={700} color="#2563eb"
             sx={{ display:'block', mb:1.5, textTransform:'uppercase', letterSpacing:1 }}>
             👁 Xem trước CV
           </Typography>
 
           <Paper ref={printRef} elevation={4}
-            sx={{ borderRadius:3, overflow:'hidden', boxShadow:'0 8px 40px rgba(102,126,234,0.18)', minHeight:700 }}>
+            sx={{ borderRadius:3, overflow:'hidden', boxShadow:'0 8px 40px rgba(37,99,235,0.12)', minHeight:700 }}>
 
             {/* CV Header */}
-            <Box sx={{ background:'linear-gradient(135deg,#667eea,#764ba2)', px:4, py:3.5, color:'#fff' }}>
+            <Box sx={{ background:'linear-gradient(135deg,#2563eb,#3b82f6)', px:4, py:3.5, color:'#fff' }}>
               <Stack direction="row" spacing={2.5} alignItems="center">
                 {avatarPreview && (
                   <Avatar src={avatarPreview}
@@ -434,7 +434,7 @@ export default function CVBuilder() {
                               <Typography variant="subtitle2" fontWeight={800} color="#1e293b">
                                 {exp.role || 'Vị trí'}
                               </Typography>
-                              <Typography variant="body2" color="#667eea" fontWeight={600}>
+                              <Typography variant="body2" color="#2563eb" fontWeight={600}>
                                 {exp.company || 'Công ty'}
                               </Typography>
                             </Box>
@@ -467,7 +467,7 @@ export default function CVBuilder() {
                               <Typography variant="subtitle2" fontWeight={800} color="#1e293b">
                                 {edu.degree || 'Bằng cấp'}
                               </Typography>
-                              <Typography variant="body2" color="#667eea" fontWeight={600}>
+                              <Typography variant="body2" color="#2563eb" fontWeight={600}>
                                 {edu.school || 'Trường'}
                               </Typography>
                             </Box>
@@ -491,8 +491,8 @@ export default function CVBuilder() {
                       {skills.map((skill, idx) => (
                         <Chip key={idx} label={skill} size="small"
                           sx={{ fontWeight:600, fontSize:'0.78rem',
-                            background:'linear-gradient(135deg,#667eea18,#764ba218)',
-                            border:'1px solid #667eea55', color:'#4a3f9f' }} />
+                            background:'#eff6ff',
+                            border:'1px solid #bfdbfe', color:'#1e40af' }} />
                       ))}
                     </Stack>
                   </CVSection>
@@ -518,8 +518,8 @@ function SectionCard({ title, children, onDelete }) {
   return (
     <Paper elevation={0} sx={{ borderRadius:3, border:'1px solid #e2e8f0', bgcolor:'#fff', overflow:'hidden' }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between"
-        sx={{ px:2.5, py:1.5, background:'linear-gradient(135deg,#f8f9ff,#f0f2ff)', borderBottom:'1px solid #e8eaf6' }}>
-        <Typography variant="subtitle2" fontWeight={700} color="#4a3f9f">{title}</Typography>
+        sx={{ px:2.5, py:1.5, background:'linear-gradient(135deg,#f8fafc,#eff6ff)', borderBottom:'1px solid #e2e8f0' }}>
+        <Typography variant="subtitle2" fontWeight={700} color="#1e40af">{title}</Typography>
         {onDelete && (
           <IconButton size="small" color="error" onClick={onDelete}>
             <DeleteIcon fontSize="small" />
@@ -539,7 +539,7 @@ function CVSection({ title, children }) {
           sx={{ textTransform:'uppercase', letterSpacing:'0.5px', fontSize:'0.8rem', whiteSpace:'nowrap' }}>
           {title}
         </Typography>
-        <Box sx={{ flex:1, height:'2px', background:'linear-gradient(90deg,#667eea,transparent)' }} />
+        <Box sx={{ flex:1, height:'2px', background:'linear-gradient(90deg,#2563eb,transparent)' }} />
       </Stack>
       {children}
     </Box>
@@ -550,8 +550,8 @@ function AddButton({ label, onClick }) {
   return (
     <Button fullWidth startIcon={<AddIcon />} onClick={onClick}
       sx={{ textTransform:'none', fontWeight:600, py:1.5,
-        border:'2px dashed #c7c7e8', borderRadius:3, color:'#667eea',
-        '&:hover':{ bgcolor:'#f0f2ff', borderColor:'#667eea' } }}>
+        border:'2px dashed #bfdbfe', borderRadius:3, color:'#2563eb',
+        '&:hover':{ bgcolor:'#eff6ff', borderColor:'#2563eb' } }}>
       {label}
     </Button>
   );

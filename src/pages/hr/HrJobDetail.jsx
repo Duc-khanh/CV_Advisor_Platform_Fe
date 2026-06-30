@@ -17,8 +17,8 @@ import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import WorkOutlineOutlinedIcon from "@mui/icons-material/WorkOutlineOutlined";
+import { getMediaUrl } from "../../utils/urlHelpers";
 
-const API_BASE_URL = "http://localhost:8080";
 const DEFAULT_IMAGE =
   "https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg";
 
@@ -55,11 +55,7 @@ export default function HrJobDetail({ job, open, onClose }) {
             >
               <Box sx={{ width: "100%", maxWidth: 280 }}>
                 <img
-                  src={
-                    job.imageUrl
-                      ? `${API_BASE_URL}${job.imageUrl}`
-                      : DEFAULT_IMAGE
-                  }
+                  src={job.imageUrl ? getMediaUrl(job.imageUrl) : DEFAULT_IMAGE}
                   alt="job"
                   onError={(e) => (e.target.src = DEFAULT_IMAGE)}
                   style={{

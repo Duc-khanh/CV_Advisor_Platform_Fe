@@ -8,6 +8,7 @@ import {
 import { Favorite, ArrowForward, FavoriteBorder } from "@mui/icons-material";
 import UserLayout from "../../components/UserLayout";
 import { useToast } from "../../contexts/ToastContext";
+import { getMediaUrl } from "../../utils/urlHelpers";
 
 export default function FavoriteJobs() {
   const [favorites, setFavorites] = useState([]);
@@ -46,7 +47,7 @@ export default function FavoriteJobs() {
     e.stopPropagation();
     const authHeader = getAuthHeader();
     try {
-      await axios.post(`http://localhost:8080/api/user/jobs/favorite/${jobId}`, null, {
+      await axios.delete(`http://localhost:8080/api/user/jobs/favorite/${jobId}`, {
         headers: authHeader,
       });
       // Xóa khỏi danh sách hiển thị ngay lập tức để người dùng thấy kết quả
@@ -66,7 +67,7 @@ export default function FavoriteJobs() {
           <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
             <Box>
               <Typography variant="h3" fontWeight="900" sx={{ color: "#1e293b", mb: 1 }}>
-                Công việc <span style={{ color: '#6366f1' }}>đã lưu</span>
+                Công việc <span style={{ color: '#2563eb' }}>đã lưu</span>
               </Typography>
               <Typography variant="h6" sx={{ color: "#64748b", fontWeight: 500 }}>
                 {loading ? "Đang tải..." : `Bạn đang quan tâm ${favorites.length} cơ hội nghề nghiệp`}
@@ -75,7 +76,7 @@ export default function FavoriteJobs() {
             <Button 
               onClick={() => navigate("/")} 
               startIcon={<ArrowForward />}
-              sx={{ color: '#6366f1', fontWeight: 800, mb: 1, textTransform: 'none' }}
+              sx={{ color: '#2563eb', fontWeight: 800, mb: 1, textTransform: 'none' }}
             >
               Tiếp tục khám phá
             </Button>
@@ -87,7 +88,7 @@ export default function FavoriteJobs() {
       <Container maxWidth={false} sx={{ py: 10, px: { xs: 4, md: 10 }, minHeight: '60vh' }}>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-            <CircularProgress sx={{ color: '#6366f1' }} />
+            <CircularProgress sx={{ color: '#2563eb' }} />
           </Box>
         ) : favorites.length === 0 ? (
           /* TRẠNG THÁI CHƯA CÓ CÔNG VIỆC YÊU THÍCH */
@@ -114,7 +115,7 @@ export default function FavoriteJobs() {
               <Button 
                 variant="contained" 
                 onClick={() => navigate("/")}
-                sx={{ bgcolor: '#6366f1', px: 4, py: 1.5, borderRadius: 4, fontWeight: 800 }}
+                sx={{ bgcolor: '#2563eb', px: 4, py: 1.5, borderRadius: 4, fontWeight: 800 }}
               >
                 Tìm việc ngay
               </Button>
@@ -126,24 +127,24 @@ export default function FavoriteJobs() {
             {favorites.map((job) => (
               <Paper
                 key={job.jobId}
-                onClick={() => navigate(`/user/job/${job.jobId}`)}
+                onClick={() => navigate(`/job/${job.jobId}`)}
                 sx={{
                   width: '10cm', minWidth: '10cm', maxWidth: '10cm',
                   p: 2.5, borderRadius: 4, cursor: "pointer",
                   border: "1px solid #e5e7eb", transition: "all 0.25s ease",
                   display: "flex", flexDirection: "column", justifyContent: "space-between",
                   "&:hover": { 
-                    borderColor: "#6366f1", 
+                    borderColor: "#2563eb", 
                     transform: "translateY(-5px)", 
-                    boxShadow: "0 10px 25px rgba(99, 102, 241, 0.1)" 
+                    boxShadow: "0 10px 25px rgba(37, 99, 235, 0.1)" 
                   }
                 }}
               >
                 <Stack direction="row" spacing={2} alignItems="flex-start">
                   {job.companyLogo ? (
-                    <Avatar src={job.companyLogo} variant="rounded" sx={{ width: 50, height: 50 }} />
+                    <Avatar src={getMediaUrl(job.companyLogo)} variant="rounded" sx={{ width: 50, height: 50 }} />
                   ) : (
-                    <Avatar variant="rounded" sx={{ width: 50, height: 50, bgcolor: "#eef2ff", color: "#6366f1", fontWeight: 800 }}>
+                    <Avatar variant="rounded" sx={{ width: 50, height: 50, bgcolor: "#eff6ff", color: "#2563eb", fontWeight: 800 }}>
                       {job.companyName?.charAt(0).toUpperCase()}
                     </Avatar>
                   )}

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Table, TableHead, TableRow, TableCell, TableBody,
-  Button, Stack, Dialog, DialogTitle, DialogContent,
+  Button, Stack, Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText,
   TextField, MenuItem, Select, FormControl, InputLabel,
   TablePagination, Chip, InputAdornment, Avatar,
   Typography, Paper, Box
@@ -18,6 +18,8 @@ import {
 } from "../../services/adminUserService";
 import UserForm from "./UserForm";
 import { useToast } from "../../contexts/ToastContext";
+import ConfirmDialog from "../../components/ConfirmDialog";
+import { getMediaUrl } from "../../utils/urlHelpers";
 
 export default function UserManagement() {
   const location = useLocation();
@@ -27,6 +29,15 @@ export default function UserManagement() {
   const [open, setOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const showToast = useToast();
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmConfig, setConfirmConfig] = useState({
+    title: "",
+    message: "",
+    type: "info",
+    confirmText: "Xác nhận",
+    onConfirm: () => {},
+  });
 
   const [filters, setFilters] = useState({
     search: "",
@@ -42,6 +53,7 @@ export default function UserManagement() {
       const params = {
         ...filters,
         enabled: filters.enabled === "" ? null : filters.enabled === "true",
+        excludeHr: true,
       };
       const data = await getUsers(params);
       setUsers(data.content || []);
@@ -98,14 +110,27 @@ export default function UserManagement() {
     }
   };
 
-  const handleToggleStatus = async (user) => {
+  const handleToggleStatus = (user) => {
     const action = user.enabled ? "KHÓA" : "MỞ";
-    if (window.confirm(`Bạn có chắc muốn ${action} tài khoản này?`)) {
-      await toggleUserStatus(user.userId || user.id);
-      showToast(`Đã ${action.toLowerCase()} tài khoản thành công!`, "success");
-      loadUsers();
-    }
+    const type = user.enabled ? "danger" : "success";
+    setConfirmConfig({
+      title: "Xác nhận thay đổi trạng thái",
+      message: `Bạn có chắc muốn ${action} tài khoản này không?`,
+      type: type,
+      confirmText: action,
+      onConfirm: async () => {
+        try {
+          await toggleUserStatus(user.userId || user.id);
+          showToast(`Đã ${action.toLowerCase()} tài khoản thành công!`, "success");
+          loadUsers();
+        } catch (error) {
+          showToast("Thao tác thất bại!", "error");
+        }
+      }
+    });
+    setConfirmOpen(true);
   };
+
 
   return (
     <>
@@ -174,7 +199,6 @@ export default function UserManagement() {
                 <Select name="role" value={filters.role} label="Quyền" onChange={handleFilterChange}>
                   <MenuItem value="">Tất cả</MenuItem>
                   <MenuItem value="ADMIN">ADMIN</MenuItem>
-                  <MenuItem value="HR">HR</MenuItem>
                   <MenuItem value="USER">USER</MenuItem>
                 </Select>
               </FormControl>
@@ -209,10 +233,12 @@ export default function UserManagement() {
                       <TableCell align="center">{filters.page * filters.size + index + 1}</TableCell>
                       <TableCell>
                         <Stack direction="row" spacing={2} alignItems="center">
-                          <Avatar src={u.avatar ? `http://localhost:8080${u.avatar}` : ""}>
+                          <Avatar src={getMediaUrl(u.avatar)}>
                             {u.fullName?.charAt(0)}
                           </Avatar>
-                          <Typography variant="subtitle2" fontWeight={600}>{u.fullName}</Typography>
+                          <Box>
+                            <Typography variant="subtitle2" fontWeight={600}>{u.fullName}</Typography>
+                          </Box>
                         </Stack>
                       </TableCell>
                       <TableCell>{u.email}</TableCell>
@@ -222,6 +248,7 @@ export default function UserManagement() {
                           label={u.enabled ? "Hoạt động" : "Đã khóa"}
                           color={u.enabled ? "success" : "error"}
                           size="small"
+                          sx={{ fontWeight: 700 }}
                         />
                       </TableCell>
                       <TableCell align="right">
@@ -261,6 +288,17 @@ export default function UserManagement() {
               <UserForm initialData={selectedUser} onSubmit={handleSubmit} onCancel={() => setOpen(false)} />
             </DialogContent>
           </Dialog>
+
+          {/* CONFIRM DIALOG */}
+          <ConfirmDialog
+            open={confirmOpen}
+            onClose={() => setConfirmOpen(false)}
+            onConfirm={confirmConfig.onConfirm}
+            title={confirmConfig.title}
+            message={confirmConfig.message}
+            type={confirmConfig.type}
+            confirmText={confirmConfig.confirmText}
+          />
 
         </Stack>
       </Box>
