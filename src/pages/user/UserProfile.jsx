@@ -57,6 +57,7 @@ import UserLayout from "../../components/UserLayout";
 import { getCurrentUser, updateCurrentUser } from "../../services/currentUser";
 import { useToast } from "../../contexts/ToastContext";
 import { getMediaUrl } from "../../utils/urlHelpers";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 // Import refactored profile subcomponents
 import UserProfileSidebar from "./profile-components/UserProfileSidebar";
@@ -107,6 +108,15 @@ export default function UserProfile() {
   const [openEdu, setOpenEdu] = useState(false);
   const [openExp, setOpenExp] = useState(false);
   const [openProject, setOpenProject] = useState(false);
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmConfig, setConfirmConfig] = useState({
+    title: "",
+    message: "",
+    type: "info",
+    confirmText: "Xác nhận",
+    onConfirm: () => {},
+  });
 
   // ===== LOCAL FORMS STATE =====
   const [basicForm, setBasicForm] = useState({
@@ -330,11 +340,18 @@ export default function UserProfile() {
     if (success) setOpenEdu(false);
   };
 
-  const handleEduDelete = async (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa mục học vấn này?")) {
-      const list = user.education.filter((item) => item.id !== id);
-      await handleUpdateProfile({ education: list });
-    }
+  const handleEduDelete = (id) => {
+    setConfirmConfig({
+      title: "Xác nhận xóa học vấn",
+      message: "Bạn có chắc chắn muốn xóa mục học vấn này không?",
+      type: "danger",
+      confirmText: "Xóa học vấn",
+      onConfirm: async () => {
+        const list = user.education.filter((item) => item.id !== id);
+        await handleUpdateProfile({ education: list });
+      }
+    });
+    setConfirmOpen(true);
   };
 
   // ===== DIALOG ACTIONS: EXPERIENCE =====
@@ -360,11 +377,18 @@ export default function UserProfile() {
     if (success) setOpenExp(false);
   };
 
-  const handleExpDelete = async (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa mục kinh nghiệm làm việc này?")) {
-      const list = user.experience.filter((item) => item.id !== id);
-      await handleUpdateProfile({ experience: list });
-    }
+  const handleExpDelete = (id) => {
+    setConfirmConfig({
+      title: "Xác nhận xóa kinh nghiệm",
+      message: "Bạn có chắc chắn muốn xóa mục kinh nghiệm làm việc này không?",
+      type: "danger",
+      confirmText: "Xóa kinh nghiệm",
+      onConfirm: async () => {
+        const list = user.experience.filter((item) => item.id !== id);
+        await handleUpdateProfile({ experience: list });
+      }
+    });
+    setConfirmOpen(true);
   };
 
   // ===== DIALOG ACTIONS: PROJECTS =====
@@ -390,11 +414,18 @@ export default function UserProfile() {
     if (success) setOpenProject(false);
   };
 
-  const handleProjectDelete = async (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa dự án này?")) {
-      const list = user.projects.filter((item) => item.id !== id);
-      await handleUpdateProfile({ projects: list });
-    }
+  const handleProjectDelete = (id) => {
+    setConfirmConfig({
+      title: "Xác nhận xóa dự án",
+      message: "Bạn có chắc chắn muốn xóa dự án này không?",
+      type: "danger",
+      confirmText: "Xóa dự án",
+      onConfirm: async () => {
+        const list = user.projects.filter((item) => item.id !== id);
+        await handleUpdateProfile({ projects: list });
+      }
+    });
+    setConfirmOpen(true);
   };
 
   // ===== CALCULATE PROFILE COMPLETENESS PERCENTAGE =====
@@ -512,7 +543,7 @@ export default function UserProfile() {
         ) : (
           <Grid container spacing={3}>
             {/* COLUMN 1: SIDEBAR */}
-            <Grid item xs={12} md={3} lg={2.6}>
+            <Grid size={{ xs: 12, md: 3, lg: 2.6 }}>
               <UserProfileSidebar
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
@@ -525,13 +556,13 @@ export default function UserProfile() {
             </Grid>
 
             {/* COLUMN 2: TAB CONTENT */}
-            <Grid item xs={12} md={isItviecProfile ? 6.2 : 9} lg={isItviecProfile ? 6.6 : 9.4}>
+            <Grid size={{ xs: 12, md: isItviecProfile ? 6.2 : 9, lg: isItviecProfile ? 6.6 : 9.4 }}>
               {renderTabContent()}
             </Grid>
 
             {/* COLUMN 3: COMPLETENESS */}
             {isItviecProfile && (
-              <Grid item xs={12} md={2.8} lg={2.8}>
+              <Grid size={{ xs: 12, md: 2.8, lg: 2.8 }}>
                 <UserProfileCompleteness completionPercent={completionPercent} />
               </Grid>
             )}
@@ -847,6 +878,16 @@ export default function UserProfile() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        type={confirmConfig.type}
+        confirmText={confirmConfig.confirmText}
+      />
     </UserLayout>
   );
 }

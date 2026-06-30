@@ -19,6 +19,7 @@ import PushPinOutlinedIcon from "@mui/icons-material/PushPinOutlined";
 import { articleService } from "../../services/articleService";
 import { useToast } from "../../contexts/ToastContext";
 import { getMediaUrl } from "../../utils/urlHelpers";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function ArticleManagement() {
   const [articles, setArticles] = useState([]);
@@ -27,6 +28,15 @@ export default function ArticleManagement() {
   const [open, setOpen] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState(null);
   const showToast = useToast();
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmConfig, setConfirmConfig] = useState({
+    title: "",
+    message: "",
+    type: "info",
+    confirmText: "Xác nhận",
+    onConfirm: () => {},
+  });
 
   // Search & Filter state
   const [searchTerm, setSearchTerm] = useState("");
@@ -190,16 +200,23 @@ export default function ArticleManagement() {
     }
   };
 
-  const handleDelete = async (articleId) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa bài viết này không? Hành động này không thể hoàn tác.")) {
-      try {
-        await articleService.deleteArticle(articleId);
-        showToast("Xóa bài viết thành công", "success");
-        loadArticles();
-      } catch (err) {
-        showToast("Lỗi xóa bài viết", "error");
+  const handleDelete = (articleId) => {
+    setConfirmConfig({
+      title: "Xác nhận xóa bài viết",
+      message: "Bạn có chắc chắn muốn xóa bài viết này không? Hành động này không thể hoàn tác.",
+      type: "danger",
+      confirmText: "Xóa bài viết",
+      onConfirm: async () => {
+        try {
+          await articleService.deleteArticle(articleId);
+          showToast("Xóa bài viết thành công", "success");
+          loadArticles();
+        } catch (err) {
+          showToast("Lỗi xóa bài viết", "error");
+        }
       }
-    }
+    });
+    setConfirmOpen(true);
   };
 
   const handleTogglePinned = async (article) => {
@@ -673,6 +690,17 @@ export default function ArticleManagement() {
             </Box>
           </DialogContent>
         </Dialog>
+
+        {/* CONFIRM DIALOG */}
+        <ConfirmDialog
+          open={confirmOpen}
+          onClose={() => setConfirmOpen(false)}
+          onConfirm={confirmConfig.onConfirm}
+          title={confirmConfig.title}
+          message={confirmConfig.message}
+          type={confirmConfig.type}
+          confirmText={confirmConfig.confirmText}
+        />
 
       </Stack>
     </Box>

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Table, TableHead, TableRow, TableCell, TableBody,
-  Button, Stack, Dialog, DialogTitle, DialogContent,
+  Button, Stack, Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText,
   TextField, MenuItem, Select, FormControl, InputLabel,
   TablePagination, Chip, InputAdornment, Avatar,
   Typography, Paper, Box
@@ -19,6 +19,7 @@ import {
 } from "../../services/adminUserService";
 import UserForm from "./UserForm";
 import { useToast } from "../../contexts/ToastContext";
+import ConfirmDialog from "../../components/ConfirmDialog";
 import { getMediaUrl } from "../../utils/urlHelpers";
 
 export default function HrManagement() {
@@ -29,6 +30,15 @@ export default function HrManagement() {
   const [open, setOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const showToast = useToast();
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmConfig, setConfirmConfig] = useState({
+    title: "",
+    message: "",
+    type: "info",
+    confirmText: "Xác nhận",
+    onConfirm: () => {},
+  });
 
   const [filters, setFilters] = useState({
     search: "",
@@ -93,26 +103,46 @@ export default function HrManagement() {
     }
   };
 
-  const handleToggleStatus = async (user) => {
+  const handleToggleStatus = (user) => {
     const action = user.enabled ? "KHÓA" : "MỞ";
-    if (window.confirm(`Bạn có chắc muốn ${action} tài khoản nhà tuyển dụng này?`)) {
-      await toggleUserStatus(user.userId || user.id);
-      showToast(`Đã ${action.toLowerCase()} tài khoản thành công!`, "success");
-      loadUsers();
-    }
+    const type = user.enabled ? "danger" : "success";
+    setConfirmConfig({
+      title: "Xác nhận thay đổi trạng thái",
+      message: `Bạn có chắc muốn ${action} tài khoản nhà tuyển dụng này không?`,
+      type: type,
+      confirmText: action,
+      onConfirm: async () => {
+        try {
+          await toggleUserStatus(user.userId || user.id);
+          showToast(`Đã ${action.toLowerCase()} tài khoản thành công!`, "success");
+          loadUsers();
+        } catch (error) {
+          showToast("Thao tác thất bại!", "error");
+        }
+      }
+    });
+    setConfirmOpen(true);
   };
 
-  const handleApproveHr = async (user, status) => {
+  const handleApproveHr = (user, status) => {
     const actionLabel = status === "APPROVED" ? "phê duyệt" : "từ chối";
-    if (window.confirm(`Bạn có chắc muốn ${actionLabel} yêu cầu đăng ký của nhà tuyển dụng này?`)) {
-      try {
-        await approveHr(user.userId || user.id, status);
-        showToast(`Đã ${actionLabel} tài khoản thành công!`, "success");
-        loadUsers();
-      } catch (error) {
-        showToast("Thao tác thất bại!", "error");
+    const type = status === "APPROVED" ? "success" : "danger";
+    setConfirmConfig({
+      title: "Xác nhận duyệt tài khoản",
+      message: `Bạn có chắc muốn ${actionLabel} yêu cầu đăng ký của nhà tuyển dụng này không?`,
+      type: type,
+      confirmText: status === "APPROVED" ? "Phê duyệt" : "Từ chối",
+      onConfirm: async () => {
+        try {
+          await approveHr(user.userId || user.id, status);
+          showToast(`Đã ${actionLabel} tài khoản thành công!`, "success");
+          loadUsers();
+        } catch (error) {
+          showToast("Thao tác thất bại!", "error");
+        }
       }
-    }
+    });
+    setConfirmOpen(true);
   };
 
   return (
@@ -308,6 +338,17 @@ export default function HrManagement() {
               <UserForm initialData={selectedUser ? { ...selectedUser, role: "HR" } : { role: "HR" }} onSubmit={handleSubmit} onCancel={() => setOpen(false)} />
             </DialogContent>
           </Dialog>
+
+          {/* CONFIRM DIALOG */}
+          <ConfirmDialog
+            open={confirmOpen}
+            onClose={() => setConfirmOpen(false)}
+            onConfirm={confirmConfig.onConfirm}
+            title={confirmConfig.title}
+            message={confirmConfig.message}
+            type={confirmConfig.type}
+            confirmText={confirmConfig.confirmText}
+          />
 
         </Stack>
       </Box>

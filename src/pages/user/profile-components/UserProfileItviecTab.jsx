@@ -108,7 +108,7 @@ export default function UserProfileItviecTab({
               ),
             },
           ].map((item, index) => (
-            <Grid item xs={12} sm={4} key={index}>
+            <Grid size={{ xs: 12, sm: 6 }} key={index}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
                 {item.icon}
                 <Typography variant="body2" color="#334155" fontWeight={600} sx={{ fontSize: "0.85rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={typeof item.label === "string" ? item.label : ""}>

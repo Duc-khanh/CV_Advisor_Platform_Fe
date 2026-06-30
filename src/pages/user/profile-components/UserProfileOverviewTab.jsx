@@ -259,13 +259,13 @@ export default function UserProfileOverviewTab({
         }}
       >
         <Typography variant="subtitle1" fontWeight={800} color="#0f172a" mb={2}>
-          Hồ sơ ITviec
+          Hồ sơ tuyển dụng
         </Typography>
 
         <Grid container spacing={3} alignItems="center">
           {/* Half ring completeness SVG gauge */}
-          <Grid item xs={12} md={6}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+          <Grid size={{ xs: 12, md: 3 }}>
+            <Box sx={{ display: "flex", justifyContent: { xs: "center", md: "flex-start" } }}>
               <Box sx={{ position: "relative", width: 110, height: 110, display: "flex", justifyContent: "center" }}>
                 {/* SVG circular progress */}
                 <svg width="110" height="110" viewBox="0 0 100 100">
@@ -311,31 +311,34 @@ export default function UserProfileOverviewTab({
                   </Typography>
                 </Box>
               </Box>
+            </Box>
+          </Grid>
 
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="body2" color="#334155" fontWeight={600} mb={1.5} sx={{ lineHeight: 1.5 }}>
-                  Nâng cấp hồ sơ của bạn lên <strong style={{ color: "#ef4444" }}>70%</strong> để bắt đầu tạo mẫu CV IT chuyên nghiệp.
-                </Typography>
-                <Button
-                  onClick={() => setActiveTab("profile_itviec")}
-                  endIcon={<ChevronRight />}
-                  sx={{
-                    textTransform: "none",
-                    color: "#2563eb",
-                    fontWeight: 800,
-                    fontSize: "0.85rem",
-                    p: 0,
-                    "&:hover": { bgcolor: "transparent", color: "#1d4ed8" },
-                  }}
-                >
-                  Nâng cấp hồ sơ
-                </Button>
-              </Box>
+          {/* Upgrade text block */}
+          <Grid size={{ xs: 12, md: 5 }}>
+            <Box sx={{ textAlign: { xs: "center", md: "left" } }}>
+              <Typography variant="body2" color="#334155" fontWeight={600} mb={1.5} sx={{ lineHeight: 1.5 }}>
+                Nâng cấp hồ sơ của bạn lên <strong style={{ color: "#ef4444" }}>70%</strong> để bắt đầu tạo mẫu CV chuyên nghiệp.
+              </Typography>
+              <Button
+                onClick={() => setActiveTab("profile_itviec")}
+                endIcon={<ChevronRight />}
+                sx={{
+                  textTransform: "none",
+                  color: "#2563eb",
+                  fontWeight: 800,
+                  fontSize: "0.85rem",
+                  p: 0,
+                  "&:hover": { bgcolor: "transparent", color: "#1d4ed8" },
+                }}
+              >
+                Nâng cấp hồ sơ
+              </Button>
             </Box>
           </Grid>
 
           {/* Previews of CV template thumbnails */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Box sx={{ display: "flex", gap: 1.5, justifyContent: "flex-end", flexWrap: "wrap" }}>
               {/* Sample template 1 */}
               <Box
@@ -412,7 +415,7 @@ export default function UserProfileOverviewTab({
 
         <Grid container spacing={2.5}>
           {/* Applied jobs block */}
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <Paper
               onClick={() => setActiveTab("my_jobs")}
               sx={{
@@ -451,7 +454,7 @@ export default function UserProfileOverviewTab({
           </Grid>
 
           {/* Saved jobs block */}
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <Paper
               onClick={() => setActiveTab("my_jobs")} // or tab can go to my_jobs with subtab
               sx={{
@@ -490,7 +493,7 @@ export default function UserProfileOverviewTab({
           </Grid>
 
           {/* Invitations block */}
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <Paper
               onClick={() => setActiveTab("invites")}
               sx={{

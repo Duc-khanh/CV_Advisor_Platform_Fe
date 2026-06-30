@@ -144,10 +144,10 @@ export default function UserProfileOverview({ user, completionPercent }) {
               <AutoAwesome sx={{ color: "#10b981" }} />
               <Box>
                 <Typography variant="subtitle2" fontWeight={700} color="#0f172a">
-                  Hồ sơ ITviec
+                  Hồ sơ tuyển dụng
                 </Typography>
                 <Typography variant="body2" color="#64748b">
-                  Hoàn thiện hồ sơ để bắt đầu tạo mẫu CV IT chuyên nghiệp.
+                  Hoàn thiện hồ sơ để bắt đầu tạo mẫu CV chuyên nghiệp.
                 </Typography>
               </Box>
             </Box>

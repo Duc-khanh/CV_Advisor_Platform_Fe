@@ -32,7 +32,7 @@ export default function UserProfileSidebar({
   const menuItems = [
     { id: "overview", icon: <Home fontSize="small" />, text: "Tổng quan" },
     { id: "attached_cv", icon: <FilePresent fontSize="small" />, text: "Hồ sơ đính kèm" },
-    { id: "profile_itviec", icon: <Person fontSize="small" />, text: "Hồ sơ ITviec" },
+    { id: "profile_itviec", icon: <Person fontSize="small" />, text: "Hồ sơ cá nhân" },
     { id: "my_jobs", icon: <Work fontSize="small" />, text: "Việc làm của tôi" },
     { id: "invites", icon: <Email fontSize="small" />, text: "Lời mời công việc", badge: 0 },
     { id: "email_subscribe", icon: <Assignment fontSize="small" />, text: "Đăng ký nhận email" },

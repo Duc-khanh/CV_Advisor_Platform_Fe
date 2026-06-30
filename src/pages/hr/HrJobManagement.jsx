@@ -34,6 +34,7 @@ import {
 
 import { useToast } from "../../contexts/ToastContext";
 import { getMediaUrl } from "../../utils/urlHelpers";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 const DEFAULT_IMAGE =
   "https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg";
@@ -55,6 +56,15 @@ export default function HrJobManagement() {
 
   const [viewJob, setViewJob] = useState(null);
   const showToast = useToast();
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmConfig, setConfirmConfig] = useState({
+    title: "",
+    message: "",
+    type: "info",
+    confirmText: "Xác nhận",
+    onConfirm: () => {},
+  });
 
   /* ================= LOAD JOB ================= */
 
@@ -121,38 +131,34 @@ export default function HrJobManagement() {
     setOpenModal(true);
   };
 
-  const handleDelete = async (jobId) => {
-
-    if (
-      !window.confirm(
-        "Bạn có chắc chắn muốn xóa tin tuyển dụng này?"
-      )
-    ) return;
-
-    try {
-
-      await deleteJob(jobId);
-
-      setJobs(prev =>
-        prev.filter(
-          item => item.jobId !== jobId
-        )
-      );
-
-      showToast(
-        "Xóa tin tuyển dụng thành công",
-        "success"
-      );
-
-    } catch (error) {
-
-      console.error(error);
-
-      showToast(
-        "Xóa thất bại",
-        "error"
-      );
-    }
+  const handleDelete = (jobId) => {
+    setConfirmConfig({
+      title: "Xác nhận xóa tin tuyển dụng",
+      message: "Bạn có chắc chắn muốn xóa tin tuyển dụng này? Hành động này không thể hoàn tác.",
+      type: "danger",
+      confirmText: "Xóa tin",
+      onConfirm: async () => {
+        try {
+          await deleteJob(jobId);
+          setJobs(prev =>
+            prev.filter(
+              item => item.jobId !== jobId
+            )
+          );
+          showToast(
+            "Xóa tin tuyển dụng thành công",
+            "success"
+          );
+        } catch (error) {
+          console.error(error);
+          showToast(
+            "Xóa thất bại",
+            "error"
+          );
+        }
+      }
+    });
+    setConfirmOpen(true);
   };
 
   const handleRefresh = async () => {
@@ -526,6 +532,17 @@ export default function HrJobManagement() {
           }}
         />
       )}
+
+      {/* CONFIRM DIALOG */}
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        type={confirmConfig.type}
+        confirmText={confirmConfig.confirmText}
+      />
 
     </HRLayout>
   );

@@ -86,7 +86,7 @@ export default function UserProfileCompleteness({ completionPercent }) {
             fontWeight={550}
             sx={{ lineHeight: 1.4, display: "block", fontSize: "0.72rem" }}
           >
-            Nâng cấp hồ sơ của bạn lên <strong>70%</strong> để nhận gợi ý CV mẫu độc quyền của chuyên gia IT từ AI.
+            Nâng cấp hồ sơ của bạn lên <strong>70%</strong> để nhận gợi ý CV mẫu độc quyền từ chuyên gia AI.
           </Typography>
         </Box>
 

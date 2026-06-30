@@ -389,7 +389,7 @@ export default function CandidateHeader() {
             <FilePresent fontSize="small" sx={{ mr: 1.5, color: "#64748b" }} /> Hồ sơ đính kèm
           </MenuItem>
           <MenuItem onClick={() => goTo("/profile?tab=profile_itviec")}>
-            <Person fontSize="small" sx={{ mr: 1.5, color: "#64748b" }} /> Hồ sơ ITviec
+            <Person fontSize="small" sx={{ mr: 1.5, color: "#64748b" }} /> Hồ sơ cá nhân
           </MenuItem>
           <MenuItem onClick={() => goTo("/profile?tab=my_jobs")}>
             <Work fontSize="small" sx={{ mr: 1.5, color: "#64748b" }} /> Việc làm của tôi
