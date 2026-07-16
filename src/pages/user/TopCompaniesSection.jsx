@@ -1,31 +1,37 @@
 import React, { useState, useEffect } from "react";
-import { Box, Container, Typography, Grid, Paper, Avatar, Stack } from "@mui/material";
+import { keyframes } from "@emotion/react";
+import { Box, Container, Typography, Paper, Avatar, Stack } from "@mui/material";
 import { Star } from "@mui/icons-material";
 import axios from "axios";
 import { getMediaUrl } from "../../utils/urlHelpers";
+
+const marquee = keyframes`
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+`;
 
 export default function TopCompaniesSection({ onCompanyClick }) {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTopCompanies = async () => {
+    const fetchCompanies = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/public/companies/top");
-        setCompanies(response.data);
+        const response = await axios.get("http://localhost:8080/api/public/companies");
+        setCompanies(response.data || []);
       } catch (error) {
-        console.error("Lỗi khi tải danh sách top công ty:", error);
+        console.error("Lỗi khi tải danh sách công ty:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchTopCompanies();
+    fetchCompanies();
   }, []);
 
   if (loading || companies.length === 0) return null;
 
-  // Display top 5 companies as shown in the screenshot, plus a "Xem tất cả" card
-  const displayCompanies = companies.slice(0, 5);
+  const duplicatedCompanies = [...companies, ...companies];
+  const animationDuration = `${Math.max(24, companies.length * 2.5)}s`;
 
   return (
     <Box sx={{ py: 6, bgcolor: "#ffffff", borderTop: "1px solid #f1f5f9" }}>
@@ -34,27 +40,33 @@ export default function TopCompaniesSection({ onCompanyClick }) {
           Top công ty tuyển dụng
         </Typography>
 
-        <Grid
-          container
-          spacing={2.5}
+        <Box
           sx={{
-            display: "grid",
-            gridTemplateColumns: {
-              xs: "repeat(2, 1fr)",
-              sm: "repeat(3, 1fr)",
-              md: "repeat(6, 1fr)",
-              lg: "repeat(6, 1fr)",
-            },
+            position: "relative",
+            overflow: "hidden",
+            width: "100%",
+            pt: 1,
+            pb: 1,
           }}
         >
-          {displayCompanies.map((company) => (
-            <Grid item key={company.companyId} sx={{ display: "contents" }}>
+          <Box
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              animation: `${marquee} ${animationDuration} linear infinite`,
+              "& > *": {
+                flexShrink: 0,
+              },
+            }}
+          >
+            {duplicatedCompanies.map((company, index) => (
               <Paper
+                key={`${company.companyId}-${index}`}
                 elevation={0}
                 onClick={() => onCompanyClick(company)}
                 sx={{
                   p: 2,
-                  borderRadius: "12px",
+                  borderRadius: "14px",
                   border: "1px solid #e2e8f0",
                   bgcolor: "#ffffff",
                   boxSizing: "border-box",
@@ -63,10 +75,10 @@ export default function TopCompaniesSection({ onCompanyClick }) {
                   gap: 1.5,
                   cursor: "pointer",
                   transition: "all 0.25s ease",
-                  width: "100%",
-                  minWidth: 0,
-                  height: 88,
-                  overflow: 'hidden',
+                  minWidth: 240,
+                  height: 92,
+                  mr: 2,
+                  overflow: "hidden",
                   "&:hover": {
                     borderColor: "#2563eb",
                     boxShadow: "0 8px 24px rgba(37,99,235,0.05)",
@@ -78,21 +90,21 @@ export default function TopCompaniesSection({ onCompanyClick }) {
                   src={getMediaUrl(company.logoUrl)}
                   variant="rounded"
                   sx={{
-                    width: 44,
-                    height: 44,
+                    width: 48,
+                    height: 48,
                     bgcolor: "#ffffff",
                     border: "1px solid #e2e8f0",
-                    borderRadius: "8px",
+                    borderRadius: "10px",
                   }}
                 >
-                  {company.companyName.charAt(0).toUpperCase()}
+                  {company.companyName?.charAt(0)?.toUpperCase()}
                 </Avatar>
 
                 <Box sx={{ minWidth: 0, flex: 1 }}>
                   <Typography
                     fontWeight={800}
                     sx={{
-                      fontSize: "0.88rem",
+                      fontSize: "0.9rem",
                       color: "#0f172a",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
@@ -109,47 +121,9 @@ export default function TopCompaniesSection({ onCompanyClick }) {
                   </Stack>
                 </Box>
               </Paper>
-            </Grid>
-          ))}
-
-          {/* View All Company Card */}
-          <Grid item sx={{ display: "contents" }}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: 2,
-                borderRadius: "12px",
-                border: "1px solid #e2e8f0",
-                bgcolor: "#ffffff",
-                boxSizing: "border-box",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                transition: "all 0.25s ease",
-                width: "100%",
-                minWidth: 0,
-                height: 88,
-                overflow: 'hidden',
-                "&:hover": {
-                  borderColor: "#2563eb",
-                  boxShadow: "0 8px 24px rgba(37,99,235,0.05)",
-                  transform: "translateY(-2px)",
-                },
-              }}
-            >
-              <Typography
-                fontWeight={800}
-                sx={{
-                  fontSize: "0.88rem",
-                  color: "#2563eb",
-                }}
-              >
-                Xem tất cả
-              </Typography>
-            </Paper>
-          </Grid>
-        </Grid>
+            ))}
+          </Box>
+        </Box>
       </Container>
     </Box>
   );

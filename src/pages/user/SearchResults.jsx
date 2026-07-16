@@ -52,11 +52,16 @@ export default function SearchResults() {
 
     try {
       const response = await axios.get("http://localhost:8080/api/public/jobs", {
-        params: { keyword, location },
+        params: { keyword, location, page: 0, size: 50 },
         headers: authHeader || {},
       });
 
-      const jobsWithFavorite = response.data.map((job) => ({
+      // Backend trả về Spring Page object: { content: [...], totalPages, ... }
+      const jobList = Array.isArray(response.data)
+        ? response.data
+        : response.data?.content ?? [];
+
+      const jobsWithFavorite = jobList.map((job) => ({
         ...job,
         isFavorite: favoriteIdsFromServer.has(job.jobId),
       }));
@@ -71,6 +76,7 @@ export default function SearchResults() {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);

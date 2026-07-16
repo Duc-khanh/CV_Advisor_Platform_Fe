@@ -30,6 +30,7 @@ export default function UserHome() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [showAllJobs, setShowAllJobs] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
   const jobsPerPage = showAllJobs ? Math.max(jobs.length, 12) : 12;
 
   // Selected company state for detail view modal
@@ -79,16 +80,24 @@ export default function UserHome() {
         params: {
           keyword: searchQuery.keyword,
           location: searchQuery.location,
+          page: 0,
+          size: 50,
         },
         headers: authHeader || {},
       });
 
-      const jobsWithFavorite = response.data.map((job) => ({
+      // Backend trả về Spring Page object: { content: [...], totalPages, totalElements, ... }
+      const jobList = Array.isArray(response.data)
+        ? response.data
+        : response.data?.content ?? [];
+
+      const jobsWithFavorite = jobList.map((job) => ({
         ...job,
         isFavorite: favoriteIdsFromServer.has(job.jobId),
       }));
 
       setJobs(jobsWithFavorite);
+      setTotalPages(response.data?.totalPages ?? 1);
       setFavoriteIds(favoriteIdsFromServer);
       setCurrentPage(1);
     } catch (error) {
