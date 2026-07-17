@@ -2,8 +2,8 @@
  * CV Service - Quản lý tất cả API calls liên quan tới CV
  */
 
-import axios from "../../api/axios";
-import { API_ENDPOINTS } from "../_shared/constants";
+import axios from "../axios";
+import { API_ENDPOINTS } from "../../pages/user/_shared/constants";
 
 export const cvService = {
   /**
@@ -27,6 +27,16 @@ export const cvService = {
     const response = await axios.post(API_ENDPOINTS.UPLOAD_CV, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
+    return response.data;
+  },
+
+  /**
+   * Xóa CV
+   * @param {string|number} cvId
+   * @returns {Promise}
+   */
+  deleteCV: async (cvId) => {
+    const response = await axios.delete(`${API_ENDPOINTS.USER_CV}/${cvId}`);
     return response.data;
   },
 

@@ -2,8 +2,8 @@
  * Job Service - Quản lý tất cả API calls liên quan tới công việc
  */
 
-import axios from "../../api/axios";
-import { API_ENDPOINTS } from "../_shared/constants";
+import axios from "../axios";
+import { API_ENDPOINTS } from "../../pages/user/_shared/constants";
 
 export const jobService = {
   /**

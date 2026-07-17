@@ -2,8 +2,8 @@
  * User Profile Service
  */
 
-import axios from "../../api/axios";
-import { API_ENDPOINTS } from "../_shared/constants";
+import axios from "../axios";
+import { API_ENDPOINTS } from "../../pages/user/_shared/constants";
 
 export const userProfileService = {
   /**

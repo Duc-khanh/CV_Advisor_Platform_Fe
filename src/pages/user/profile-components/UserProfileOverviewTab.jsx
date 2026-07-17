@@ -233,7 +233,7 @@ export default function UserProfileOverviewTab({
             </Box>
           </Box>
 
-          <Button
+          {/* <Button
             onClick={() => setActiveTab("attached_cv")}
             endIcon={<ChevronRight />}
             sx={{
@@ -244,7 +244,7 @@ export default function UserProfileOverviewTab({
             }}
           >
             Tải lên ngay
-          </Button>
+          </Button> */}
         </Box>
       </Paper>
 

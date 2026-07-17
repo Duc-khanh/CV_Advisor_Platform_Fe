@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Paper,
@@ -6,19 +6,50 @@ import {
   Button,
   Stack,
   Divider,
+  CircularProgress,
 } from "@mui/material";
 import {
   CloudUpload,
   FilePresent,
   CheckCircle,
   Error,
+  Visibility,
+  Download,
+  Delete,
 } from "@mui/icons-material";
 import { useToast } from "../../../contexts/ToastContext";
+import { cvService } from "../../../services/user";
+import { getCvUrl } from "../../../utils/urlHelpers";
 
 export default function UserAttachedCvTab({ user }) {
   const showToast = useToast();
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [cvs, setCvs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCvList();
+  }, []);
+
+  const fetchCvList = async () => {
+    setLoading(true);
+    try {
+      const data = await cvService.getUserCV();
+      if (Array.isArray(data)) {
+        setCvs(data);
+      } else if (data) {
+        setCvs(data?.files || data?.cvs || data?.data || [data]);
+      } else {
+        setCvs([]);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách CV:", error);
+      showToast("Không thể tải danh sách CV. Vui lòng thử lại sau.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -45,7 +76,29 @@ export default function UserAttachedCvTab({ user }) {
     }
   };
 
-  const handleFile = (file) => {
+  const getFileUrl = (cv) => {
+    const url = cv.fileUrl || cv.cvFileUrl || cv.url || cv.path || cv.filePath || cv.fileLink || cv.link;
+    return getCvUrl(url || "");
+  };
+
+  const getFileName = (cv) => {
+    return cv.fileName || cv.name || cv.originalName || cv.title || "CV của bạn";
+  };
+
+  const getFileSizeText = (cv) => {
+    const fileSize = cv.size || cv.fileSize || cv.metadata?.size;
+    if (!fileSize || typeof fileSize !== "number") return "-";
+    return `${(fileSize / 1024 / 1024).toFixed(1)} MB`;
+  };
+
+  const getFileUpdateDate = (cv) => {
+    const dateValue = cv.updatedAt || cv.modifiedAt || cv.uploadedAt || cv.createdAt || cv.timestamp;
+    if (!dateValue) return "-";
+    const date = new Date(dateValue);
+    return date.toLocaleDateString("vi-VN");
+  };
+
+  const handleFile = async (file) => {
     const fileType = file.name.split(".").pop().toLowerCase();
     if (fileType !== "pdf" && fileType !== "doc" && fileType !== "docx") {
       showToast("Chỉ hỗ trợ tải lên file PDF, DOC hoặc DOCX.", "error");
@@ -57,11 +110,138 @@ export default function UserAttachedCvTab({ user }) {
     }
 
     setUploading(true);
-    // Simulate upload delay
-    setTimeout(() => {
-      setUploading(false);
+    try {
+      const uploaded = await cvService.uploadCV(file);
       showToast("Tải lên CV thành công!", "success");
-    }, 1500);
+      if (uploaded) {
+        await fetchCvList();
+      }
+    } catch (error) {
+      console.error("Lỗi upload CV:", error);
+      const msg = error?.response?.data?.message || "Không thể tải lên CV. Vui lòng thử lại.";
+      showToast(msg, "error");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDelete = async (cv) => {
+    const fileName = getFileName(cv);
+    if (!window.confirm(`Bạn có chắc muốn xóa ${fileName}?`)) return;
+
+    try {
+      const id = cv.id || cv.cvId || cv.fileId || cv._id;
+      if (!id) {
+        throw new Error("Không tìm thấy ID file CV để xóa.");
+      }
+      await cvService.deleteCV(id);
+      showToast("Xóa CV thành công.", "success");
+      await fetchCvList();
+    } catch (error) {
+      console.error("Lỗi xóa CV:", error);
+      const msg = error?.response?.data?.message || "Không thể xóa CV. Vui lòng thử lại.";
+      showToast(msg, "error");
+    }
+  };
+
+  const renderCvItem = (cv) => {
+    const fileUrl = getFileUrl(cv);
+    const fileName = getFileName(cv);
+    return (
+      <Box
+        key={cv.id || cv.cvId || cv.fileId || cv._id || fileName}
+        sx={{
+          p: 2.5,
+          border: "1px solid #e2e8f0",
+          borderRadius: 3,
+          bgcolor: "#f8fafc",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 2,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2, minWidth: 0, flex: 1 }}>
+          <Box
+            sx={{
+              width: 48,
+              height: 48,
+              borderRadius: 2,
+              bgcolor: "#e0f2fe",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <FilePresent sx={{ color: "#0ea5e9", fontSize: 28 }} />
+          </Box>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Button
+              component="a"
+              href={fileUrl || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{
+                p: 0,
+                minWidth: 0,
+                justifyContent: "flex-start",
+                textTransform: "none",
+                fontWeight: 800,
+                color: "#0f172a",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {fileName}
+            </Button>
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
+              {getFileUpdateDate(cv)} • {getFileSizeText(cv)}
+            </Typography>
+          </Box>
+        </Box>
+        <Stack direction="row" spacing={1.5}>
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<Visibility />}
+            component="a"
+            href={fileUrl || "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            disabled={!fileUrl}
+            sx={{ textTransform: "none", fontWeight: 700 }}
+          >
+            Xem CV
+          </Button>
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<Download />}
+            component="a"
+            href={fileUrl || "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            download={fileName}
+            disabled={!fileUrl}
+            sx={{ textTransform: "none", fontWeight: 700 }}
+          >
+            Tải về
+          </Button>
+          <Button
+            size="small"
+            variant="outlined"
+            color="error"
+            startIcon={<Delete />}
+            onClick={() => handleDelete(cv)}
+            sx={{ textTransform: "none", fontWeight: 700 }}
+          >
+            Xóa
+          </Button>
+        </Stack>
+      </Box>
+    );
   };
 
   return (
@@ -82,72 +262,41 @@ export default function UserAttachedCvTab({ user }) {
           Tải lên các file CV đính kèm để dễ dàng ứng tuyển vào các vị trí công việc mơ ước của bạn.
         </Typography>
 
-        {/* Existing CV details container */}
-        <Box
-          sx={{
-            p: 2.5,
-            border: "1px solid #e2e8f0",
-            borderRadius: 3,
-            bgcolor: "#f8fafc",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 2,
-            mb: 4,
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Box
+        <Stack spacing={2.5} mb={4}>
+          {loading ? (
+            <Paper
               sx={{
-                width: 48,
-                height: 48,
-                borderRadius: 2,
-                bgcolor: "#ffe4e6",
+                p: 4,
+                borderRadius: 3,
+                border: "1px solid #e2e8f0",
+                bgcolor: "#f8fafc",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <FilePresent sx={{ color: "#fb7185", fontSize: 28 }} />
-            </Box>
-            <Box>
-              <Typography variant="body2" fontWeight={700} color="#0f172a">
-                NguyenDucKhanhCVFullStack.pdf
-              </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
-                Cập nhật lần cuối: 13/04/2026 • Dung lượng: 1.2 MB
-              </Typography>
-            </Box>
-          </Box>
-          <Stack direction="row" spacing={1.5}>
-            <Button
-              variant="outlined"
-              size="small"
+              <CircularProgress size={24} />
+            </Paper>
+          ) : cvs.length > 0 ? (
+            cvs.map((cv) => renderCvItem(cv))
+          ) : (
+            <Paper
               sx={{
-                borderColor: "#e2e8f0",
-                color: "#64748b",
-                textTransform: "none",
-                fontWeight: 700,
-                "&:hover": { borderColor: "#cbd5e1", bgcolor: "#f1f5f9" },
+                p: 4,
+                borderRadius: 3,
+                border: "1px solid #e2e8f0",
+                bgcolor: "#f8fafc",
               }}
             >
-              Tải về CV
-            </Button>
-            <Button
-              variant="outlined"
-              color="error"
-              size="small"
-              sx={{ textTransform: "none", fontWeight: 700 }}
-            >
-              Xóa
-            </Button>
-          </Stack>
-        </Box>
+              <Typography variant="body2" color="text.secondary">
+                Bạn chưa tải lên CV đính kèm nào. Hãy chọn file hoặc kéo thả vào khu vực bên dưới.
+              </Typography>
+            </Paper>
+          )}
+        </Stack>
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Upload drag-and-drop zone */}
         <Box
           onDragEnter={handleDrag}
           onDragOver={handleDrag}
@@ -159,13 +308,13 @@ export default function UserAttachedCvTab({ user }) {
             borderRadius: 3.5,
             p: 5,
             textAlign: "center",
-            cursor: "pointer",
+            cursor: uploading ? "default" : "pointer",
             bgcolor: dragActive ? "#eff6ff" : "#f8fafc",
             transition: "all 0.2s ease",
             position: "relative",
             "&:hover": {
-              borderColor: "#3b82f6",
-              bgcolor: "#eff6ff",
+              borderColor: uploading ? "#cbd5e1" : "#3b82f6",
+              bgcolor: uploading ? "#f8fafc" : "#eff6ff",
             },
           }}
           component="label"
@@ -190,11 +339,13 @@ export default function UserAttachedCvTab({ user }) {
                 color: "#2563eb",
               }}
             >
-              <CloudUpload fontSize="large" />
+              {uploading ? <CircularProgress size={28} color="inherit" /> : <CloudUpload fontSize="large" />}
             </Box>
             <Box>
               <Typography variant="subtitle2" fontWeight={800} color="#334155" mb={0.5}>
-                {uploading ? "Đang tải tệp lên..." : "Kéo thả file CV của bạn vào đây hoặc click để duyệt file"}
+                {uploading
+                  ? "Đang tải tệp lên..."
+                  : "Kéo thả file CV của bạn vào đây hoặc click để duyệt file"}
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 Hỗ trợ tệp: PDF, DOC, DOCX • Dung lượng không quá 5MB
@@ -204,7 +355,6 @@ export default function UserAttachedCvTab({ user }) {
         </Box>
       </Paper>
 
-      {/* Guidelines Paper */}
       <Paper
         sx={{
           p: 3.5,
