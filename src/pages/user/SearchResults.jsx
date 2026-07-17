@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import UserLayout from "../../components/UserLayout";
 import HeroSection from "./HeroSection";
 import JobListSection from "./JobListSection";
 import { useToast } from "../../contexts/ToastContext";
@@ -102,9 +101,8 @@ export default function SearchResults() {
   };
 
   return (
-    <UserLayout>
+    <>
       <HeroSection searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={handleSearch} />
-
       <JobListSection
         jobs={jobs}
         currentPage={currentPage}
@@ -115,6 +113,6 @@ export default function SearchResults() {
         handlePageChange={handlePageChange}
         navigate={navigate}
       />
-    </UserLayout>
+    </>
   );
 }

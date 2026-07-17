@@ -54,7 +54,6 @@ import {
   Transgender,
   CardGiftcard,
 } from "@mui/icons-material";
-import UserLayout from "../../components/UserLayout";
 import { useToast } from "../../contexts/ToastContext";
 import { getMediaUrl } from "../../utils/urlHelpers";
 
@@ -422,8 +421,7 @@ export default function JobDetail() {
   };
 
   return (
-    <UserLayout>
-      {/* KHU VỰC NỀN TRÊN CỦA TRANG CHỦ CHỨA NÚT BACK */}
+    <>
       <Box sx={{ bgcolor: "#f8fafc", pt: 3, pb: 2 }}>
         <Container maxWidth="xl">
           <Link
@@ -1363,7 +1361,7 @@ export default function JobDetail() {
           </Box>
         </Box>
       </Modal>
-    </UserLayout>
+    </>
   );
 }
    

@@ -19,12 +19,11 @@ import {
   AutoAwesome,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import UserLayout from "../../components/UserLayout";
 import AIAnalysisCard from "./AIAnalysisCard";
 import api from "../../services/axios";
-import { getPublicJobs } from "../../services/publicJobService";
+import { getPublicJobs } from "../../services/job/publicJobService";
 import { useToast } from "../../contexts/ToastContext";
-import { saveCvAnalysis } from "../../services/cvAnalysisStorage";
+import { saveCvAnalysis } from "../../services/cv/cvAnalysisStorage";
 
 export default function CVAnalysis() {
   const navigate = useNavigate();
@@ -181,8 +180,7 @@ export default function CVAnalysis() {
   };
 
   return (
-    <UserLayout>
-      <Box sx={{ py: 6, bgcolor: "#f8fafc", minHeight: "100vh" }}>
+    <Box sx={{ py: 6, bgcolor: "#f8fafc", minHeight: "100vh" }}>
         <Container maxWidth="xl">
           {/* Header */}
           <Box
@@ -675,6 +673,5 @@ export default function CVAnalysis() {
           )}
         </Container>
       </Box>
-    </UserLayout>
-  );
+    );
 }

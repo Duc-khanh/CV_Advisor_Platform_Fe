@@ -27,8 +27,9 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../contexts/ToastContext";
-import LogoutConfirmDialog from "../../components/LogoutConfirmDialog";
-import { getCurrentUser } from "../../services/currentUser";
+import LogoutConfirmDialog from "../../components/dialogs/LogoutConfirmDialog";
+import Navbar from "../../components/ui/Navbar";
+import { getCurrentUser } from "../../services/user/currentUser";
 import { getMediaUrl } from "../../utils/urlHelpers";
 
 export default function CandidateHeader() {
@@ -173,92 +174,7 @@ export default function CandidateHeader() {
             <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
               
               {/* MENU */}
-              <Box sx={{ display: { xs: "none", md: "flex" }, gap: 3 }}>
-                <Typography
-                  onClick={() => goTo("/cv-analysis")}
-                  sx={{
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 0.5,
-                    color: "#475569",
-                    fontSize: "0.9rem",
-                    "&:hover": { color: "#2563eb" },
-                    transition: "color 0.2s",
-                  }}
-                >
-                  Phân tích CV
-                </Typography>
-                
-                <Typography
-                  onClick={() => goTo("/cv-builder")}
-                  sx={{
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 0.5,
-                    color: "#475569",
-                    fontSize: "0.9rem",
-                    "&:hover": { color: "#2563eb" },
-                    transition: "color 0.2s",
-                  }}
-                >
-                  Tạo CV
-                </Typography>
-
-                <Typography
-                  onClick={() => goTo("/career-roadmap")}
-                  sx={{
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 0.5,
-                    color: "#475569",
-                    fontSize: "0.9rem",
-                    "&:hover": { color: "#2563eb" },
-                    transition: "color 0.2s",
-                  }}
-                >
-                  Lộ trình học tập
-                </Typography>
-
-                <Typography
-                  onClick={() => goTo("/career-guide")}
-                  sx={{
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 0.5,
-                    color: "#475569",
-                    fontSize: "0.9rem",
-                    "&:hover": { color: "#2563eb" },
-                    transition: "color 0.2s",
-                  }}
-                >
-                  Cẩm nang
-                </Typography>
-
-                <Typography
-                  onClick={() => goTo("/for-employers")}
-                  sx={{
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 0.5,
-                    color: "#475569",
-                    fontSize: "0.9rem",
-                    "&:hover": { color: "#2563eb" },
-                    transition: "color 0.2s",
-                  }}
-                >
-                  Nhà tuyển dụng
-                </Typography>
-              </Box>
+              <Navbar />
 
               {/* USER */}
               <Box

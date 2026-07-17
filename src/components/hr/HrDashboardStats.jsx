@@ -1,6 +1,6 @@
 import { Box, Typography, CircularProgress } from "@mui/material";
 import { People, AssignmentTurnedIn, TrendingUp } from "@mui/icons-material";
-import StatCard from "../admin/StatCard";
+import StatCard from "../ui/StatCard";
 
 export default function HrDashboardStats({ jobsCount, applicationsCount, interviewCount, acceptRate, loading }) {
   return (

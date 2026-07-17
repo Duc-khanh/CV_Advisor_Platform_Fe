@@ -29,9 +29,9 @@ import {
   Work,
 } from "@mui/icons-material";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { register, registerHr } from "../services/authService";
-import AuthLayout from "../components/AuthLayout";
-import { useToast } from "../contexts/ToastContext";
+import { register, registerHr } from "../../services/auth/authService";
+import AuthLayout from "../../layouts/AuthLayout";
+import { useToast } from "../../contexts/ToastContext";
 
 export default function Register() {
   const [form, setForm] = useState({

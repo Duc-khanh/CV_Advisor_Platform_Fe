@@ -40,7 +40,7 @@ import {
   AutoAwesome
 } from "@mui/icons-material";
 
-import HRLayout from "../../components/HRLayout";
+import HRLayout from "../../layouts/HRLayout";
 import { useToast } from "../../contexts/ToastContext";
 
 const STATUS_OPTIONS = [

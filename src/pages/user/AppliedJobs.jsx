@@ -9,7 +9,6 @@ import {
   Modal, IconButton
 } from "@mui/material";
 import { ArrowForward, WorkHistoryOutlined, Description, Visibility, FilterList, Close } from "@mui/icons-material";
-import UserLayout from "../../components/UserLayout";
 import { useToast } from "../../contexts/ToastContext";
 import { getMediaUrl, getCvUrl } from "../../utils/urlHelpers";
 
@@ -84,7 +83,7 @@ export default function AppliedJobs() {
   };
 
   return (
-    <UserLayout>
+    <>
       <Box sx={{ bgcolor: "#f8faff", pt: 10, pb: 6, borderBottom: "1px solid #eff6ff" }}>
         <Container maxWidth="lg">
           <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ md: 'flex-end' }} spacing={2}>
@@ -245,6 +244,6 @@ export default function AppliedJobs() {
         </Box>
       </Modal>
 
-    </UserLayout>
+    </>
   );
 }

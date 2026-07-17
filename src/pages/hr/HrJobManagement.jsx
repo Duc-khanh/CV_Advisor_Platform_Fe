@@ -22,19 +22,19 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import RefreshIcon from "@mui/icons-material/Refresh";
 
-import HrJobForm from "./HrJobForm";
-import HrJobDetail from "./HrJobDetail";
+import HrJobForm from "../../components/forms/HrJobForm";
+import HrJobDetail from "../../components/hr/HrJobDetail";
 
-import HRLayout from "../../components/HRLayout";
+import HRLayout from "../../layouts/HRLayout";
 
 import {
   getMyJobs,
   deleteJob
-} from "../../services/hrJobService";
+} from "../../services/job/hrJobService";
 
 import { useToast } from "../../contexts/ToastContext";
 import { getMediaUrl } from "../../utils/urlHelpers";
-import ConfirmDialog from "../../components/ConfirmDialog";
+import ConfirmDialog from "../../components/dialogs/ConfirmDialog";
 
 const DEFAULT_IMAGE =
   "https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg";

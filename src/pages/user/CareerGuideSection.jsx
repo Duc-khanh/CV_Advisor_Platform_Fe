@@ -11,7 +11,7 @@ import {
   Skeleton,
 } from "@mui/material";
 import { ArrowForward, AccessTime } from "@mui/icons-material";
-import { articleService } from "../../services/articleService";
+import { articleService } from "../../services/company/articleService";
 
 const themeColor = "#2563eb";
 

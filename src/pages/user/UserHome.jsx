@@ -7,7 +7,6 @@ import {
   Campaign,
   AccountBalance,
 } from "@mui/icons-material";
-import UserLayout from "../../components/UserLayout";
 import LastCvAnalysisSection from "./LastCvAnalysisSection";
 import HeroSection from "./HeroSection";
 import JobCategoriesSection from "./JobCategoriesSection";
@@ -17,7 +16,7 @@ import HomeCTASection from "./HomeCTASection";
 import TopCompaniesSection from "./TopCompaniesSection";
 import CompanyDetailModal from "./CompanyDetailModal";
 import CareerGuideSection from "./CareerGuideSection";
-import { migrateLegacyStorage } from "../../services/cvAnalysisStorage";
+import { migrateLegacyStorage } from "../../services/cv/cvAnalysisStorage";
 import { useToast } from "../../contexts/ToastContext";
 
 export default function UserHome() {
@@ -193,7 +192,7 @@ export default function UserHome() {
   ];
 
   return (
-    <UserLayout>
+    <>
       <HeroSection searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={handleSearch} />
       <LastCvAnalysisSection />
       <JobCategoriesSection jobCategories={jobCategories} />
@@ -228,6 +227,6 @@ export default function UserHome() {
         navigate={navigate}
         handleToggleFavorite={handleToggleFavorite}
       />
-    </UserLayout>
+    </>
   );
 }

@@ -1,9 +1,9 @@
 import React from 'react';
 import { Grid, Box } from '@mui/material';
 import { Users, UserPlus, AlertCircle, DollarSign } from 'lucide-react';
-import StatCard from './StatCard'; // Import component MUI bạn vừa tạo
-import AdminFeatureSection from './AdminFeatureSection';
-import AdminQuickActions from './AdminQuickActions';
+import StatCard from '../../components/ui/StatCard'; // Import component MUI bạn vừa tạo
+import AdminFeatureSection from '../../components/admin/AdminFeatureSection';
+import AdminQuickActions from '../../components/admin/AdminQuickActions';
 
 const AdminHome = () => {
   return (

@@ -1,11 +1,10 @@
 import React, { useEffect } from "react";
 import { Box } from "@mui/material";
-import EmployerHero from "../../components/for-employers/EmployerHero";
-import EmployerFeatures from "../../components/for-employers/EmployerFeatures";
-import EmployerProcess from "../../components/for-employers/EmployerProcess";
-import EmployerPricing from "../../components/for-employers/EmployerPricing";
-import EmployerFAQ from "../../components/for-employers/EmployerFAQ";
-import UserLayout from "../../components/UserLayout";
+import EmployerHero from "../../components/employer/EmployerHero";
+import EmployerFeatures from "../../components/employer/EmployerFeatures";
+import EmployerProcess from "../../components/employer/EmployerProcess";
+import EmployerPricing from "../../components/employer/EmployerPricing";
+import EmployerFAQ from "../../components/employer/EmployerFAQ";
 
 const ForEmployers = () => {
   useEffect(() => {
@@ -13,16 +12,14 @@ const ForEmployers = () => {
   }, []);
 
   return (
-    <UserLayout>
-      <Box sx={{ mx: { xs: -4, md: -10 } }}> {/* Phá vỡ Container padding của UserLayout để full-width sections */}
+    <Box sx={{ mx: { xs: -4, md: -10 } }}> {/* Phá vỡ Container padding của UserLayout để full-width sections */}
         <EmployerHero />
         <EmployerFeatures />
         <EmployerProcess />
         <EmployerPricing />
         <EmployerFAQ />
       </Box>
-    </UserLayout>
-  );
+    );
 };
 
 export default ForEmployers;

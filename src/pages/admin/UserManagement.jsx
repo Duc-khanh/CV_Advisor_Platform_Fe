@@ -15,10 +15,10 @@ import {
   createUser,
   updateUser,
   toggleUserStatus
-} from "../../services/adminUserService";
-import UserForm from "./UserForm";
+} from "../../services/user/adminUserService";
+import UserForm from "../../components/forms/UserForm";
 import { useToast } from "../../contexts/ToastContext";
-import ConfirmDialog from "../../components/ConfirmDialog";
+import ConfirmDialog from "../../components/dialogs/ConfirmDialog";
 import { getMediaUrl } from "../../utils/urlHelpers";
 
 export default function UserManagement() {

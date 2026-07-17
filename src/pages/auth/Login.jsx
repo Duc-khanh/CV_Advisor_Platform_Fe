@@ -21,11 +21,11 @@ import {
 } from "@mui/icons-material";
 import { Google } from "@mui/icons-material";
 import { useGoogleLogin } from "@react-oauth/google";
-import AuthLayout from "../components/AuthLayout";
-import { login, loginWithGoogle } from "../services/authService";
+import AuthLayout from "../../layouts/AuthLayout";
+import { login, loginWithGoogle } from "../../services/auth/authService";
 import { Link, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { useToast } from "../contexts/ToastContext";
+import { useToast } from "../../contexts/ToastContext";
 
 const normalizeToken = (value) => {
   if (!value) return null;

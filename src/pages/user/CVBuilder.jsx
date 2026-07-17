@@ -13,7 +13,6 @@ import {
   LocationOn as LocationIcon, LinkedIn as LinkedInIcon,
   CameraAlt as CameraIcon,
 } from '@mui/icons-material';
-import UserLayout from '../../components/UserLayout';
 import axios from '../../services/axios';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -145,8 +144,7 @@ export default function CVBuilder() {
 
   /* ══════════════════════════════════════════════════ */
   return (
-    <UserLayout>
-      {/* ── Header ── */}
+    <>
       <Box sx={{
         background: 'linear-gradient(135deg,#2563eb,#3b82f6)',
         px: 4, py: 2.5,
@@ -509,7 +507,7 @@ export default function CVBuilder() {
           </Paper>
         </Box>
       </Box>
-    </UserLayout>
+    </>
   );
 }
 

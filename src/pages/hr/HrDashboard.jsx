@@ -4,10 +4,10 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   LineChart, Line
 } from 'recharts';
-import HRFeatureSection from "./HRFeatureSection";
-import HRQuickActions from "./HRQuickActions";
-import HRLayout from "../../components/HRLayout";
-import HrDashboardStats from "./HrDashboardStats";
+import HRFeatureSection from "../../components/hr/HRFeatureSection";
+import HRQuickActions from "../../components/hr/HRQuickActions";
+import HRLayout from "../../layouts/HRLayout";
+import HrDashboardStats from "../../components/hr/HrDashboardStats";
 import api from "../../services/axios";
 
 export default function HrDashboard() {

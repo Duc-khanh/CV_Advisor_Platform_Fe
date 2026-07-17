@@ -1,4 +1,4 @@
-import axios from "./axios";
+import axios from "../axios";
 
 export const getMyJobs = async ({ keyword, experienceLevel }) => {
   const res = await axios.get("/api/hr/jobs", {

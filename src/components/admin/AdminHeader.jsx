@@ -5,9 +5,9 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../contexts/ToastContext";
-import LogoutConfirmDialog from "../../components/LogoutConfirmDialog";
-import { getCurrentUser } from "../../services/currentUser";
-import ProfileDialog from "./ProfileDialog";
+import LogoutConfirmDialog from "../dialogs/LogoutConfirmDialog";
+import { getCurrentUser } from "../../services/user/currentUser";
+import ProfileDialog from "../dialogs/ProfileDialog";
 
 const drawerWidth = 260; // Đồng bộ với sidebar
 

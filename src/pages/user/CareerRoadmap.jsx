@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Box, Container, Stack, Grid } from "@mui/material";
-import UserLayout from "../../components/UserLayout";
-import { evaluateCvFile, generateCareerRoadmap } from "../../services/aiService";
+import { evaluateCvFile, generateCareerRoadmap } from "../../services/ai/aiService";
 import {
   HeaderSection,
   UploadFormSection,
@@ -9,7 +8,7 @@ import {
   SkillAnalysisCard,
   RoadmapSection,
   MarketTrendsSection,
-} from "../../components/career-roadmap";
+} from "../../components/roadmap";
 
 const CareerRoadmap = () => {
   const [cvFile, setCvFile] = useState(null);
@@ -66,8 +65,7 @@ const CareerRoadmap = () => {
   };
 
   return (
-    <UserLayout>
-      <Box sx={{ py: 6, bgcolor: "#f8fafc", minHeight: "100vh" }}>
+    <Box sx={{ py: 6, bgcolor: "#f8fafc", minHeight: "100vh" }}>
         <Container maxWidth="xl">
           <HeaderSection />
 
@@ -107,8 +105,7 @@ const CareerRoadmap = () => {
           </Stack>
         </Container>
       </Box>
-    </UserLayout>
-  );
+    );
 };
 
 export default CareerRoadmap;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -6,7 +6,6 @@ import {
   IconButton, Paper, CircularProgress, Button, Divider 
 } from "@mui/material";
 import { Favorite, ArrowForward, FavoriteBorder } from "@mui/icons-material";
-import UserLayout from "../../components/UserLayout";
 import { useToast } from "../../contexts/ToastContext";
 import { getMediaUrl } from "../../utils/urlHelpers";
 
@@ -28,12 +27,12 @@ export default function FavoriteJobs() {
       const res = await axios.get("http://localhost:8080/api/user/jobs/favorite/all", {
         headers: authHeader,
       });
-      // Đảm bảo dữ liệu từ server luôn hiển thị trạng thái đã lưu
+      // Äáº£m báº£o dá»¯ liá»‡u tá»« server luÃ´n hiá»ƒn thá»‹ tráº¡ng thÃ¡i Ä‘Ã£ lÆ°u
       const favoriteData = res.data.map(job => ({ ...job, isFavorite: true }));
       setFavorites(favoriteData);
     } catch (err) {
-      console.error("Lỗi lấy danh sách yêu thích", err);
-      showToast("Lỗi tải danh sách yêu thích", "error");
+      console.error("Lá»—i láº¥y danh sÃ¡ch yÃªu thÃ­ch", err);
+      showToast("Lá»—i táº£i danh sÃ¡ch yÃªu thÃ­ch", "error");
     } finally {
       setLoading(false);
     }
@@ -50,27 +49,27 @@ export default function FavoriteJobs() {
       await axios.delete(`http://localhost:8080/api/user/jobs/favorite/${jobId}`, {
         headers: authHeader,
       });
-      // Xóa khỏi danh sách hiển thị ngay lập tức để người dùng thấy kết quả
+      // XÃ³a khá»i danh sÃ¡ch hiá»ƒn thá»‹ ngay láº­p tá»©c Ä‘á»ƒ ngÆ°á»i dÃ¹ng tháº¥y káº¿t quáº£
       setFavorites((prev) => prev.filter((job) => job.jobId !== jobId));
-      showToast("Đã bỏ lưu tin!", "success");
+      showToast("ÄÃ£ bá» lÆ°u tin!", "success");
     } catch (err) {
-      console.error("Lỗi xóa yêu thích:", err);
-      showToast("Lỗi bỏ lưu tin", "error");
+      console.error("Lá»—i xÃ³a yÃªu thÃ­ch:", err);
+      showToast("Lá»—i bá» lÆ°u tin", "error");
     }
   };
 
   return (
-    <UserLayout>
-      {/* 1. HEADER SECTION - Đồng bộ với tone màu trang chủ */}
+    <>
+      {/* 1. HEADER SECTION - Äá»“ng bá»™ vá»›i tone mÃ u trang chá»§ */}
       <Box sx={{ bgcolor: "#f8faff", pt: 12, pb: 8, borderBottom: "1px solid #eff6ff" }}>
         <Container maxWidth={false} sx={{ px: { xs: 4, md: 10 } }}>
           <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
             <Box>
               <Typography variant="h3" fontWeight="900" sx={{ color: "#1e293b", mb: 1 }}>
-                Công việc <span style={{ color: '#2563eb' }}>đã lưu</span>
+                CÃ´ng viá»‡c <span style={{ color: '#2563eb' }}>Ä‘Ã£ lÆ°u</span>
               </Typography>
               <Typography variant="h6" sx={{ color: "#64748b", fontWeight: 500 }}>
-                {loading ? "Đang tải..." : `Bạn đang quan tâm ${favorites.length} cơ hội nghề nghiệp`}
+                {loading ? "Äang táº£i..." : `Báº¡n Ä‘ang quan tÃ¢m ${favorites.length} cÆ¡ há»™i nghá» nghiá»‡p`}
               </Typography>
             </Box>
             <Button 
@@ -78,7 +77,7 @@ export default function FavoriteJobs() {
               startIcon={<ArrowForward />}
               sx={{ color: '#2563eb', fontWeight: 800, mb: 1, textTransform: 'none' }}
             >
-              Tiếp tục khám phá
+              Tiáº¿p tá»¥c khÃ¡m phÃ¡
             </Button>
           </Stack>
         </Container>
@@ -91,7 +90,7 @@ export default function FavoriteJobs() {
             <CircularProgress sx={{ color: '#2563eb' }} />
           </Box>
         ) : favorites.length === 0 ? (
-          /* TRẠNG THÁI CHƯA CÓ CÔNG VIỆC YÊU THÍCH */
+          /* TRáº NG THÃI CHÆ¯A CÃ“ CÃ”NG VIá»†C YÃŠU THÃCH */
           <Box sx={{ textAlign: 'center', py: 10 }}>
             <Paper 
               elevation={0} 
@@ -107,22 +106,22 @@ export default function FavoriteJobs() {
                   <FavoriteBorder sx={{ fontSize: 40, color: '#94a3b8' }} />
               </Avatar>
               <Typography variant="h5" fontWeight="800" color="#1e293b" mb={1}>
-                Danh sách yêu thích trống
+                Danh sÃ¡ch yÃªu thÃ­ch trá»‘ng
               </Typography>
               <Typography color="#64748b" mb={4} sx={{ maxWidth: 400, mx: 'auto' }}>
-                Có vẻ như bạn chưa lưu công việc nào. Hãy quay lại trang chủ để tìm kiếm những cơ hội phù hợp nhất!
+                CÃ³ váº» nhÆ° báº¡n chÆ°a lÆ°u cÃ´ng viá»‡c nÃ o. HÃ£y quay láº¡i trang chá»§ Ä‘á»ƒ tÃ¬m kiáº¿m nhá»¯ng cÆ¡ há»™i phÃ¹ há»£p nháº¥t!
               </Typography>
               <Button 
                 variant="contained" 
                 onClick={() => navigate("/")}
                 sx={{ bgcolor: '#2563eb', px: 4, py: 1.5, borderRadius: 4, fontWeight: 800 }}
               >
-                Tìm việc ngay
+                TÃ¬m viá»‡c ngay
               </Button>
             </Paper>
           </Box>
         ) : (
-          /* HIỂN THỊ DANH SÁCH (Dùng đúng form 7cm của trang Home) */
+          /* HIá»‚N THá»Š DANH SÃCH (DÃ¹ng Ä‘Ãºng form 7cm cá»§a trang Home) */
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'center' }}>
             {favorites.map((job) => (
               <Paper
@@ -161,7 +160,7 @@ export default function FavoriteJobs() {
                 <Stack direction="row" alignItems="center" justifyContent="space-between" mt={3}>
                   <Stack direction="row" spacing={1}>
                     <Box sx={{ bgcolor: "#f1f5f9", px: 1, py: 0.5, borderRadius: 1.5 }}>
-                      <Typography variant="caption" fontWeight="700">{job.salaryRange || "Thỏa thuận"}</Typography>
+                      <Typography variant="caption" fontWeight="700">{job.salaryRange || "Thá»a thuáº­n"}</Typography>
                     </Box>
                     <Box sx={{ bgcolor: "#f1f5f9", px: 1, py: 0.5, borderRadius: 1.5 }}>
                       <Typography variant="caption" fontWeight="700">{job.location?.split(',').pop()}</Typography>
@@ -186,6 +185,6 @@ export default function FavoriteJobs() {
           </Box>
         )}
       </Container>
-    </UserLayout>
+    </>
   );
 }

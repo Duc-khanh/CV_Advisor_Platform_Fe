@@ -10,8 +10,7 @@ import {
   Search, Visibility, Favorite, FavoriteBorder, Bookmark, BookmarkBorder,
   AccessTime, CalendarMonth, TrendingUp, Email, LocalOffer
 } from "@mui/icons-material";
-import UserLayout from "../../components/UserLayout";
-import { articleService } from "../../services/articleService";
+import { articleService } from "../../services/company/articleService";
 import { useToast } from "../../contexts/ToastContext";
 import { getMediaUrl } from "../../utils/urlHelpers";
 
@@ -126,8 +125,7 @@ export default function CareerGuide() {
   );
 
   return (
-    <UserLayout>
-      {/* HERO */}
+    <>
       <Box sx={{ background: "linear-gradient(135deg, #1e3a8a 0%, #2563eb 60%, #3b82f6 100%)", color: "#fff", pt: { xs: 8, md: 10 }, pb: { xs: 6, md: 8 }, position: "relative", overflow: "hidden" }}>
         <Box sx={{ position: "absolute", top: "-20%", right: "-10%", width: 400, height: 400, borderRadius: "50%", background: "rgba(255,255,255,0.04)", filter: "blur(50px)", pointerEvents: "none" }} />
         <Container maxWidth="xl" sx={{ px: "24px" }}>
@@ -322,7 +320,7 @@ export default function CareerGuide() {
           </Box>
         )}
       </Container>
-    </UserLayout>
+    </>
   );
 }
   

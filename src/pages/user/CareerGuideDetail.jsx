@@ -33,8 +33,7 @@ import {
   Star,
   StarOutline
 } from "@mui/icons-material";
-import UserLayout from "../../components/UserLayout";
-import { articleService } from "../../services/articleService";
+import { articleService } from "../../services/company/articleService";
 import { useToast } from "../../contexts/ToastContext";
 import { getMediaUrl } from "../../utils/urlHelpers";
 
@@ -321,8 +320,7 @@ export default function CareerGuideDetail() {
   };
 
   return (
-    <UserLayout>
-      <Container maxWidth={false} sx={{ pt: 14, pb: 10, px: { xs: 4, md: 10 } }}>
+    <Container maxWidth={false} sx={{ pt: 14, pb: 10, px: { xs: 4, md: 10 } }}>
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
             <CircularProgress sx={{ color: "#2563eb" }} />
@@ -688,6 +686,5 @@ export default function CareerGuideDetail() {
           </Grid>
         )}
       </Container>
-    </UserLayout>
-  );
+    );
 }

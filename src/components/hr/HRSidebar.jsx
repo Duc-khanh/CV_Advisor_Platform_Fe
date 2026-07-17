@@ -8,7 +8,7 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../contexts/ToastContext";
-import LogoutConfirmDialog from "../../components/LogoutConfirmDialog";
+import LogoutConfirmDialog from "../dialogs/LogoutConfirmDialog";
 
 const drawerWidth = 280;
 

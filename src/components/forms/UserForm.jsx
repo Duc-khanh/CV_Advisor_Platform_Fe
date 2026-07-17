@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { TextField, Button, Stack, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, Autocomplete } from "@mui/material";
 import { createFilterOptions } from "@mui/material/Autocomplete";
-import { getCompanies, createCompany, getIndustries } from "../../services/adminUserService";
+import { getCompanies, createCompany, getIndustries } from "../../services/user/adminUserService";
 
 const filter = createFilterOptions();
 

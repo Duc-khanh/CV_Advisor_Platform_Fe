@@ -1,7 +1,7 @@
 import { Box, Toolbar } from "@mui/material";
-import HRSidebar from "../pages/hr/HRSidebar";
-import AdminHeader from "../pages/admin/AdminHeader";
-import AdminFooter from "../pages/admin/AdminFooter";
+import HRSidebar from "../components/hr/HRSidebar";
+import AdminHeader from "../components/admin/AdminHeader";
+import AdminFooter from "../components/admin/AdminFooter";
 
 export default function HRLayout({ children }) {
   return (

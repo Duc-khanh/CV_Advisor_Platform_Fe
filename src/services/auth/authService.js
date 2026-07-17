@@ -1,4 +1,4 @@
-import authApi from "../api/authApi.js";
+import authApi from "./authApi.js";
 
 export const register = (data) => {
   return authApi.post("/register", data);

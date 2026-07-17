@@ -2,7 +2,6 @@ import React, { useEffect } from "react";
 import { Container, Typography, Box, Paper, Divider, Button, Stack } from "@mui/material";
 import { ArrowBack, Security, Gavel, Storage, Visibility } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import UserLayout from "../../components/UserLayout"; 
 
 export default function PrivacyPolicy() {
   const navigate = useNavigate();
@@ -12,8 +11,7 @@ export default function PrivacyPolicy() {
   }, []);
 
   return (
-    <UserLayout>
-      <Container maxWidth="md" sx={{ py: 6 }}>
+    <Container maxWidth="md" sx={{ py: 6 }}>
         <Button 
           startIcon={<ArrowBack />} 
           onClick={() => navigate(-1)} 
@@ -86,6 +84,5 @@ export default function PrivacyPolicy() {
           </Box>
         </Paper>
       </Container>
-    </UserLayout>
-  );
+    );
 }

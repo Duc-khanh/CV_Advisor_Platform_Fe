@@ -53,11 +53,10 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
-import UserLayout from "../../components/UserLayout";
-import { getCurrentUser, updateCurrentUser } from "../../services/currentUser";
+import { getCurrentUser, updateCurrentUser } from "../../services/user/currentUser";
 import { useToast } from "../../contexts/ToastContext";
 import { getMediaUrl } from "../../utils/urlHelpers";
-import ConfirmDialog from "../../components/ConfirmDialog";
+import ConfirmDialog from "../../components/dialogs/ConfirmDialog";
 
 // Import refactored profile subcomponents
 import UserProfileSidebar from "./profile-components/UserProfileSidebar";
@@ -534,13 +533,13 @@ export default function UserProfile() {
   const isItviecProfile = activeTab === "profile_itviec";
 
   return (
-    <UserLayout>
+    <>
       <Box sx={{ py: 2, bgcolor: "#f8fafc", minHeight: "100vh", mx: -4, px: 4 }}>
-        {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
-            <CircularProgress size={50} thickness={4.5} sx={{ color: "#ef4444" }} />
-          </Box>
-        ) : (
+          {loading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
+              <CircularProgress size={50} thickness={4.5} sx={{ color: "#ef4444" }} />
+            </Box>
+          ) : (
           <Grid container spacing={3}>
             {/* COLUMN 1: SIDEBAR */}
             <Grid size={{ xs: 12, md: 3, lg: 2.6 }}>
@@ -888,6 +887,6 @@ export default function UserProfile() {
         type={confirmConfig.type}
         confirmText={confirmConfig.confirmText}
       />
-    </UserLayout>
+    </>
   );
 }

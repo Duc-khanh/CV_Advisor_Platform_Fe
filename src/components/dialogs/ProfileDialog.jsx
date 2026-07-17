@@ -3,7 +3,7 @@ import {
   TextField, Button, Avatar, Stack, Box, Typography 
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { updateCurrentUser } from "../../services/currentUser";
+import { updateCurrentUser } from "../../services/user/currentUser";
 import { useToast } from "../../contexts/ToastContext";
 import { getMediaUrl } from "../../utils/urlHelpers";
 

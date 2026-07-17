@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Box, CssBaseline, Toolbar } from "@mui/material";
-import AdminHeader from "../pages/admin/AdminHeader";
-import AdminSidebar from "../pages/admin/AdminSidebar";
+import AdminHeader from "../components/admin/AdminHeader";
+import AdminSidebar from "../components/admin/AdminSidebar";
 
 const drawerWidth = 260;
 

@@ -1,4 +1,4 @@
-import axios from './axios'; // Assuming this is an axios instance with baseUrl configured
+import axios from '../axios'; // Assuming this is an axios instance with baseUrl configured
 
 /**
  * Gọi API để AI đánh giá CV bằng file upload.

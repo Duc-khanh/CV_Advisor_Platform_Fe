@@ -10,7 +10,7 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import AIAnalysisCard from './AIAnalysisCard';
-import { loadCvAnalysis, clearCvAnalysis, getCurrentUserId } from '../../services/cvAnalysisStorage';
+import { loadCvAnalysis, clearCvAnalysis, getCurrentUserId } from '../../services/cv/cvAnalysisStorage';
 
 export default function LastCvAnalysisSection() {
   const navigate = useNavigate();

@@ -16,10 +16,10 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import PushPinIcon from "@mui/icons-material/PushPin";
 import PushPinOutlinedIcon from "@mui/icons-material/PushPinOutlined";
 
-import { articleService } from "../../services/articleService";
+import { articleService } from "../../services/company/articleService";
 import { useToast } from "../../contexts/ToastContext";
 import { getMediaUrl } from "../../utils/urlHelpers";
-import ConfirmDialog from "../../components/ConfirmDialog";
+import ConfirmDialog from "../../components/dialogs/ConfirmDialog";
 
 export default function ArticleManagement() {
   const [articles, setArticles] = useState([]);

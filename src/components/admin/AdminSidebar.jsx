@@ -23,7 +23,7 @@ import {
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "../../contexts/ToastContext";
-import LogoutConfirmDialog from "../../components/LogoutConfirmDialog";
+import LogoutConfirmDialog from "../dialogs/LogoutConfirmDialog";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
