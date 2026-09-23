@@ -21,8 +21,8 @@ export const API_ENDPOINTS = {
   REMOVE_FAVORITE: (jobId) => `/api/user/jobs/favorite/${jobId}`,
 
   // CV Management
-  USER_CV: "/api/user/cv",
-  UPLOAD_CV: "/api/user/cv/upload",
+  USER_CV: "/api/user/cvs",
+  UPLOAD_CV: "/api/user/cvs/upload",
 
   // AI Services
   EVALUATE_CV: "/api/v1/ai/evaluate-cv",

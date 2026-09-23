@@ -10,12 +10,14 @@ const UserLayout = () => {
   const location = useLocation();
   const header = useMemo(() => <CandidateHeader />, []);
 
+  const isCvBuilder = location.pathname === "/cv-builder";
+
   return (
     <Box sx={{ bgcolor: "#ffffff", minHeight: "100vh", width: "100%", display: "flex", flexDirection: "column" }}>
       {header}
 
-      <Box sx={{ flex: 1, py: 4 }}>
-        <Container maxWidth={false} sx={{ px: { xs: 4, md: 10 } }}>
+      <Box sx={{ flex: 1, py: isCvBuilder ? 0 : 4 }}>
+        <Container maxWidth={false} disableGutters={isCvBuilder} sx={{ px: isCvBuilder ? 0 : { xs: 4, md: 10 } }}>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={location.pathname}
@@ -31,7 +33,7 @@ const UserLayout = () => {
         </Container>
       </Box>
 
-      <UserFooter />
+      {!location.pathname.startsWith("/for-employers") && !isCvBuilder && <UserFooter />}
     </Box>
   );
 };

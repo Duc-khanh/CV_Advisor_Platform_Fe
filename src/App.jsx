@@ -5,6 +5,7 @@ import AdminHome from "./pages/admin/AdminHome";
 import HrDashboard from "./pages/hr/HrDashboard";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import EmployerRegister from "./pages/auth/EmployerRegister";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import UserManagement from "./pages/admin/UserManagement";
 import AdminLayout from "./layouts/AdminLayout";
@@ -38,8 +39,8 @@ export default function App() {
         <Route path="cv-builder" element={<ProtectedRoute><CVBuilder /></ProtectedRoute>} />
         <Route path="career-roadmap" element={<ProtectedRoute><CareerRoadmap /></ProtectedRoute>} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="favorite-jobs" element={<FavoriteJobs />} />
-        <Route path="applied-jobs" element={<AppliedJobs />} />
+        <Route path="favorite-jobs" element={<ProtectedRoute><FavoriteJobs /></ProtectedRoute>} />
+        <Route path="applied-jobs" element={<ProtectedRoute><AppliedJobs /></ProtectedRoute>} />
         <Route path="applications" element={<CompanyApplications />} />
         <Route path="for-employers" element={<ForEmployers />} />
         <Route path="career-guide" element={<CareerGuide />} />
@@ -48,6 +49,9 @@ export default function App() {
 
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/register-hr" element={<EmployerRegister />} />
+      <Route path="/register/employer" element={<EmployerRegister />} />
+      <Route path="/employer-register" element={<EmployerRegister />} />
 
       <Route
         path="/admin_dashboard"

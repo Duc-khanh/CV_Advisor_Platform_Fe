@@ -34,7 +34,7 @@ export default function TopCompaniesSection({ onCompanyClick }) {
   const animationDuration = `${Math.max(24, companies.length * 2.5)}s`;
 
   return (
-    <Box sx={{ py: 6, bgcolor: "#ffffff", borderTop: "1px solid #f1f5f9" }}>
+    <Box sx={{ py: 6, bgcolor: "#ffffff", }}>
       <Container maxWidth="xl">
         <Typography variant="h6" fontWeight={900} color="#0f172a" sx={{ mb: 3 }}>
           Top công ty tuyển dụng
@@ -67,7 +67,7 @@ export default function TopCompaniesSection({ onCompanyClick }) {
                 sx={{
                   p: 2,
                   borderRadius: "14px",
-                  border: "1px solid #e2e8f0",
+
                   bgcolor: "#ffffff",
                   boxSizing: "border-box",
                   display: "flex",
@@ -80,7 +80,7 @@ export default function TopCompaniesSection({ onCompanyClick }) {
                   mr: 2,
                   overflow: "hidden",
                   "&:hover": {
-                    borderColor: "#2563eb",
+
                     boxShadow: "0 8px 24px rgba(37,99,235,0.05)",
                     transform: "translateY(-2px)",
                   },
@@ -93,7 +93,7 @@ export default function TopCompaniesSection({ onCompanyClick }) {
                     width: 48,
                     height: 48,
                     bgcolor: "#ffffff",
-                    border: "1px solid #e2e8f0",
+
                     borderRadius: "10px",
                   }}
                 >

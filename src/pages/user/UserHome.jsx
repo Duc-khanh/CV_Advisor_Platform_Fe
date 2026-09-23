@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { Box } from "@mui/material";
 import {
   Code,
   Brush,
@@ -192,7 +193,12 @@ export default function UserHome() {
   ];
 
   return (
-    <>
+    <Box
+      sx={{
+        "& .MuiPaper-root": { border: "1px solid #e2e8f0" },
+        "& .MuiPaper-root:hover": { borderColor: "#e2e8f0" },
+      }}
+    >
       <HeroSection searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={handleSearch} />
       <LastCvAnalysisSection />
       <JobCategoriesSection jobCategories={jobCategories} />
@@ -227,6 +233,6 @@ export default function UserHome() {
         navigate={navigate}
         handleToggleFavorite={handleToggleFavorite}
       />
-    </>
+    </Box>
   );
 }

@@ -616,7 +616,7 @@ export default function CareerGuideDetail() {
                     Chuyên gia Tư vấn Nghề nghiệp
                   </Typography>
                   <Typography variant="body2" color="#64748b" sx={{ lineHeight: 1.5, px: 1 }}>
-                    Ban Biên Tập CvAdvisor Platform - Chia sẻ các bài phân tích sâu, xu hướng việc làm và bí quyết thương lượng lương, viết CV vượt qua ải ATS.
+                    Ban Biên Tập CareerGo - Chia sẻ các bài phân tích sâu, xu hướng việc làm và bí quyết thương lượng lương, viết CV vượt qua ải ATS.
                   </Typography>
                 </Paper>
 

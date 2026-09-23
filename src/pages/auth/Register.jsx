@@ -21,17 +21,17 @@ import {
   Person,
   Visibility,
   VisibilityOff,
-  Business,
-  Public,
-  LocationOn,
-  Description,
   AutoAwesome,
   Work,
 } from "@mui/icons-material";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { register, registerHr } from "../../services/auth/authService";
+import { register } from "../../services/auth/authService";
 import AuthLayout from "../../layouts/AuthLayout";
 import { useToast } from "../../contexts/ToastContext";
+import {
+  validateCandidateRegister,
+  getAuthErrorMessage,
+} from "../../utils/authValidation";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -39,13 +39,8 @@ export default function Register() {
     email: "",
     password: "",
     confirmPassword: "",
-    companyName: "",
-    industryName: "",
-    address: "",
-    description: "",
   });
 
-  const [isHr, setIsHr] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -55,10 +50,11 @@ export default function Register() {
   const showToast = useToast();
 
   useEffect(() => {
+    // Nếu có cờ isHr, tự động chuyển hướng sang màn hình tuyển dụng
     if (location.state?.isHr) {
-      setIsHr(true);
+      navigate("/for-employers#employer-register", { replace: true });
     }
-  }, [location.state]);
+  }, [location.state, navigate]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -67,30 +63,25 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (form.password !== form.confirmPassword) {
-      showToast("Mật khẩu nhập lại không khớp!", "error");
+    const validation = validateCandidateRegister(form);
+    if (!validation.isValid) {
+      showToast(validation.error, "error");
       return;
     }
 
     setLoading(true);
 
     try {
-      const { confirmPassword, ...registerData } = form;
+      await register({
+        fullName: form.fullName.trim(),
+        email: form.email.trim(),
+        password: form.password,
+      });
 
-      if (isHr) {
-        await registerHr(registerData);
-      } else {
-        await register({
-          fullName: form.fullName,
-          email: form.email,
-          password: form.password,
-        });
-      }
-
-      showToast("Đăng ký thành công!", "success");
+      showToast("Đăng ký tài khoản ứng viên thành công!", "success");
       navigate("/login");
     } catch (err) {
-      showToast(err.response?.data?.message || "Đăng ký thất bại", "error");
+      showToast(getAuthErrorMessage(err, "Đăng ký thất bại. Vui lòng thử lại!"), "error");
     } finally {
       setLoading(false);
     }
@@ -223,7 +214,7 @@ export default function Register() {
                 zIndex: 2,
               }}
             >
-              HireAI
+              CareerGo
             </Typography>
 
             <Typography
@@ -336,56 +327,25 @@ export default function Register() {
 
                 <Typography
                   sx={{
-                    fontSize: 31,
+                    fontSize: 30,
                     fontWeight: 900,
                     color: "#1976d2",
                     mb: 0.8,
                   }}
                 >
-                  Tạo tài khoản
+                  Đăng ký ứng viên
                 </Typography>
 
                 <Typography
                   sx={{
                     color: "#64748b",
-                    fontSize: 14.5,
+                    fontSize: 14,
                     fontWeight: 500,
                   }}
                 >
-                  Đăng ký để bắt đầu sử dụng hệ thống tuyển dụng
+                  Tạo tài khoản để khám phá việc làm và kết nối với nhà tuyển dụng
                 </Typography>
               </Box>
-
-              <Tabs
-                value={isHr ? 1 : 0}
-                onChange={(e, val) => setIsHr(val === 1)}
-                variant="fullWidth"
-                sx={{
-                  mb: 2.5,
-                  minHeight: 44,
-                  p: 0.5,
-                  borderRadius: "999px",
-                  bgcolor: "#f1f5f9",
-                  "& .MuiTabs-indicator": {
-                    display: "none",
-                  },
-                  "& .MuiTab-root": {
-                    minHeight: 36,
-                    borderRadius: "999px",
-                    textTransform: "none",
-                    fontWeight: 800,
-                    color: "#64748b",
-                  },
-                  "& .Mui-selected": {
-                    bgcolor: "#fff",
-                    color: "#1976d2 !important",
-                    boxShadow: "0 4px 12px rgba(15,23,42,0.08)",
-                  },
-                }}
-              >
-                <Tab label="Ứng viên" />
-                <Tab label="Nhà tuyển dụng" />
-              </Tabs>
 
               <Stack spacing={1.8} component="form" onSubmit={handleSubmit}>
                 <TextField
@@ -493,111 +453,6 @@ export default function Register() {
                   sx={inputSx}
                 />
 
-                {isHr && (
-                  <>
-                    <TextField
-                      name="companyName"
-                      placeholder="Tên công ty"
-                      required
-                      fullWidth
-                      onChange={handleChange}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Business
-                              sx={{ color: "#64748b" }}
-                              fontSize="small"
-                            />
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={inputSx}
-                    />
-
-                    <TextField
-                      name="industryName"
-                      placeholder="Lĩnh vực hoạt động"
-                      required
-                      fullWidth
-                      onChange={handleChange}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Public
-                              sx={{ color: "#64748b" }}
-                              fontSize="small"
-                            />
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={inputSx}
-                    />
-
-                    <TextField
-                      name="address"
-                      placeholder="Địa chỉ công ty"
-                      required
-                      fullWidth
-                      onChange={handleChange}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <LocationOn
-                              sx={{ color: "#64748b" }}
-                              fontSize="small"
-                            />
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={inputSx}
-                    />
-
-                    <TextField
-                      name="description"
-                      placeholder="Mô tả công ty"
-                      multiline
-                      rows={3}
-                      fullWidth
-                      onChange={handleChange}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment
-                            position="start"
-                            sx={{ alignSelf: "flex-start", mt: 1 }}
-                          >
-                            <Description
-                              sx={{ color: "#64748b" }}
-                              fontSize="small"
-                            />
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={{
-                        ...inputSx,
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: "22px",
-                          bgcolor: "#bfe8dd",
-                          px: 1,
-                          alignItems: "flex-start",
-                          "& fieldset": { border: "none" },
-                          "&:hover fieldset": { border: "none" },
-                          "&.Mui-focused fieldset": {
-                            border: "2px solid #38bdf8",
-                          },
-                        },
-                        "& textarea": {
-                          fontWeight: 600,
-                          color: "#0f172a",
-                        },
-                        "& textarea::placeholder": {
-                          color: "#64748b",
-                          opacity: 1,
-                        },
-                      }}
-                    />
-                  </>
-                )}
-
                 <Button
                   type="submit"
                   variant="contained"
@@ -621,7 +476,7 @@ export default function Register() {
                     },
                   }}
                 >
-                  {loading ? "Đang xử lý..." : "Đăng ký tài khoản"}
+                  {loading ? "Đang xử lý..." : "Đăng ký tài khoản ứng viên"}
                 </Button>
 
                 <Typography
@@ -644,6 +499,29 @@ export default function Register() {
                     Đăng nhập
                   </Link>
                 </Typography>
+
+                <Box
+                  sx={{
+                    mt: 2,
+                    pt: 2,
+                    borderTop: "1px dashed #e2e8f0",
+                    textAlign: "center",
+                  }}
+                >
+                  <Typography sx={{ fontSize: 13, color: "#64748b", fontWeight: 500 }}>
+                    Bạn là nhà tuyển dụng?{" "}
+                    <Link
+                      to="/for-employers#employer-register"
+                      style={{
+                        textDecoration: "none",
+                        color: "#2563eb",
+                        fontWeight: 800,
+                      }}
+                    >
+                      Đăng ký cho Doanh nghiệp →
+                    </Link>
+                  </Typography>
+                </Box>
               </Stack>
             </Box>
           </Box>

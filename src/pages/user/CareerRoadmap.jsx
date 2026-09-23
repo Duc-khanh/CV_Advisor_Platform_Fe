@@ -13,7 +13,7 @@ import {
 const CareerRoadmap = () => {
   const [cvFile, setCvFile] = useState(null);
   const [targetRole, setTargetRole] = useState("");
-  const [desiredRoadmap, setDesiredRoadmap] = useState("");
+  const [desiredRoadmap, setDesiredRoadmap] = useState("6 tháng (Tiêu chuẩn)");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [evaluation, setEvaluation] = useState(null);
   const [roadmap, setRoadmap] = useState(null);
@@ -32,6 +32,10 @@ const CareerRoadmap = () => {
   const handleAnalyze = async () => {
     if (!cvFile) {
       setError("Vui lòng tải lên CV của bạn");
+      return;
+    }
+    if (!targetRole.trim()) {
+      setError("Vui lòng nhập vị trí nghề nghiệp mục tiêu");
       return;
     }
 
@@ -58,18 +62,18 @@ const CareerRoadmap = () => {
   const handleReset = () => {
     setCvFile(null);
     setTargetRole("");
-    setDesiredRoadmap("");
+    setDesiredRoadmap("6 tháng (Tiêu chuẩn)");
     setEvaluation(null);
     setRoadmap(null);
     setError("");
   };
 
   return (
-    <Box sx={{ py: 6, bgcolor: "#f8fafc", minHeight: "100vh" }}>
+    <Box sx={{ py: { xs: 3, md: 4 }, bgcolor: "#f8fafc", minHeight: "100vh" }}>
         <Container maxWidth="xl">
           <HeaderSection />
 
-          <Stack spacing={4}>
+          <Stack spacing={3} sx={{ alignItems: "center" }}>
             <UploadFormSection
               cvFile={cvFile}
               targetRole={targetRole}

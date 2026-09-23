@@ -1,21 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Box,
   Typography,
   Paper,
   Button,
   Stack,
-  LinearProgress,
-  Chip,
-  Divider,
+  CircularProgress,
   Container,
 } from "@mui/material";
 import {
   CloudUpload,
-  Search,
   PictureAsPdf,
   CheckCircle,
-  InfoOutlined,
   AutoAwesome,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
@@ -179,499 +175,435 @@ export default function CVAnalysis() {
     }
   };
 
+  const fileInputRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const droppedFile = e.dataTransfer.files?.[0];
+    if (!droppedFile) return;
+
+    if (droppedFile.type !== "application/pdf") {
+      showToast("Chỉ cho phép upload file PDF.", "warning");
+      return;
+    }
+
+    if (droppedFile.size > 5 * 1024 * 1024) {
+      showToast("File PDF tối đa 5MB.", "warning");
+      return;
+    }
+
+    setFile(droppedFile);
+  };
+
+  const handleRemoveFile = (e) => {
+    e?.stopPropagation();
+    setFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   return (
-    <Box sx={{ py: 6, bgcolor: "#f8fafc", minHeight: "100vh" }}>
-        <Container maxWidth="xl">
-          {/* Header */}
+    <Box
+      sx={{
+        py: { xs: 2, md: 3 },
+        bgcolor: "#f8fafc",
+        minHeight: result ? "100vh" : "calc(100vh - 180px)",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: result ? "flex-start" : "center",
+      }}
+    >
+      <Container maxWidth="xl">
+        {/* ================= 1. HERO HEADER ================= */}
+        <Box sx={{ textAlign: "center", maxWidth: "600px", mx: "auto" }}>
+          {/* Badge */}
           <Box
             sx={{
-              position: "relative",
-              overflow: "hidden",
-              textAlign: "center",
-              mb: 2.5,
-              py: { xs: 2.2, md: 2.8 },
-              px: 3,
-              borderRadius: "0 0 28px 28px",
-              background:
-                "linear-gradient(135deg, #f8faff 0%, #ffffff 45%, #eff6ff 100%)",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 0.6,
+              bgcolor: "#eff6ff",
+              color: "#1D61F2",
+              px: 1.5,
+              py: 0.5,
+              borderRadius: "9999px",
+              fontSize: "0.75rem",
+              fontWeight: 600,
             }}
           >
-            <Box
-              sx={{
-                position: "absolute",
-                left: { xs: 18, md: 90 },
-                top: { xs: 18, md: 24 },
-                width: { xs: 52, md: 70 },
-                height: { xs: 52, md: 70 },
-                borderRadius: "20px",
-                background: "linear-gradient(135deg, #eff6ff, #bfdbfe)",
-                display: { xs: "none", sm: "flex" },
-                alignItems: "center",
-                justifyContent: "center",
-                transform: "rotate(-8deg)",
-                opacity: 0.9,
-              }}
-            >
-              <PictureAsPdf
-                sx={{
-                  fontSize: { sm: 30, md: 40 },
-                  color: "#3b82f6",
-                }}
-              />
-            </Box>
-
-            <Box
-              sx={{
-                position: "absolute",
-                right: { xs: 18, md: 100 },
-                top: { xs: 18, md: 24 },
-                width: { xs: 54, md: 72 },
-                height: { xs: 54, md: 72 },
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #eff6ff, #dbeafe)",
-                display: { xs: "none", sm: "flex" },
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: 0.9,
-              }}
-            >
-              <Search
-                sx={{
-                  fontSize: { sm: 32, md: 44 },
-                  color: "#2563eb",
-                }}
-              />
-            </Box>
-
-            <Box
-              sx={{
-                position: "relative",
-                zIndex: 1,
-                maxWidth: 650,
-                mx: "auto",
-              }}
-            >
-              <Chip
-                icon={<AutoAwesome sx={{ color: "#2563eb !important" }} />}
-                label="Phân tích CV AI"
-                sx={{
-                  mb: 1,
-                  px: 0.6,
-                  height: 28,
-                  borderRadius: "999px",
-                  bgcolor: "#eff6ff",
-                  color: "#2563eb",
-                  fontWeight: 800,
-                  fontSize: "0.76rem",
-                  border: "1px solid #dbeafe",
-                }}
-              />
-
-              <Typography
-                variant="h2"
-                fontWeight={900}
-                sx={{
-                  lineHeight: 1.08,
-                  letterSpacing: "-1px",
-                  fontSize: {
-                    xs: "1.45rem",
-                    sm: "2rem",
-                    md: "2.45rem",
-                  },
-                  background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  mb: 1,
-                }}
-              >
-                Phân tích CV bằng AI
-              </Typography>
-
-              <Typography
-                variant="body1"
-                color="#64748b"
-                sx={{
-                  fontSize: { xs: "0.88rem", md: "0.98rem" },
-                  fontWeight: 500,
-                  lineHeight: 1.65,
-                  maxWidth: 560,
-                  mx: "auto",
-                  mb: 1.2,
-                }}
-              >
-                Tải lên CV PDF để hệ thống phân tích kỹ năng, điểm mạnh, điểm
-                yếu và gợi ý việc làm phù hợp.
-              </Typography>
-
-              <Stack
-                direction="row"
-                spacing={1}
-                justifyContent="center"
-                flexWrap="wrap"
-                useFlexGap
-                sx={{ mt: 0.5 }}
-              >
-                <Chip
-                  size="small"
-                  icon={<CheckCircle />}
-                  label="Đánh giá CV"
-                  sx={{
-                    bgcolor: "#ffffff",
-                    border: "1px solid #e2e8f0",
-                    fontWeight: 700,
-                    height: 30,
-                  }}
-                />
-
-                <Chip
-                  size="small"
-                  icon={<AutoAwesome />}
-                  label="Phân tích kỹ năng"
-                  sx={{
-                    bgcolor: "#ffffff",
-                    border: "1px solid #e2e8f0",
-                    fontWeight: 700,
-                    height: 30,
-                  }}
-                />
-
-                <Chip
-                  size="small"
-                  icon={<Search />}
-                  label="Gợi ý việc làm"
-                  sx={{
-                    bgcolor: "#ffffff",
-                    border: "1px solid #e2e8f0",
-                    fontWeight: 700,
-                    height: 30,
-                  }}
-                />
-              </Stack>
-            </Box>
+            <AutoAwesome sx={{ fontSize: 14, color: "#1D61F2" }} />
+            <span>Phân tích CV AI</span>
           </Box>
 
-          {/* Upload UI */}
-          <Paper
-            elevation={0}
+          {/* Tiêu đề H1 */}
+          <Typography
+            component="h1"
             sx={{
-              p: { xs: 2.5, md: 3 },
-              borderRadius: "20px",
-              mb: 4,
-              border: "1px solid #e2e8f0",
-              bgcolor: "#ffffff",
-              boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+              fontSize: { xs: "1.65rem", sm: "1.875rem" },
+              fontWeight: 700,
+              color: "#0f172a",
+              mt: 1,
+              mb: 0,
+              lineHeight: 1.25,
             }}
           >
-            <Stack direction="row" alignItems="center" spacing={2} mb={2.5}>
-              <Box
-                sx={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: "50%",
-                  bgcolor: "#eff6ff",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                <CloudUpload sx={{ color: "#3b82f6" }} />
-              </Box>
+            Phân tích CV bằng AI
+          </Typography>
 
+          {/* Subtitle */}
+          <Typography
+            sx={{
+              color: "#64748b",
+              maxWidth: "36rem",
+              mx: "auto",
+              mt: 1,
+              fontSize: "0.875rem",
+              lineHeight: 1.5,
+            }}
+          >
+            Tải lên CV để hệ thống tự động bóc tách kỹ năng, phát hiện điểm mạnh - điểm yếu và gợi ý công việc phù hợp.
+          </Typography>
+
+          {/* 3 tags dạng text inline */}
+          <Typography
+            sx={{
+              fontSize: "0.75rem",
+              color: "#94a3b8",
+              mt: 1,
+              fontWeight: 500,
+            }}
+          >
+            Đánh giá chuẩn ATS • Phân tích kỹ năng • Gợi ý việc làm phù hợp
+          </Typography>
+        </Box>
+
+        {/* ================= 2. KHU VỰC TẢI LÊN CV (UPLOAD BOX) ================= */}
+        <Paper
+          elevation={0}
+          sx={{
+            maxWidth: "42rem",
+            width: "100%",
+            mx: "auto",
+            mt: 2.5,
+            p: { xs: 2.5, sm: 3.5 },
+            bgcolor: "#ffffff",
+            borderRadius: "16px",
+            border: "1px solid #e2e8f0",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+            boxSizing: "border-box",
+          }}
+        >
+          {/* Vùng Dropzone (Kéo thả file) */}
+          <Box
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            sx={{
+              border: isDragging ? "2px dashed #1D61F2" : "2px dashed #bfdbfe",
+              bgcolor: isDragging ? "#eff6ff" : "rgba(239, 246, 255, 0.3)",
+              borderRadius: "12px",
+              p: { xs: 2.5, sm: 3.5 },
+              textAlign: "center",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              "&:hover": {
+                borderColor: "#1D61F2",
+                bgcolor: "rgba(239, 246, 255, 0.5)",
+              },
+            }}
+          >
+            {!file ? (
               <Box>
-                <Typography fontWeight={800} color="#0f172a">
-                  Upload CV của bạn
+                <CloudUpload sx={{ fontSize: 40, color: "#1D61F2", mb: 0.5 }} />
+                <Typography sx={{ fontSize: "0.925rem", fontWeight: 600, color: "#334155" }}>
+                  Kéo & thả file PDF vào đây hoặc
                 </Typography>
-                <Typography variant="body2" color="#64748b">
-                  Tải lên file PDF để bắt đầu phân tích
-                </Typography>
-              </Box>
-            </Stack>
 
-            <Button
-              component="label"
-              fullWidth
-              sx={{
-                height: 205,
-                borderRadius: 3,
-                border: "2px dashed #93c5fd",
-                bgcolor: "#ffffff",
-                textTransform: "none",
-                color: "#0f172a",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: 1,
-                mb: 2,
-                "&:hover": {
-                  bgcolor: "#eff6ff",
-                  borderColor: "#3b82f6",
-                },
-              }}
-            >
-              <Box
-                sx={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 1.5,
-                  bgcolor: "#3b82f6",
-                  color: "#ffffff",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  mb: 0.5,
-                }}
-              >
-                <CloudUpload />
-              </Box>
-
-              <Typography fontWeight={800}>Kéo & thả file PDF vào đây</Typography>
-
-              <Typography variant="body2" color="#64748b">
-                hoặc
-              </Typography>
-
-              <Box
-                sx={{
-                  px: 2.5,
-                  py: 1,
-                  borderRadius: 1.5,
-                  border: "1px solid #93c5fd",
-                  color: "#2563eb",
-                  fontWeight: 800,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                }}
-              >
-                <CloudUpload sx={{ fontSize: 18 }} />
-                Chọn file PDF
-              </Box>
-
-              <input
-                type="file"
-                accept="application/pdf"
-                hidden
-                onChange={handleFileChange}
-              />
-            </Button>
-
-            {file && (
-              <Box
-                sx={{
-                  p: 1.5,
-                  borderRadius: 2,
-                  border: "1px solid #e2e8f0",
-                  bgcolor: "#f8fafc",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1.5,
-                  mb: 1.5,
-                }}
-              >
-                <PictureAsPdf sx={{ color: "#ef4444", fontSize: 28 }} />
-
-                <Typography
-                  variant="body2"
-                  fontWeight={700}
-                  color="#334155"
+                <Box
+                  component="span"
                   sx={{
-                    flex: 1,
-                    minWidth: 0,
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
+                    display: "inline-block",
+                    mt: 1.2,
+                    px: 2,
+                    py: 0.8,
+                    bgcolor: "#ffffff",
+                    border: "1px solid #cbd5e1",
+                    color: "#334155",
+                    borderRadius: "8px",
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                    boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                    transition: "all 0.15s ease",
+                    "&:hover": {
+                      bgcolor: "#f8fafc",
+                    },
                   }}
                 >
-                  {file.name}
-                </Typography>
+                  Chọn file từ máy tính
+                </Box>
 
-                <Typography variant="caption" color="#64748b">
-                  {formatFileSize(file.size)}
+                <Typography
+                  component="span"
+                  sx={{
+                    display: "block",
+                    fontSize: "0.75rem",
+                    color: "#94a3b8",
+                    mt: 1.5,
+                  }}
+                >
+                  Hỗ trợ định dạng PDF (tối đa 5MB)
                 </Typography>
+              </Box>
+            ) : (
+              /* Trạng thái đã chọn file */
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  p: 1.5,
+                  bgcolor: "#f0fdf4",
+                  border: "1px solid #bbf7d0",
+                  borderRadius: "10px",
+                }}
+              >
+                <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0, flex: 1 }}>
+                  <PictureAsPdf sx={{ color: "#ef4444", fontSize: 30, flexShrink: 0 }} />
+                  <Box sx={{ minWidth: 0, textAlign: "left" }}>
+                    <Typography
+                      sx={{
+                        fontSize: "0.875rem",
+                        fontWeight: 700,
+                        color: "#0f172a",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {file.name}
+                    </Typography>
+                    <Typography sx={{ fontSize: "0.75rem", color: "#64748b" }}>
+                      {formatFileSize(file.size)} • Định dạng PDF
+                    </Typography>
+                  </Box>
+                </Stack>
 
-                <CheckCircle sx={{ color: "#22c55e", fontSize: 22 }} />
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <CheckCircle sx={{ color: "#16a34a", fontSize: 20 }} />
+                  <Button
+                    size="small"
+                    onClick={handleRemoveFile}
+                    sx={{
+                      textTransform: "none",
+                      fontSize: "0.75rem",
+                      fontWeight: 600,
+                      color: "#dc2626",
+                      p: 0.5,
+                      minWidth: "auto",
+                      "&:hover": { bgcolor: "#fee2e2" },
+                    }}
+                  >
+                    Đổi file
+                  </Button>
+                </Stack>
               </Box>
             )}
 
-            <Stack
-              direction="row"
-              spacing={1}
-              alignItems="center"
-              mb={3}
-              flexWrap="wrap"
-              useFlexGap
-            >
-              <InfoOutlined sx={{ fontSize: 16, color: "#64748b" }} />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/pdf,.pdf"
+              hidden
+              onChange={handleFileChange}
+            />
+          </Box>
 
-              <Typography variant="caption" color="#64748b">
-                Dung lượng tối đa 5MB
-              </Typography>
+          {/* ================= 3. ACTION FOOTER ================= */}
+          <Button
+            variant="contained"
+            onClick={handleAnalyze}
+            disabled={uploading || !file}
+            sx={{
+              width: "100%",
+              height: 48,
+              bgcolor: "#1D61F2",
+              color: "#ffffff",
+              fontWeight: 600,
+              fontSize: "0.95rem",
+              borderRadius: "12px",
+              textTransform: "none",
+              mt: 2.5,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 1,
+              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+              transition: "all 0.2s ease",
+              "&:hover": {
+                bgcolor: "#1550c7",
+              },
+              "&:disabled": {
+                opacity: 0.5,
+                cursor: "not-allowed",
+                bgcolor: "#1D61F2",
+                color: "#ffffff",
+              },
+            }}
+          >
+            {uploading ? (
+              <Stack direction="row" spacing={1} alignItems="center">
+                <CircularProgress size={18} color="inherit" />
+                <span>Đang phân tích CV...</span>
+              </Stack>
+            ) : (
+              <Stack direction="row" spacing={1} alignItems="center">
+                <AutoAwesome sx={{ fontSize: 18 }} />
+                <span>Bắt đầu phân tích CV</span>
+              </Stack>
+            )}
+          </Button>
 
-              <Typography variant="caption" color="#94a3b8">
-                •
-              </Typography>
+          {/* Lưu ý bảo mật */}
+          <Typography
+            sx={{
+              fontSize: "0.75rem",
+              color: "#94a3b8",
+              textAlign: "center",
+              mt: 1.5,
+              display: "block",
+            }}
+          >
+            File của bạn được bảo mật tuyệt đối và chỉ sử dụng cho mục đích phân tích năng lực cá nhân.
+          </Typography>
+        </Paper>
 
-              <Typography variant="caption" color="#64748b">
-                Định dạng: PDF
-              </Typography>
-            </Stack>
+        {/* ================= 4. KẾT QUẢ PHÂN TÍCH (NẾU CÓ) ================= */}
+        {result && (
+          <Box sx={{ mt: 4 }}>
+            <AIAnalysisCard {...result} />
 
-            <Divider sx={{ mb: 3 }} />
-
-            <Stack
-              direction={{ xs: "column", md: "row" }}
-              spacing={2.5}
-              alignItems={{ xs: "stretch", md: "center" }}
-            >
-              <Button
-                variant="contained"
-                onClick={handleAnalyze}
-                disabled={uploading || !file}
-                startIcon={<Search />}
+            {summary && (
+              <Paper
+                elevation={0}
                 sx={{
-                  height: 48,
-                  minWidth: 180,
-                  borderRadius: 2,
-                  textTransform: "none",
-                  fontWeight: 800,
-                  bgcolor: "#2563eb",
-                  boxShadow: "0 10px 20px rgba(37,99,235,0.22)",
-                  "&:hover": {
-                    bgcolor: "#1d4ed8",
-                  },
-                  "&:disabled": {
-                    bgcolor: "#cbd5e1",
-                    color: "#ffffff",
-                  },
+                  mt: 3,
+                  p: 3.5,
+                  borderRadius: "16px",
+                  border: "1px solid #e2e8f0",
+                  bgcolor: "#ffffff",
                 }}
               >
-                {uploading ? "Đang phân tích..." : "Phân tích CV"}
-              </Button>
-
-              <Box>
-                <Typography fontWeight={800} color="#0f172a" mb={0.5}>
-                  Lưu ý:
+                <Typography variant="h6" fontWeight={800} mb={1.5} color="#0f172a">
+                  Tóm tắt phân tích
                 </Typography>
-                <Typography variant="body2" color="#64748b">
-                  File CV phải là PDF. Hệ thống sẽ trích xuất nội dung và gợi ý
-                  những vị trí phù hợp dựa trên kỹ năng, kinh nghiệm và mục tiêu
-                  nghề nghiệp của bạn.
+                <Typography variant="body2" color="#475569" lineHeight={1.7}>
+                  {summary}
                 </Typography>
-              </Box>
-            </Stack>
+              </Paper>
+            )}
 
-            {uploading && <LinearProgress sx={{ mt: 3, borderRadius: 2 }} />}
-          </Paper>
+            <Paper
+              elevation={0}
+              sx={{
+                mt: 3,
+                p: 3.5,
+                borderRadius: "16px",
+                border: "1px solid #e2e8f0",
+                bgcolor: "#ffffff",
+              }}
+            >
+              <Typography variant="h6" fontWeight={800} mb={2} color="#0f172a">
+                Gợi ý việc làm phù hợp
+              </Typography>
 
-          {result && (
-            <Box>
-              <AIAnalysisCard {...result} />
-
-              {summary && (
-                <Paper
+              {loadingJobs ? (
+                <Typography color="text.secondary">
+                  Đang tải gợi ý việc làm từ hệ thống...
+                </Typography>
+              ) : recommendedJobs.length > 0 ? (
+                <Box
                   sx={{
-                    mt: 4,
-                    p: 4,
-                    borderRadius: 4,
-                    border: "1px solid #e2e8f0",
+                    display: "grid",
+                    gridTemplateColumns: {
+                      xs: "1fr",
+                      sm: "repeat(2, 1fr)",
+                      lg: "repeat(4, 1fr)",
+                    },
+                    gap: 2.5,
                   }}
                 >
-                  <Typography variant="h5" fontWeight={800} mb={2}>
-                    Tóm tắt phân tích
-                  </Typography>
+                  {recommendedJobs.slice(0, 4).map((job, idx) => {
+                    const jobId = job.jobId || job.id;
 
-                  <Typography variant="body2" color="text.secondary">
-                    {summary}
-                  </Typography>
-                </Paper>
-              )}
-
-              <Paper
-                sx={{
-                  mt: 4,
-                  p: 4,
-                  borderRadius: 4,
-                  border: "1px solid #e2e8f0",
-                }}
-              >
-                <Typography variant="h5" fontWeight={800} mb={2}>
-                  Gợi ý việc làm phù hợp
-                </Typography>
-
-                {loadingJobs ? (
-                  <Typography color="text.secondary">
-                    Đang tải gợi ý việc làm từ hệ thống...
-                  </Typography>
-                ) : recommendedJobs.length > 0 ? (
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gridTemplateColumns: {
-                        xs: "1fr",
-                        sm: "repeat(2, 1fr)",
-                        lg: "repeat(4, 1fr)",
-                      },
-                      gap: 3,
-                    }}
-                  >
-                    {recommendedJobs.slice(0, 4).map((job, idx) => {
-                      const jobId = job.jobId || job.id;
-
-                      const companyInitial =
-                        job.companyName?.charAt(0)?.toUpperCase() ||
-                        job.title?.charAt(0)?.toUpperCase() ||
-                        "J";
-
-                      return (
-                        <Paper
-                          key={jobId || idx}
-                          elevation={0}
-                          onClick={() =>
-                            jobId && navigate(`/job/${jobId}`)
-                          }
-                          sx={{
-                            p: 2.5,
-                            borderRadius: 4,
-                            border: "1px solid #e2e8f0",
-                            bgcolor: "#ffffff",
-                            cursor: jobId ? "pointer" : "default",
-                            display: "flex",
-                            flexDirection: "column",
-                            height: 210,
-                            overflow: "hidden",
-                            transition: "all 0.3s ease",
-                            "&:hover": jobId
-                              ? {
-                                  borderColor: "#2563eb",
-                                  transform: "translateY(-5px)",
-                                  boxShadow:
-                                    "0 20px 25px -5px rgba(0,0,0,0.05)",
-                                }
-                              : {},
-                          }}
-                        >
-                          <Typography fontWeight={800}>
+                    return (
+                      <Paper
+                        key={jobId || idx}
+                        elevation={0}
+                        onClick={() => jobId && navigate(`/job/${jobId}`)}
+                        sx={{
+                          p: 2.5,
+                          borderRadius: "12px",
+                          border: "1px solid #e2e8f0",
+                          bgcolor: "#ffffff",
+                          cursor: jobId ? "pointer" : "default",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                          minHeight: 130,
+                          transition: "all 0.2s ease",
+                          "&:hover": jobId
+                            ? {
+                                borderColor: "#1D61F2",
+                                transform: "translateY(-3px)",
+                                boxShadow: "0 10px 20px -5px rgba(29, 97, 242, 0.1)",
+                              }
+                            : {},
+                        }}
+                      >
+                        <Box>
+                          <Typography fontWeight={700} color="#0f172a" fontSize="0.95rem">
                             {job.title || job.jobTitle || "Công việc đề xuất"}
                           </Typography>
-
-                          <Typography variant="body2" color="#64748b">
+                          <Typography variant="body2" color="#64748b" mt={0.5}>
                             {job.companyName || job.company || "Công ty"}
                           </Typography>
-                        </Paper>
-                      );
-                    })}
-                  </Box>
-                ) : (
-                  <Typography color="text.secondary">
-                    Chưa có gợi ý việc làm từ dữ liệu hệ thống.
-                  </Typography>
-                )}
-              </Paper>
-            </Box>
-          )}
-        </Container>
-      </Box>
-    );
+                        </Box>
+                        {job.location && (
+                          <Typography variant="caption" color="#94a3b8" mt={1}>
+                            {job.location}
+                          </Typography>
+                        )}
+                      </Paper>
+                    );
+                  })}
+                </Box>
+              ) : (
+                <Typography color="text.secondary">
+                  Chưa có gợi ý việc làm từ dữ liệu hệ thống.
+                </Typography>
+              )}
+            </Paper>
+          </Box>
+        )}
+      </Container>
+    </Box>
+  );
 }

@@ -13,6 +13,7 @@ import {
 import { articleService } from "../../services/company/articleService";
 import { useToast } from "../../contexts/ToastContext";
 import { getMediaUrl } from "../../utils/urlHelpers";
+import "./CareerGuide.css";
 
 const STATIC_CATEGORIES = ["Tất cả", "Viết CV", "Phỏng vấn", "Tìm việc", "Thương lượng lương", "Kỹ năng", "Định hướng"];
 
@@ -34,6 +35,8 @@ export default function CareerGuide() {
   const size = 6;
   const token = localStorage.getItem("token");
 
+  // Các bộ lọc bên dưới là nguồn kích hoạt duy nhất cho lần tải lại danh sách.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchArticles(); }, [category, query, sortBy, page]);
   useEffect(() => { fetchSidebarData(); }, []);
 
@@ -43,7 +46,7 @@ export default function CareerGuide() {
       const data = await articleService.getArticlesPublic({ category: category === "Tất cả" ? "" : category, query, page: page - 1, size, sortBy });
       setArticles(data.content || []);
       setTotalPages(data.totalPages || 1);
-    } catch (err) {
+    } catch {
       showToast("Lỗi tải danh sách bài viết", "error");
     } finally { setLoading(false); }
   };
@@ -53,7 +56,20 @@ export default function CareerGuide() {
     try {
       const [trending, tags] = await Promise.all([articleService.getTrendingArticles(), articleService.getPopularTags()]);
       setTrendingArticles(trending || []);
-      setPopularTags(tags || []);
+      const normalizedTags = (Array.isArray(tags) ? tags : [])
+        .map((tag) => {
+          if (Array.isArray(tag)) return { name: tag[0], count: tag[1] };
+          if (tag && typeof tag === "object") {
+            return {
+              name: tag.name ?? tag.category ?? tag.label,
+              count: tag.count ?? tag.total ?? 0,
+            };
+          }
+          if (typeof tag === "string") return { name: tag, count: 0 };
+          return null;
+        })
+        .filter((tag) => tag?.name);
+      setPopularTags(normalizedTags);
     } catch (err) { console.error(err); }
     finally { setLoadingSidebar(false); }
   };
@@ -125,20 +141,20 @@ export default function CareerGuide() {
   );
 
   return (
-    <>
+    <Box className="career-guide-page">
       <Box sx={{ background: "linear-gradient(135deg, #1e3a8a 0%, #2563eb 60%, #3b82f6 100%)", color: "#fff", pt: { xs: 8, md: 10 }, pb: { xs: 6, md: 8 }, position: "relative", overflow: "hidden" }}>
         <Box sx={{ position: "absolute", top: "-20%", right: "-10%", width: 400, height: 400, borderRadius: "50%", background: "rgba(255,255,255,0.04)", filter: "blur(50px)", pointerEvents: "none" }} />
         <Container maxWidth="xl" sx={{ px: "24px" }}>
           <Grid container spacing={4} alignItems="center">
             <Grid size={{ xs: 12, md: 7 }}>
               <Typography variant="h1" fontWeight={900} sx={{ mb: 1.5, fontSize: { xs: "26px", md: "32px" }, letterSpacing: "-0.02em" }}>
-                Cẩm Nang <span style={{ color: "#93c5fd" }}>Nghề Nghiệp</span>
+                Tự tin hơn trên mỗi bước đường <span style={{ color: "#bfdbfe" }}>sự nghiệp</span>
               </Typography>
               <Typography sx={{ color: "#dbeafe", mb: 3, lineHeight: 1.6, fontSize: "15px", maxWidth: 580 }}>
-                Trang bị kiến thức tìm việc, kinh nghiệm viết CV, trả lời phỏng vấn chuẩn ATS và các bí quyết phát triển sự nghiệp hiệu quả.
+                Kiến thức thực tế về viết CV, phỏng vấn, tìm việc và phát triển kỹ năng — được chọn lọc để bạn có thể áp dụng ngay.
               </Typography>
               <Box component="form" onSubmit={handleSearchSubmit} sx={{ maxWidth: 520 }}>
-                <TextField fullWidth variant="outlined" placeholder="Tìm kiếm bài viết, chủ đề nghề nghiệp..."
+                <TextField fullWidth variant="outlined" placeholder="Bạn đang muốn tìm hiểu điều gì?"
                   value={searchVal} onChange={e => setSearchVal(e.target.value)}
                   InputProps={{
                     startAdornment: <InputAdornment position="start"><Search sx={{ color: "#94a3b8" }} /></InputAdornment>,
@@ -241,10 +257,10 @@ export default function CareerGuide() {
                     {/* 3 cards per row: xs=12, sm=6, lg=4 */}
                     <Grid container spacing={2}>
                       {regularArticles.map((art, idx) => (
-                        <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={art.articleId || idx}>
-                          <Card elevation={0} onClick={() => navigate(`/career-guide/${art.articleId}`)} sx={{ height: "260px", borderRadius: "16px", border: "1px solid #e2e8f0", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", display: "flex", flexDirection: "column", cursor: "pointer", overflow: "hidden", transition: "all 0.22s ease", "&:hover": { borderColor: "#2563eb", transform: "translateY(-3px)", boxShadow: "0 12px 24px rgba(37,99,235,0.08)" } }}>
+                        <Grid size={{ xs: 12, sm: 6 }} key={art.articleId || idx}>
+                          <Card elevation={0} onClick={() => navigate(`/career-guide/${art.articleId}`)} sx={{ height: "330px", borderRadius: "16px", border: "1px solid #e2e8f0", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", display: "flex", flexDirection: "column", cursor: "pointer", overflow: "hidden", transition: "all 0.22s ease", "&:hover": { borderColor: "#2563eb", transform: "translateY(-3px)", boxShadow: "0 12px 24px rgba(37,99,235,0.08)" } }}>
                             <Box sx={{ position: "relative", flexShrink: 0 }}>
-                              <CardMedia component="img" height="130" image={art.imageUrl || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=240&fit=crop"} alt={art.title} sx={{ objectFit: "cover" }} />
+                              <CardMedia component="img" height="170" image={art.imageUrl || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=240&fit=crop"} alt={art.title} sx={{ objectFit: "cover" }} />
                               <Chip label={art.category} size="small" sx={{ position: "absolute", top: 8, left: 8, bgcolor: "rgba(255,255,255,0.92)", backdropFilter: "blur(4px)", color: "#1e3a8a", fontWeight: 700, fontSize: "11px", height: 20 }} />
                             </Box>
                             <CardContent sx={{ p: "12px 14px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
@@ -294,8 +310,23 @@ export default function CareerGuide() {
                     ) : (
                       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8 }}>
                         {popularTags.map((tag, i) => (
-                          <Chip key={tag[0] || i} label={`${tag[0]} (${tag[1]})`} variant="outlined" onClick={() => handleCategoryChange(tag[0])} sx={{ borderRadius: "8px", fontWeight: 600, fontSize: "12px", borderColor: category === tag[0] ? "#2563eb" : "#e2e8f0", bgcolor: category === tag[0] ? "#eff6ff" : "transparent", color: category === tag[0] ? "#2563eb" : "#475569", "&:hover": { bgcolor: "#f0f7ff", borderColor: "#2563eb" } }} />
+                          <Chip
+                            key={tag.name || i}
+                            label={`${tag.name} (${tag.count})`}
+                            variant="outlined"
+                            onClick={() => handleCategoryChange(tag.name)}
+                            sx={{
+                              borderRadius: "8px",
+                              fontWeight: 600,
+                              fontSize: "12px",
+                              borderColor: category === tag.name ? "#2563eb" : "#e2e8f0",
+                              bgcolor: category === tag.name ? "#eff6ff" : "transparent",
+                              color: category === tag.name ? "#2563eb" : "#475569",
+                              "&:hover": { bgcolor: "#f0f7ff", borderColor: "#2563eb" },
+                            }}
+                          />
                         ))}
+
                       </Box>
                     )}
                   </Paper>
@@ -320,7 +351,7 @@ export default function CareerGuide() {
           </Box>
         )}
       </Container>
-    </>
+    </Box>
   );
 }
   

@@ -40,7 +40,7 @@ export default function HowItWorksSection() {
   ];
 
   return (
-    <Box sx={{ py: 6, bgcolor: "#ffffff", borderTop: "1px solid #f1f5f9" }}>
+    <Box sx={{ py: 6, bgcolor: "#ffffff", }}>
       <Container maxWidth="xl">
         {/* Left aligned title */}
         <Typography variant="h5" fontWeight={900} color="#0f172a" sx={{ mb: 4 }}>

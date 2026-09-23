@@ -1,168 +1,142 @@
 import React from "react";
 import { Box, Typography, Chip, Stack } from "@mui/material";
-import {
-  AutoAwesome,
-  Description,
-  TrackChanges,
-  School,
-} from "@mui/icons-material";
+import { AutoAwesome, Description, School, TrendingUp } from "@mui/icons-material";
 
 const HeaderSection = () => (
   <Box
     sx={{
       position: "relative",
-      overflow: "hidden",
       textAlign: "center",
-      mb: 4,
-      py: { xs: 3, md: 4 },
-      px: 3,
-      borderRadius: "0 0 28px 28px",
-      background:
-        "linear-gradient(135deg, #f8faff 0%, #ffffff 45%, #eff6ff 100%)",
+      mb: { xs: 2.5, md: 3 },
+      pt: { xs: 1, md: 1.5 },
+      pb: 0.5,
+      px: 2,
     }}
   >
     <Box
       sx={{
-        position: "absolute",
-        left: { xs: 18, md: 90 },
-        top: { xs: 20, md: 30 },
-        width: { xs: 60, md: 82 },
-        height: { xs: 60, md: 82 },
-        borderRadius: "20px",
-        background: "linear-gradient(135deg, #eff6ff, #bfdbfe)",
-        display: { xs: "none", sm: "flex" },
-        alignItems: "center",
-        justifyContent: "center",
-        transform: "rotate(-8deg)",
-      }}
-    >
-      <Description
-        sx={{
-          fontSize: { sm: 34, md: 46 },
-          color: "#3b82f6",
-        }}
-      />
-    </Box>
-
-    <Box
-      sx={{
-        position: "absolute",
-        right: { xs: 18, md: 100 },
-        top: { xs: 22, md: 32 },
-        width: { xs: 62, md: 84 },
-        height: { xs: 62, md: 84 },
-        borderRadius: "50%",
-        background: "linear-gradient(135deg, #eff6ff, #dbeafe)",
-        display: { xs: "none", sm: "flex" },
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <TrackChanges
-        sx={{
-          fontSize: { sm: 36, md: 50 },
-          color: "#2563eb",
-        }}
-      />
-    </Box>
-
-    <Box
-      sx={{
         position: "relative",
         zIndex: 1,
-        maxWidth: 680,
+        maxWidth: 720,
         mx: "auto",
       }}
     >
+      {/* Badge: AI Career Roadmap */}
       <Chip
-        icon={<AutoAwesome sx={{ color: "#2563eb !important" }} />}
-        label="Lộ trình học tập AI"
+        icon={<AutoAwesome sx={{ color: "#2563eb !important", fontSize: 16 }} />}
+        label="AI Career Roadmap"
         sx={{
-          mb: 1.5,
-          px: 0.8,
-          height: 30,
+          mb: 2,
+          px: 1,
+          height: 32,
           borderRadius: "999px",
           bgcolor: "#eff6ff",
           color: "#2563eb",
           fontWeight: 800,
-          fontSize: "0.8rem",
+          fontSize: "0.85rem",
           border: "1px solid #dbeafe",
         }}
       />
 
+      {/* Tiêu đề */}
       <Typography
         variant="h2"
-        fontWeight={900}
         sx={{
-          lineHeight: 1.1,
-          letterSpacing: "-1px",
+          fontWeight: 900,
+          lineHeight: 1.2,
+          letterSpacing: "-0.8px",
           fontSize: {
-            xs: "1.6rem",
-            sm: "2.2rem",
-            md: "2.8rem",
+            xs: "1.75rem",
+            sm: "2.3rem",
+            md: "2.75rem",
           },
-          background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          mb: 1.5,
-        }}
-      >
-        Cố vấn Sự nghiệp AI
-      </Typography>
-
-      <Typography
-        variant="body1"
-        color="#64748b"
-        sx={{
-          fontSize: { xs: "0.92rem", md: "1rem" },
-          fontWeight: 600,
-          lineHeight: 1.6,
-          maxWidth: 580,
-          mx: "auto",
+          color: "#0f172a",
           mb: 2,
         }}
       >
-        Nhận đề xuất lộ trình học tập cá nhân hóa dựa trên CV của bạn và xu
-        hướng thị trường.
+        Xây dựng lộ trình học tập từ{" "}
+        <Box
+          component="span"
+          sx={{
+            background: "linear-gradient(135deg, #2563eb, #3b82f6)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
+          CV của bạn
+        </Box>
       </Typography>
 
+      {/* Mô tả */}
+      <Typography
+        variant="body1"
+        sx={{
+          color: "#64748b",
+          fontSize: { xs: "0.95rem", md: "1.05rem" },
+          fontWeight: 500,
+          lineHeight: 1.65,
+          maxWidth: 640,
+          mx: "auto",
+          mb: 3,
+        }}
+      >
+        Tải lên CV để AI phân tích kỹ năng hiện có, so khớp với vị trí mong muốn
+        và tạo lộ trình học tập chi tiết để bạn đạt mục tiêu.
+      </Typography>
+
+      {/* Flow badges */}
       <Stack
         direction="row"
-        spacing={1}
+        spacing={1.5}
         justifyContent="center"
+        alignItems="center"
         flexWrap="wrap"
         useFlexGap
       >
         <Chip
           size="small"
-          icon={<Description />}
-          label="Phân tích CV"
+          icon={<Description sx={{ fontSize: 15 }} />}
+          label="1. Đọc CV hiện có"
           sx={{
             bgcolor: "#ffffff",
             border: "1px solid #e2e8f0",
             fontWeight: 700,
+            fontSize: "0.8rem",
+            color: "#334155",
           }}
         />
 
-        <Chip
-          size="small"
-          icon={<School />}
-          label="Lộ trình học tập"
-          sx={{
-            bgcolor: "#ffffff",
-            border: "1px solid #e2e8f0",
-            fontWeight: 700,
-          }}
-        />
+        <Box sx={{ color: "#94a3b8", fontSize: "0.85rem", fontWeight: 700 }}>
+          →
+        </Box>
 
         <Chip
           size="small"
-          icon={<TrackChanges />}
-          label="Theo xu hướng thị trường"
+          icon={<TrendingUp sx={{ fontSize: 15 }} />}
+          label="2. So khớp mục tiêu"
           sx={{
             bgcolor: "#ffffff",
             border: "1px solid #e2e8f0",
             fontWeight: 700,
+            fontSize: "0.8rem",
+            color: "#334155",
+          }}
+        />
+
+        <Box sx={{ color: "#94a3b8", fontSize: "0.85rem", fontWeight: 700 }}>
+          →
+        </Box>
+
+        <Chip
+          size="small"
+          icon={<School sx={{ fontSize: 15 }} />}
+          label="3. Nhận lộ trình bù kỹ năng"
+          sx={{
+            bgcolor: "#eff6ff",
+            border: "1px solid #bfdbfe",
+            fontWeight: 700,
+            fontSize: "0.8rem",
+            color: "#2563eb",
           }}
         />
       </Stack>

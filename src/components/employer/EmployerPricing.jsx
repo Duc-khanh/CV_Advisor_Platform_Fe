@@ -46,9 +46,9 @@ const plans = [
   }
 ];
 
-const EmployerPricing = () => {
+const EmployerPricing = ({ onOpenRegister }) => {
   return (
-    <Box sx={{ py: 10, bgcolor: "#ffffff" }}>
+    <Box id="employer-pricing" sx={{ py: 10, bgcolor: "#ffffff", scrollMarginTop: "70px" }}>
       <Container maxWidth="lg">
         <Box sx={{ textAlign: "center", mb: 8 }}>
           <Typography 
@@ -137,6 +137,11 @@ const EmployerPricing = () => {
                   fullWidth
                   variant={plan.popular ? "contained" : "outlined"}
                   size="large"
+                  onClick={() => {
+                    if (onOpenRegister) {
+                      onOpenRegister(plan.title);
+                    }
+                  }}
                   sx={{
                     py: 1.5,
                     borderRadius: "12px",

@@ -53,7 +53,7 @@ export default function PrivacyPolicy() {
                 <Storage color="primary" fontSize="small" /> 2. Cam kết bảo mật
               </Typography>
               <Typography variant="body1" paragraph>
-                Hệ thống <b>CV Advisor Platform</b> cam kết không chia sẻ dữ liệu của bạn cho bất kỳ bên thứ ba nào ngoài nhà tuyển dụng mà bạn đã chủ động nhấn nút "Nộp hồ sơ ứng tuyển". Toàn bộ dữ liệu được mã hóa và lưu trữ an toàn trên máy chủ của chúng tôi.
+                Hệ thống <b>CareerGo</b> cam kết không chia sẻ dữ liệu của bạn cho bất kỳ bên thứ ba nào ngoài nhà tuyển dụng mà bạn đã chủ động nhấn nút "Nộp hồ sơ ứng tuyển". Toàn bộ dữ liệu được mã hóa và lưu trữ an toàn trên máy chủ của chúng tôi.
               </Typography>
             </Box>
 

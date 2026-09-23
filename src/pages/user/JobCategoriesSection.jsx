@@ -103,12 +103,12 @@
                     p: 2,
                     textAlign: "center",
                     borderRadius: "16px",
-                    border: "1px solid #f1f5f9",
+
                     bgcolor: "#ffffff",
                     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                     cursor: "pointer",
                     "&:hover": {
-                      borderColor: "#dbeafe",
+
                       boxShadow: "0 15px 35px rgba(37,99,235,0.06)",
                       transform: "translateY(-5px)",
                     },

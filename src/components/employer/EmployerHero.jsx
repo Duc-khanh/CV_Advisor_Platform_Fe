@@ -3,7 +3,7 @@ import { Box, Typography, Button, Stack, Container, Grid } from "@mui/material";
 import { Speed, GroupAdd, BarChart } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
-const EmployerHero = () => {
+const EmployerHero = ({ onOpenRegister }) => {
   const navigate = useNavigate();
 
   const stats = [
@@ -149,9 +149,11 @@ const EmployerHero = () => {
                 <Button
                   variant="contained"
                   size="large"
-                  onClick={() =>
-                    navigate("/register", { state: { isHr: true } })
-                  }
+                  onClick={() => {
+                    if (onOpenRegister) {
+                      onOpenRegister();
+                    }
+                  }}
                   sx={{
                     px: 4,
                     py: 2,

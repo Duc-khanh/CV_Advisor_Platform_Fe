@@ -12,6 +12,7 @@ import {
   Link,
   Grid,
 } from "@mui/material";
+import { motion } from "framer-motion";
 import { Favorite, FavoriteBorder, ArrowForward, Room } from "@mui/icons-material";
 import { getMediaUrl } from "../../utils/urlHelpers";
 
@@ -24,7 +25,7 @@ const getTimeAgo = (createdAt) => {
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
-    
+
     if (diffMins < 60) {
       return `${Math.max(1, diffMins)} phút trước`;
     } else if (diffHours < 24) {
@@ -42,13 +43,27 @@ const getJobBadge = (job) => {
   const now = new Date();
   const diffMs = now - createdDate;
   const diffDays = diffMs / (1000 * 60 * 60 * 24);
-  
+
   if (diffDays <= 3 || job.jobId % 5 === 1) {
     return { label: "New", color: "#22c55e", bg: "#f0fdf4" };
   } else if ((job.viewCount && job.viewCount >= 5) || job.jobId % 5 === 0) {
     return { label: "Hot", color: "#ef4444", bg: "#fef2f2" };
   }
   return null;
+};
+
+const scrollRevealVariants = {
+  hidden: { opacity: 0, y: 40, scale: 0.96, filter: "blur(8px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.7,
+      ease: "easeOut",
+    },
+  },
 };
 
 export default function JobListSection({
@@ -81,11 +96,11 @@ export default function JobListSection({
     processedJobs = processedJobs.filter(j => {
       const skills = j.requiredSkills ? j.requiredSkills.map(s => s.toLowerCase()) : [];
       return (
-        skills.includes("java") || 
-        skills.includes("react") || 
-        skills.includes("reactjs") || 
-        skills.includes("nodejs") || 
-        skills.includes("golang") || 
+        skills.includes("java") ||
+        skills.includes("react") ||
+        skills.includes("reactjs") ||
+        skills.includes("nodejs") ||
+        skills.includes("golang") ||
         (j.salaryRange && j.salaryRange.includes("triệu") && parseInt(j.salaryRange) >= 25)
       );
     });
@@ -116,7 +131,7 @@ export default function JobListSection({
   const themeBorder = "#dbeafe";
 
   return (
-    <Box id="job-list-section" sx={{ py: 8, bgcolor: "#ffffff", borderTop: "1px solid #f1f5f9" }}>
+    <Box id="job-list-section" sx={{ py: 8, bgcolor: "#ffffff", }}>
       <Container maxWidth="xl">
         {/* Header and Tabs Stack */}
         <Stack
@@ -141,7 +156,7 @@ export default function JobListSection({
               direction="row"
               spacing={3}
               sx={{
-                borderBottom: "1px solid #e2e8f0",
+
                 pb: 0.5,
                 width: { xs: "100%", md: "auto" },
                 overflowX: "auto",
@@ -241,32 +256,39 @@ export default function JobListSection({
               },
             }}
           >
-            {currentJobs.map((job) => {
+            {currentJobs.map((job, index) => {
               const badge = getJobBadge(job);
               return (
                 <Grid item key={job.jobId} sx={{ display: "contents" }}>
-                  <Paper
-                    elevation={0}
-                    onClick={() => navigate(`/job/${job.jobId}`)}
-                    sx={{
-                      p: 2.5,
-                      borderRadius: "16px",
-                      border: "1px solid #e2e8f0",
-                      bgcolor: "#ffffff",
-                      minHeight: 220,
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "flex-start",
-                      cursor: "pointer",
-                      position: "relative",
-                      transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-                      "&:hover": {
-                        borderColor: themeColor,
-                        boxShadow: "0 12px 30px rgba(37,99,235,0.06)",
-                        transform: "translateY(-3px)",
-                      },
-                    }}
+                  <motion.div
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.2 }}
+                    variants={scrollRevealVariants}
+                    transition={{ delay: index * 0.1 }}
+                    style={{ display: "contents" }}
                   >
+                    <Paper
+                      elevation={0}
+                      onClick={() => navigate(`/job/${job.jobId}`)}
+                      sx={{
+                        p: 2.5,
+                        borderRadius: "16px",
+
+                        bgcolor: "#ffffff",
+                        minHeight: 220,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "flex-start",
+                        cursor: "pointer",
+                        position: "relative",
+                        transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                        "&:hover": {
+                            boxShadow: "0 12px 30px rgba(37,99,235,0.12)",
+                          transform: "translateY(-3px) scale(1.01)",
+                        },
+                      }}
+                    >
                     {/* Badge hot / new at top right */}
                     {badge && (
                       <Box
@@ -298,7 +320,7 @@ export default function JobListSection({
                           width: 48,
                           height: 48,
                           bgcolor: "#ffffff",
-                          border: "1px solid #e2e8f0",
+
                           borderRadius: "10px",
                           flexShrink: 0,
                           fontSize: "1rem",
@@ -383,7 +405,7 @@ export default function JobListSection({
                       sx={{
                         mt: "auto",
                         pt: 1.5,
-                        borderTop: "1px dashed #e2e8f0",
+
                       }}
                     >
                       <Typography sx={{ fontSize: "0.75rem", color: "#94a3b8", fontWeight: 600 }}>
@@ -416,9 +438,10 @@ export default function JobListSection({
                       </IconButton>
                     </Stack>
                   </Paper>
-                </Grid>
-              );
-            })}
+                </motion.div>
+              </Grid>
+            );
+          })}
           </Grid>
         )}
 

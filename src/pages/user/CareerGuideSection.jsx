@@ -47,7 +47,7 @@ export default function CareerGuideSection() {
   };
 
   return (
-    <Box sx={{ py: 6, bgcolor: "#ffffff", borderTop: "1px solid #f1f5f9" }}>
+    <Box sx={{ py: 6, bgcolor: "#ffffff", }}>
       <Container maxWidth="xl">
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
           <Typography variant="h6" fontWeight={900} color="#0f172a">
@@ -78,7 +78,7 @@ export default function CareerGuideSection() {
                   key={i}
                   sx={{ display: "flex", flexBasis: "calc(33.3333% - 20px)", maxWidth: "calc(33.3333% - 20px)", flexGrow: 0 }}
                 >
-                  <Paper elevation={0} sx={{ p: 1.2, borderRadius: "16px", border: "1px solid #e2e8f0", display: "flex", flex: 1, gap: 1.25, minHeight: 100 }}>
+                  <Paper elevation={0} sx={{ p: 1.2, borderRadius: "16px",  display: "flex", flex: 1, gap: 1.25, minHeight: 100 }}>
                     <Skeleton variant="rounded" width={60} height={60} sx={{ borderRadius: "10px", flexShrink: 0 }} />
                     <Stack sx={{ flex: 1 }} spacing={0.8}>
                       <Skeleton variant="text" width="90%" height={18} />
@@ -99,7 +99,7 @@ export default function CareerGuideSection() {
                     sx={{
                       p: 1.2,
                       borderRadius: "16px",
-                      border: "1px solid #e2e8f0",
+
                       bgcolor: "#ffffff",
                       display: "flex",
                       flex: 1,
@@ -108,7 +108,6 @@ export default function CareerGuideSection() {
                       cursor: "pointer",
                       transition: "all 0.25s ease",
                       "&:hover": {
-                        borderColor: themeColor,
                         boxShadow: "0 10px 26px rgba(37,99,235,0.06)",
                         transform: "translateY(-3px)",
                       },

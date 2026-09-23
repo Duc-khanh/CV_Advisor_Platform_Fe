@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   TextField,
   Button,
@@ -23,7 +23,7 @@ import { Google } from "@mui/icons-material";
 import { useGoogleLogin } from "@react-oauth/google";
 import AuthLayout from "../../layouts/AuthLayout";
 import { login, loginWithGoogle } from "../../services/auth/authService";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { useToast } from "../../contexts/ToastContext";
 
@@ -35,10 +35,10 @@ const normalizeToken = (value) => {
   return null;
 };
 
-const navigateByRole = (role, navigate) => {
+const navigateByRole = (role, navigate, returnTo) => {
   if (role === "ADMIN") navigate("/admin_dashboard");
   else if (role === "HR") navigate("/hr_dashboard");
-  else navigate("/");
+  else navigate(returnTo || "/");
 };
 
 export default function Login() {
@@ -46,7 +46,18 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const showToast = useToast();
+  const hasShownAuthMessage = useRef(false);
+  const returnTo = location.state?.returnTo;
+
+  useEffect(() => {
+    const authMessage = location.state?.authMessage;
+    if (authMessage && !hasShownAuthMessage.current) {
+      hasShownAuthMessage.current = true;
+      showToast(authMessage, "warning");
+    }
+  }, [location.state, showToast]);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -67,7 +78,7 @@ export default function Login() {
       const decoded = jwtDecode(token);
 
       showToast("Đăng nhập thành công!", "success");
-      navigateByRole(decoded.role, navigate);
+      navigateByRole(decoded.role, navigate, returnTo);
     } catch (err) {
       console.error("Login error:", err.response?.data || err.message);
       showToast(
@@ -97,7 +108,7 @@ export default function Login() {
         const decoded = jwtDecode(token);
 
         showToast("Đăng nhập thành công!", "success");
-        navigateByRole(decoded.role, navigate);
+        navigateByRole(decoded.role, navigate, returnTo);
       } catch (err) {
         console.error("Google login error:", err.response?.data || err.message);
         showToast(
@@ -216,7 +227,7 @@ export default function Login() {
                 zIndex: 2,
               }}
             >
-              HireAI
+              CareerGo
             </Typography>
 
             <Typography

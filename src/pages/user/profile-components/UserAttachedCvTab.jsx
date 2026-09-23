@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Paper,
@@ -7,6 +7,8 @@ import {
   Stack,
   Divider,
   CircularProgress,
+  Alert,
+  LinearProgress,
 } from "@mui/material";
 import {
   CloudUpload,
@@ -21,15 +23,20 @@ import { useToast } from "../../../contexts/ToastContext";
 import { cvService } from "../../../services/user";
 import { getCvUrl } from "../../../utils/urlHelpers";
 
-export default function UserAttachedCvTab({ user }) {
+export default function UserAttachedCvTab() {
   const showToast = useToast();
-  const [dragActive, setDragActive] = useState(false);
+  const [, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [cvs, setCvs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     fetchCvList();
+    // Chỉ tải danh sách khi tab được mở.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchCvList = async () => {
@@ -37,9 +44,9 @@ export default function UserAttachedCvTab({ user }) {
     try {
       const data = await cvService.getUserCV();
       if (Array.isArray(data)) {
-        setCvs(data);
+        setCvs(data.filter((cv) => cv?.fileUrl));
       } else if (data) {
-        setCvs(data?.files || data?.cvs || data?.data || [data]);
+        setCvs((data?.files || data?.cvs || data?.data || [data]).filter((cv) => cv?.fileUrl));
       } else {
         setCvs([]);
       }
@@ -71,9 +78,10 @@ export default function UserAttachedCvTab({ user }) {
   };
 
   const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFile(e.target.files[0]);
-    }
+    const file = e.target.files?.[0];
+    if (file) handleFile(file);
+    // Cho phép chọn lại cùng một file nếu lần tải trước thất bại.
+    e.target.value = "";
   };
 
   const getFileUrl = (cv) => {
@@ -99,32 +107,80 @@ export default function UserAttachedCvTab({ user }) {
   };
 
   const handleFile = async (file) => {
-    const fileType = file.name.split(".").pop().toLowerCase();
-    if (fileType !== "pdf" && fileType !== "doc" && fileType !== "docx") {
-      showToast("Chỉ hỗ trợ tải lên file PDF, DOC hoặc DOCX.", "error");
+    if (!file || uploading) return;
+
+    setUploadError("");
+    const extension = file.name.includes(".") ? file.name.split(".").pop().toLowerCase() : "";
+    const allowedExtensions = ["pdf", "doc", "docx"];
+    const allowedMimeTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
+    if (!allowedExtensions.includes(extension) || (file.type && !allowedMimeTypes.includes(file.type))) {
+      const message = "File không hợp lệ. Vui lòng chọn PDF, DOC hoặc DOCX.";
+      setUploadError(message);
+      showToast(message, "error");
+      return;
+    }
+    if (file.size === 0) {
+      const message = "File đang trống. Vui lòng chọn một CV khác.";
+      setUploadError(message);
+      showToast(message, "error");
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      showToast("Dung lượng file tối đa là 5MB.", "error");
+      const message = "Dung lượng CV vượt quá 5MB.";
+      setUploadError(message);
+      showToast(message, "error");
       return;
     }
 
     setUploading(true);
+    setUploadProgress(0);
     try {
-      const uploaded = await cvService.uploadCV(file);
-      showToast("Tải lên CV thành công!", "success");
-      if (uploaded) {
-        await fetchCvList();
-      }
+      await cvService.uploadCV(file, setUploadProgress);
+      setUploadProgress(100);
+      showToast(`Đã tải lên ${file.name} thành công!`, "success");
+      await fetchCvList();
     } catch (error) {
       console.error("Lỗi upload CV:", error);
-      const msg = error?.response?.data?.message || "Không thể tải lên CV. Vui lòng thử lại.";
-      showToast(msg, "error");
+      const responseData = error?.response?.data;
+      const message = typeof responseData === "string"
+        ? responseData
+        : responseData?.message || responseData?.error || (error?.code === "ECONNABORTED"
+          ? "Tải CV quá thời gian. Vui lòng kiểm tra kết nối và thử lại."
+          : "Không thể tải lên CV. Vui lòng thử lại.");
+      setUploadError(message);
+      showToast(message, "error");
     } finally {
       setUploading(false);
     }
   };
 
+  const handleOpenFile = async (cv, shouldDownload = false) => {
+    const id = cv.id || cv.cvId || cv.fileId || cv._id;
+    if (!id) return;
+    try {
+      const blob = await cvService.getCVFile(id);
+      const objectUrl = URL.createObjectURL(blob);
+      if (shouldDownload) {
+        const link = document.createElement("a");
+        link.href = objectUrl;
+        link.download = getFileName(cv);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      } else {
+        window.open(objectUrl, "_blank", "noopener,noreferrer");
+      }
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+    } catch (error) {
+      const message = error?.response?.data?.message || "Không thể mở file CV.";
+      showToast(message, "error");
+    }
+  };
   const handleDelete = async (cv) => {
     const fileName = getFileName(cv);
     if (!window.confirm(`Bạn có chắc muốn xóa ${fileName}?`)) return;
@@ -178,10 +234,8 @@ export default function UserAttachedCvTab({ user }) {
           </Box>
           <Box sx={{ minWidth: 0, flex: 1 }}>
             <Button
-              component="a"
-              href={fileUrl || "#"}
-              target="_blank"
-              rel="noopener noreferrer"
+              onClick={() => handleOpenFile(cv)}
+              disabled={!fileUrl}
               sx={{
                 p: 0,
                 minWidth: 0,
@@ -206,10 +260,7 @@ export default function UserAttachedCvTab({ user }) {
             size="small"
             variant="outlined"
             startIcon={<Visibility />}
-            component="a"
-            href={fileUrl || "#"}
-            target="_blank"
-            rel="noopener noreferrer"
+            onClick={() => handleOpenFile(cv)}
             disabled={!fileUrl}
             sx={{ textTransform: "none", fontWeight: 700 }}
           >
@@ -219,11 +270,7 @@ export default function UserAttachedCvTab({ user }) {
             size="small"
             variant="outlined"
             startIcon={<Download />}
-            component="a"
-            href={fileUrl || "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            download={fileName}
+            onClick={() => handleOpenFile(cv, true)}
             disabled={!fileUrl}
             sx={{ textTransform: "none", fontWeight: 700 }}
           >
@@ -295,31 +342,28 @@ export default function UserAttachedCvTab({ user }) {
           )}
         </Stack>
 
-        <Divider sx={{ my: 3 }} />
-
         <Box
           onDragEnter={handleDrag}
           onDragOver={handleDrag}
           onDragLeave={handleDrag}
           onDrop={handleDrop}
           sx={{
-            border: "2px dashed",
-            borderColor: dragActive ? "#3b82f6" : "#cbd5e1",
-            borderRadius: 3.5,
+            border: "none",
+            borderRadius: 0,
             p: 5,
             textAlign: "center",
             cursor: uploading ? "default" : "pointer",
-            bgcolor: dragActive ? "#eff6ff" : "#f8fafc",
+            bgcolor: "transparent",
             transition: "all 0.2s ease",
             position: "relative",
             "&:hover": {
-              borderColor: uploading ? "#cbd5e1" : "#3b82f6",
-              bgcolor: uploading ? "#f8fafc" : "#eff6ff",
+              bgcolor: "transparent",
             },
           }}
           component="label"
         >
           <input
+            ref={fileInputRef}
             type="file"
             accept=".pdf,.doc,.docx"
             hidden
@@ -353,6 +397,20 @@ export default function UserAttachedCvTab({ user }) {
             </Box>
           </Stack>
         </Box>
+        {uploading && (
+          <Box sx={{ mt: 2 }}>
+            <Stack direction="row" justifyContent="space-between" mb={0.75}>
+              <Typography variant="caption" fontWeight={700} color="#2563eb">Đang tải CV lên máy chủ</Typography>
+              <Typography variant="caption" fontWeight={800} color="#2563eb">{uploadProgress}%</Typography>
+            </Stack>
+            <LinearProgress variant="determinate" value={uploadProgress} sx={{ height: 8, borderRadius: 99, bgcolor: "#dbeafe", "& .MuiLinearProgress-bar": { borderRadius: 99 } }} />
+          </Box>
+        )}
+        {uploadError && !uploading && (
+          <Alert severity="error" onClose={() => setUploadError("")} sx={{ mt: 2, borderRadius: 2.5 }}>
+            {uploadError}
+          </Alert>
+        )}
       </Paper>
 
       <Paper

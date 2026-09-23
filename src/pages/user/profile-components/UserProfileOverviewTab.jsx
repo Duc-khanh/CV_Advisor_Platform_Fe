@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Paper,
@@ -9,6 +9,7 @@ import {
   Stack,
   IconButton,
   Divider,
+  CircularProgress,
 } from "@mui/material";
 import {
   ChevronRight,
@@ -18,7 +19,8 @@ import {
   ArrowForward,
   AutoAwesome,
 } from "@mui/icons-material";
-import { getMediaUrl } from "../../../utils/urlHelpers";
+import { getCvUrl, getMediaUrl } from "../../../utils/urlHelpers";
+import { cvService } from "../../../services/user";
 
 export default function UserProfileOverviewTab({
   user,
@@ -28,6 +30,35 @@ export default function UserProfileOverviewTab({
   savedJobsCount = 0,
   inviteCount = 0,
 }) {
+  const [attachedCvs, setAttachedCvs] = useState([]);
+  const [loadingCvs, setLoadingCvs] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    const loadAttachedCvs = async () => {
+      setLoadingCvs(true);
+      try {
+        const response = await cvService.getUserCV();
+        const items = Array.isArray(response)
+          ? response
+          : response?.files || response?.cvs || response?.data || (response ? [response] : []);
+        if (active) setAttachedCvs(Array.isArray(items) ? items : []);
+      } catch (error) {
+        console.error("Không thể tải CV đính kèm ở trang tổng quan:", error);
+        if (active) setAttachedCvs([]);
+      } finally {
+        if (active) setLoadingCvs(false);
+      }
+    };
+    loadAttachedCvs();
+    return () => { active = false; };
+  }, []);
+
+  const latestCv = attachedCvs[0];
+  const latestCvName = latestCv?.fileName || latestCv?.name || latestCv?.originalName || latestCv?.title || "CV của bạn";
+  const latestCvUrl = latestCv ? getCvUrl(latestCv.fileUrl || latestCv.cvFileUrl || latestCv.url || latestCv.path || latestCv.filePath || latestCv.fileLink || latestCv.link || "") : "";
+  const latestCvDateValue = latestCv?.updatedAt || latestCv?.modifiedAt || latestCv?.uploadedAt || latestCv?.createdAt || latestCv?.timestamp;
+  const latestCvDate = latestCvDateValue ? new Date(latestCvDateValue).toLocaleDateString("vi-VN") : "Chưa có thông tin";
   const initials = user.fullName
     ? user.fullName
         .trim()
@@ -171,83 +202,41 @@ export default function UserProfileOverviewTab({
         </Box>
       </Paper>
 
-      {/* 3. "Hồ sơ đính kèm của bạn" box */}
-      <Paper
-        sx={{
-          p: 3,
-          borderRadius: 4,
-          boxShadow: "0 1px 3px rgba(15,23,42,0.05)",
-          border: "1px solid #e2e8f0",
-          bgcolor: "#ffffff",
-        }}
-      >
-        <Typography variant="subtitle1" fontWeight={800} color="#0f172a" mb={2}>
-          Hồ sơ đính kèm của bạn
-        </Typography>
-
-        <Box
-          sx={{
-            p: 2.5,
-            border: "1px solid #e2e8f0",
-            borderRadius: 3,
-            bgcolor: "#f8fafc",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 2,
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            {/* Pink folder icon */}
-            <Box
-              sx={{
-                width: 48,
-                height: 48,
-                borderRadius: 2,
-                bgcolor: "#ffe4e6",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <FilePresent sx={{ color: "#fb7185", fontSize: 28 }} />
-            </Box>
-
-            <Box>
-              <Typography
-                variant="body2"
-                fontWeight={700}
-                color="#0f172a"
-                sx={{
-                  textDecoration: "underline",
-                  cursor: "pointer",
-                  "&:hover": { color: "#ef4444" },
-                }}
-              >
-                NguyenDucKhanhCVFullStack.pdf
-              </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
-                Cập nhật lần cuối: 13/04/2026
-              </Typography>
-            </Box>
+      {/* 3. Hồ sơ đính kèm — dữ liệu trực tiếp từ API */}
+      <Paper sx={{ p: 3, borderRadius: 4, boxShadow: "0 1px 3px rgba(15,23,42,0.05)", border: "1px solid #e2e8f0", bgcolor: "#ffffff" }}>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
+          <Box>
+            <Typography variant="subtitle1" fontWeight={800} color="#0f172a">Hồ sơ đính kèm của bạn</Typography>
+            <Typography variant="caption" color="text.secondary">CV mới nhất dùng khi ứng tuyển</Typography>
           </Box>
+          <Button onClick={() => setActiveTab("attached_cv")} endIcon={<ChevronRight />} sx={{ textTransform: "none", color: "#2563eb", fontWeight: 800 }}>
+            Quản lý hồ sơ
+          </Button>
+        </Stack>
 
-          {/* <Button
-            onClick={() => setActiveTab("attached_cv")}
-            endIcon={<ChevronRight />}
-            sx={{
-              textTransform: "none",
-              color: "#2563eb",
-              fontWeight: 800,
-              fontSize: "0.85rem",
-            }}
+        {loadingCvs ? (
+          <Box sx={{ minHeight: 90, display: "grid", placeItems: "center", bgcolor: "#f8fafc", borderRadius: 3 }}><CircularProgress size={24} /></Box>
+        ) : latestCv ? (
+          <Box
+            onClick={() => latestCvUrl ? window.open(latestCvUrl, "_blank", "noopener,noreferrer") : setActiveTab("attached_cv")}
+            sx={{ p: 2.5, border: "1px solid #e2e8f0", borderRadius: 3, bgcolor: "#f8fafc", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2, cursor: "pointer", transition: "all .2s ease", "&:hover": { borderColor: "#93c5fd", bgcolor: "#f0f7ff" } }}
           >
-            Tải lên ngay
-          </Button> */}
-        </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, minWidth: 0 }}>
+              <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: "#dbeafe", display: "grid", placeItems: "center", flexShrink: 0 }}><FilePresent sx={{ color: "#2563eb", fontSize: 27 }} /></Box>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="body2" fontWeight={800} color="#0f172a" noWrap>{latestCvName}</Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>Cập nhật lần cuối: {latestCvDate}</Typography>
+              </Box>
+            </Box>
+            <ChevronRight sx={{ color: "#94a3b8", flexShrink: 0 }} />
+          </Box>
+        ) : (
+          <Box sx={{ p: 3, textAlign: "center", bgcolor: "#f8fafc", borderRadius: 3 }}>
+            <Typography variant="body2" fontWeight={700} color="#334155">Bạn chưa có CV đính kèm</Typography>
+            <Button onClick={() => setActiveTab("attached_cv")} sx={{ mt: 1, textTransform: "none", fontWeight: 800 }}>Tải CV lên ngay</Button>
+          </Box>
+        )}
       </Paper>
-
       {/* 4. "Hồ sơ ITviec" box (completeness and templates preview) */}
       <Paper
         sx={{

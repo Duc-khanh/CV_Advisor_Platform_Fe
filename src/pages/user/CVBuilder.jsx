@@ -1,64 +1,245 @@
-import React, { useState, useRef, useCallback } from 'react';
-import { useReactToPrint } from 'react-to-print';
+import React, { useEffect, useState, useRef } from "react";
+import { useReactToPrint } from "react-to-print";
 import {
-  Box, Paper, TextField, Button, Stack, Typography,
-  Tab, Tabs, IconButton, Chip, Divider, Avatar, Tooltip,
-} from '@mui/material';
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Stack,
+  IconButton,
+  Chip,
+  Avatar,
+  Tooltip,
+  Paper,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+} from "@mui/material";
 import {
-  Delete as DeleteIcon, Add as AddIcon,
-  Download as DownloadIcon, Save as SaveIcon,
-  Person as PersonIcon, Work as WorkIcon,
-  School as SchoolIcon, Psychology as SkillIcon,
-  Email as EmailIcon, Phone as PhoneIcon,
-  LocationOn as LocationIcon, LinkedIn as LinkedInIcon,
+  ExpandMore as ExpandMoreIcon,
+  DeleteOutline as DeleteIcon,
+  Add as AddIcon,
   CameraAlt as CameraIcon,
-} from '@mui/icons-material';
-import axios from '../../services/axios';
-import { useToast } from '../../contexts/ToastContext';
+  Person as PersonIcon,
+  WorkOutline as WorkIcon,
+  SchoolOutlined as SchoolIcon,
+  PsychologyOutlined as SkillIcon,
+  DescriptionOutlined as SummaryIcon,
+  FolderOpenOutlined as ProjectIcon,
+  NotesOutlined as CustomSectionIcon,
+} from "@mui/icons-material";
+import { FileText, Layers, Plus } from "lucide-react";
+import axios from "../../services/axios";
+import { getCurrentUserId } from "../../services/cv/cvAnalysisStorage";
+import { useToast } from "../../contexts/ToastContext";
+import CVStudioTopBar from "../../components/cv/CVStudioTopBar";
+import CVSectionReorder from "../../components/cv/CVSectionReorder";
+import CVFloatingSelectionToolbar from "../../components/cv/CVFloatingSelectionToolbar";
+import ModernTwoColumnTemplate from "../../components/cv/templates/ModernTwoColumnTemplate";
+import ClassicTemplate from "../../components/cv/templates/ClassicTemplate";
 
-/* ─────────────────────────────────────────────────── */
-function TabPanel({ children, value, index }) {
-  return value === index ? <Box sx={{ pt: 2 }}>{children}</Box> : null;
-}
+const getAutoSaveKey = () => `cv-builder-autosave-${getCurrentUserId() || "guest"}`;
 
-const TABS = [
-  { label: 'Thông tin', icon: <PersonIcon fontSize="small" /> },
-  { label: 'Kinh nghiệm', icon: <WorkIcon fontSize="small" /> },
-  { label: 'Học vấn', icon: <SchoolIcon fontSize="small" /> },
-  { label: 'Kỹ năng', icon: <SkillIcon fontSize="small" /> },
-];
+// Dữ liệu khởi tạo mẫu để người dùng dễ hình dung
+const INITIAL_CV_DATA = {
+  personalInfo: {
+    fullName: "Nguyễn Văn An",
+    title: "Senior Fullstack Developer",
+    email: "an.nguyen@example.com",
+    phone: "0987 654 321",
+    github: "github.com/annguyen-dev",
+    linkedin: "linkedin.com/in/annguyen-dev",
+    avatarUrl: "",
+  },
+  summary:
+    "Kỹ sư phần mềm với hơn 3 năm kinh nghiệm phát triển ứng dụng Web quy mô lớn với React.js, Node.js và Spring Boot. Đam mê thiết kế Clean Architecture, tối ưu hóa trải nghiệm người dùng và áp dụng CI/CD tự động hóa.",
+  experience: [
+    {
+      role: "Senior Frontend Developer",
+      company: "FPT Software",
+      startDate: "06/2023",
+      endDate: "Hiện tại",
+      description:
+        "• Chịu trách nhiệm kiến trúc Frontend hệ thống Enterprise Dashboard phục vụ 100,000+ người dùng.\n• Tối ưu thời gian tải trang ban đầu (FCP) giảm 40% bằng code-splitting và server-side caching.\n• Dẫn dắt và đào tạo 4 junior developers theo chuẩn Clean Code & TypeScript.",
+    },
+    {
+      role: "Fullstack Web Developer",
+      company: "VNG Corporation",
+      startDate: "01/2021",
+      endDate: "05/2023",
+      description:
+        "• Xây dựng hệ thống thanh toán điện tử tích hợp cổng ZaloPay và VNPay.\n• Thiết kế RESTful APIs với Node.js Express và PostgreSQL, xử lý 1,500 transactions/phút.\n• Triển khai container hóa với Docker và Kubernetes trên hạ tầng AWS.",
+    },
+  ],
+  education: [
+    {
+      degree: "Kỹ sư Công nghệ Thông tin",
+      school: "Đại học Bách Khoa Hà Nội",
+      startDate: "2017",
+      endDate: "2021",
+    },
+  ],
+  skills: [
+    "JavaScript / TypeScript",
+    "React.js & Next.js",
+    "Node.js (Express/NestJS)",
+    "Java Spring Boot",
+    "PostgreSQL & MongoDB",
+    "Docker & Kubernetes",
+    "CI/CD Pipeline",
+    "Git & Agile/Scrum",
+  ],
+  customSections: [],
+  projects: [
+    {
+      name: "E-Commerce Microservices Platform",
+      role: "Lead Developer",
+      link: "github.com/annguyen/ecommerce-platform",
+      description:
+        "Hệ thống bán lẻ đa kênh áp dụng kiến trúc Event-driven với Apache Kafka, hỗ trợ thanh toán trực tuyến và gợi ý sản phẩm AI.",
+    },
+  ],
+};
 
-/* ─────────────────────────────────────────────────── */
 export default function CVBuilder() {
-  const [tabIndex, setTabIndex] = useState(0);
-  const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState("content"); // 'content' | 'reorder'
+  const [selectedTemplate, setSelectedTemplate] = useState("modern"); // 'modern' | 'classic'
+  const [primaryColor, setPrimaryColor] = useState("#1D61F2");
+  const [fontFamily, setFontFamily] = useState("Inter, sans-serif");
+  const [savedCvId, setSavedCvId] = useState(null);
+  const [autoSaveStatus, setAutoSaveStatus] = useState("saved");
   const showToast = useToast();
+
   const printRef = useRef(null);
-  const [skillInput, setSkillInput] = useState('');
-
-  // Avatar state
-  const [avatarFile, setAvatarFile] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState(null);
+  const canvasRef = useRef(null);
+  const splitViewRef = useRef(null);
   const avatarInputRef = useRef(null);
+  const autoSaveTimerRef = useRef(null);
+  const hasLoadedRef = useRef(false);
+  const lastSavedSnapshotRef = useRef("");
 
-  const [cvData, setCvData] = useState({
-    personalInfo: { fullName: '', title: '', email: '', phone: '', address: '', linkedin: '' },
-    summary: '',
-    experience: [],
-    education: [],
-    skills: [],
+  const [cvData, setCvData] = useState(INITIAL_CV_DATA);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [skillInput, setSkillInput] = useState("");
+
+  // Sắp xếp và ẩn/hiện khối
+  const [sectionOrder, setSectionOrder] = useState([
+    "summary",
+    "experience",
+    "education",
+    "skills",
+    "projects",
+  ]);
+  const [hiddenSections, setHiddenSections] = useState([]);
+
+  // Kích hoạt In / Xuất PDF qua useReactToPrint
+  useEffect(() => {
+    let active = true;
+
+    const loadLatestSavedCv = async () => {
+      try {
+        const response = await axios.get("/api/user/cvs");
+        const latestCv = response.data?.[0];
+        if (!active) return;
+        if (!latestCv?.cvText) {
+          const localDraft = localStorage.getItem(getAutoSaveKey());
+          if (localDraft) {
+            const draft = JSON.parse(localDraft);
+            const settings = draft.settings || {};
+            setCvData((prev) => ({ ...prev, ...(draft.cvData || {}) }));
+            if (settings.selectedTemplate) setSelectedTemplate(settings.selectedTemplate);
+            if (settings.primaryColor) setPrimaryColor(settings.primaryColor);
+            if (settings.fontFamily) setFontFamily(settings.fontFamily);
+            if (settings.sectionOrder) setSectionOrder(settings.sectionOrder);
+            if (settings.hiddenSections) setHiddenSections(settings.hiddenSections);
+          }
+          return;
+        }
+
+        const parsed = JSON.parse(latestCv.cvText);
+        const settings = parsed.settings || {};
+        const content = { ...parsed };
+        delete content.settings;
+
+        setCvData((prev) => ({ ...prev, ...content }));
+        setSavedCvId(latestCv.cvId);
+        if (settings.selectedTemplate) setSelectedTemplate(settings.selectedTemplate);
+        if (settings.primaryColor) setPrimaryColor(settings.primaryColor);
+        if (settings.fontFamily) setFontFamily(settings.fontFamily);
+        if (settings.sectionOrder) setSectionOrder(settings.sectionOrder);
+        if (settings.hiddenSections) setHiddenSections(settings.hiddenSections);
+
+        const localDraft = localStorage.getItem(getAutoSaveKey());
+        if (localDraft) {
+          const draft = JSON.parse(localDraft);
+          const localSettings = draft.settings || {};
+          setCvData((prev) => ({ ...prev, ...(draft.cvData || {}) }));
+          if (localSettings.selectedTemplate) setSelectedTemplate(localSettings.selectedTemplate);
+          if (localSettings.primaryColor) setPrimaryColor(localSettings.primaryColor);
+          if (localSettings.fontFamily) setFontFamily(localSettings.fontFamily);
+          if (localSettings.sectionOrder) setSectionOrder(localSettings.sectionOrder);
+          if (localSettings.hiddenSections) setHiddenSections(localSettings.hiddenSections);
+        }
+      } catch (error) {
+        if (error?.response?.status !== 404) {
+          console.error("Không thể tải CV đã lưu:", error);
+        }
+      } finally {
+        if (active) hasLoadedRef.current = true;
+      }
+    };
+
+    loadLatestSavedCv();
+    return () => { active = false; };
+  }, []);
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `${cvData.personalInfo.fullName || "CV"}_Resume`,
   });
 
-  /* ── react-to-print v3: useReactToPrint returns a trigger fn directly ── */
-  const handlePrint = useReactToPrint({ contentRef: printRef });
-
-  /* ── Handlers ── */
-  const handlePersonalInfoChange = (e) => {
-    const { name, value } = e.target;
-    setCvData((prev) => ({ ...prev, personalInfo: { ...prev.personalInfo, [name]: value } }));
+  // Toggle ẩn / hiện khối
+  const handleToggleHide = (key) => {
+    setHiddenSections((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
   };
 
-  const handleSummaryChange = (e) => setCvData((prev) => ({ ...prev, summary: e.target.value }));
+  /* ── Form Event Handlers ── */
+  const handlePersonalInfoChange = (e) => {
+    const { name, value } = e.target;
+    setCvData((prev) => ({
+      ...prev,
+      personalInfo: { ...prev.personalInfo, [name]: value },
+    }));
+  };
+
+  const handleSummaryChange = (e) =>
+    setCvData((prev) => ({ ...prev, summary: e.target.value }));
+  const handleApplyAiText = (originalText, rewrittenText) => {
+    const source = originalText?.trim();
+    if (!source || !rewrittenText) return false;
+
+    let replaced = false;
+    const replaceFirstMatch = (value) => {
+      if (replaced) return value;
+      if (typeof value === "string") {
+        const index = value.indexOf(source);
+        if (index === -1) return value;
+        replaced = true;
+        return value.slice(0, index) + rewrittenText + value.slice(index + source.length);
+      }
+      if (Array.isArray(value)) return value.map(replaceFirstMatch);
+      if (value && typeof value === "object") {
+        return Object.fromEntries(
+          Object.entries(value).map(([key, nestedValue]) => [key, replaceFirstMatch(nestedValue)])
+        );
+      }
+      return value;
+    };
+
+    setCvData((prev) => replaceFirstMatch(prev));
+    return true;
+  };
 
   const addArrayItem = (key, item) =>
     setCvData((prev) => ({ ...prev, [key]: [...prev[key], item] }));
@@ -79,8 +260,11 @@ export default function CVBuilder() {
 
   const addSkill = () => {
     if (!skillInput.trim()) return;
-    setCvData((prev) => ({ ...prev, skills: [...prev.skills, skillInput.trim()] }));
-    setSkillInput('');
+    setCvData((prev) => ({
+      ...prev,
+      skills: [...prev.skills, skillInput.trim()],
+    }));
+    setSkillInput("");
   };
 
   const removeSkill = (idx) =>
@@ -90,467 +274,600 @@ export default function CVBuilder() {
       return { ...prev, skills: s };
     });
 
-  /* ── Avatar upload ── */
+  /* ── Upload Avatar ── */
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      showToast('Vui lòng chọn file ảnh (JPG, PNG...)', 'warning');
+    if (!file.type.startsWith("image/")) {
+      showToast("Vui lòng chọn file ảnh (JPG, PNG...)", "warning");
       return;
     }
-    setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file));
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarPreview(previewUrl);
+    setCvData((prev) => ({
+      ...prev,
+      personalInfo: { ...prev.personalInfo, avatarUrl: previewUrl },
+    }));
   };
 
-  /* ── Save CV (multipart: JSON + optional avatar) ── */
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      const formData = new FormData();
-      formData.append(
-        'data',
-        new Blob(
-          [JSON.stringify({
-            fileName: `${cvData.personalInfo.fullName || 'Untitled'}_CV`,
-            cvContent: JSON.stringify(cvData),
-          })],
-          { type: 'application/json' }
-        )
-      );
-      if (avatarFile) formData.append('avatar', avatarFile);
-
-      await axios.post('/api/user/cv', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      showToast('CV đã được lưu thành công!', 'success');
-    } catch (err) {
-      // Fallback: try plain JSON save if backend doesn't support multipart
-      try {
-        await axios.post('/api/user/cv', {
-          fileName: `${cvData.personalInfo.fullName || 'Untitled'}_CV`,
-          cvContent: JSON.stringify(cvData),
-        });
-        showToast('CV đã được lưu thành công!', 'success');
-      } catch {
-        const msg = err?.response?.data?.message || 'Không thể lưu CV. Vui lòng thử lại.';
-        showToast(msg, 'error');
+  /* ── Lưu CV ── */
+  const handleInlineUpdate = (path, newText) => {
+    if (!path) return;
+    setCvData((prev) => {
+      const cloned = { ...prev };
+      const parts = path.split(".");
+      if (parts.length === 1) {
+        cloned[parts[0]] = newText;
+      } else if (parts.length === 2) {
+        const [parent, child] = parts;
+        if (Array.isArray(cloned[parent])) {
+          const list = [...cloned[parent]];
+          list[Number(child)] = newText;
+          cloned[parent] = list;
+        } else {
+          cloned[parent] = { ...cloned[parent], [child]: newText };
+        }
+      } else if (parts.length === 3) {
+        const [section, idxStr, field] = parts;
+        const idx = parseInt(idxStr, 10);
+        if (Array.isArray(cloned[section]) && cloned[section][idx]) {
+          const list = [...cloned[section]];
+          list[idx] = { ...list[idx], [field]: newText };
+          cloned[section] = list;
+        }
       }
-    } finally {
-      setIsSaving(false);
-    }
+      return cloned;
+    });
   };
 
-  const { personalInfo, summary, experience, education, skills } = cvData;
+  useEffect(() => {
+    if (!hasLoadedRef.current) return;
 
-  /* ══════════════════════════════════════════════════ */
+    const settings = { selectedTemplate, primaryColor, fontFamily, sectionOrder, hiddenSections };
+    const snapshot = JSON.stringify({ ...cvData, settings });
+    if (snapshot === lastSavedSnapshotRef.current) return;
+
+    localStorage.setItem(
+      getAutoSaveKey(),
+      JSON.stringify({ cvData, settings, updatedAt: new Date().toISOString() })
+    );
+    setAutoSaveStatus("saving");
+    clearTimeout(autoSaveTimerRef.current);
+
+    autoSaveTimerRef.current = setTimeout(async () => {
+      try {
+        const payload = {
+          fileName: `${cvData.personalInfo.fullName || "Untitled"}_CV`,
+          cvText: snapshot,
+        };
+        const response = savedCvId
+          ? await axios.put(`/api/user/cvs/${savedCvId}`, payload)
+          : await axios.post("/api/user/cvs", payload);
+
+        setSavedCvId(response.data.cvId);
+        lastSavedSnapshotRef.current = snapshot;
+        setAutoSaveStatus("saved");
+      } catch (error) {
+        console.error("Không thể tự động lưu CV:", error);
+        setAutoSaveStatus("local");
+      }
+    }, 1500);
+
+    return () => clearTimeout(autoSaveTimerRef.current);
+  }, [cvData, selectedTemplate, primaryColor, fontFamily, sectionOrder, hiddenSections, savedCvId]);
+  const { personalInfo, summary, experience, education, skills, projects = [], customSections = [] } = cvData;
+
   return (
-    <>
-      <Box sx={{
-        background: 'linear-gradient(135deg,#2563eb,#3b82f6)',
-        px: 4, py: 2.5,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        flexShrink: 0,
-      }}>
-        <Box>
-          <Typography variant="h5" fontWeight={800} color="#fff"> Thiết Kế CV</Typography>
-          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.85)' }}>
-            Tạo CV chuyên nghiệp – xem trước trực tiếp
-          </Typography>
-        </Box>
-        <Stack direction="row" spacing={1.5}>
-          <Button variant="outlined" startIcon={<SaveIcon />} disabled={isSaving} onClick={handleSave}
-            sx={{ color:'#fff', borderColor:'rgba(255,255,255,0.6)', textTransform:'none', fontWeight:700,
-              '&:hover':{ borderColor:'#fff', bgcolor:'rgba(255,255,255,0.1)' } }}>
-            {isSaving ? 'Đang lưu...' : 'Lưu CV'}
-          </Button>
-          <Button variant="contained" startIcon={<DownloadIcon />} onClick={() => handlePrint()}
-            sx={{ bgcolor:'#fff', color:'#2563eb', fontWeight:700, textTransform:'none',
-              boxShadow:'0 4px 14px rgba(0,0,0,0.15)', '&:hover':{ bgcolor:'#f0f4ff' } }}>
-            Tải PDF
-          </Button>
-        </Stack>
-      </Box>
+    <Box sx={{ display: "flex", flexDirection: "column", height: "calc(100vh - 65px)", bgcolor: "#ffffff", overflow: "hidden" }}>
+      {/* 1. TOP ACTION BAR (Global Settings Only) */}
+      <CVStudioTopBar
+        selectedTemplate={selectedTemplate}
+        onSelectTemplate={setSelectedTemplate}
+        primaryColor={primaryColor}
+        onSelectColor={setPrimaryColor}
+        fontFamily={fontFamily}
+        onSelectFont={setFontFamily}
+        autoSaveStatus={autoSaveStatus}
+        onDownload={handlePrint}
+      />
 
-      {/* ── Split-screen body ── */}
-      <Box sx={{ display:'flex', flex:1, overflow:'hidden', height:'calc(100vh - 116px)' }}>
+      {/* 2. SPLIT VIEW BODY */}
+      <Box ref={splitViewRef} sx={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        {/* ================= CỘT TRÁI: CONTROLLER (380px) ================= */}
+        <Box
+          sx={{
+            width: "380px",
+            minWidth: "380px",
+            bgcolor: "#ffffff",
+            borderRight: "1px solid #e2e8f0",
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+            boxSizing: "border-box",
+          }}
+        >
+          {/* TABS CHUYỂN ĐỔI: NỘI DUNG vs SẮP XẾP KHỐI */}
+          <Box
+            sx={{
+              p: 1.5,
+              borderBottom: "1px solid #e2e8f0",
+              bgcolor: "#f8fafc",
+              display: "flex",
+              gap: 1,
+            }}
+          >
+            <Button
+              fullWidth
+              size="small"
+              onClick={() => setActiveTab("content")}
+              startIcon={<FileText size={16} />}
+              sx={{
+                textTransform: "none",
+                fontWeight: 700,
+                fontSize: "0.85rem",
+                borderRadius: "8px",
+                py: 0.9,
+                bgcolor: activeTab === "content" ? "#ffffff" : "transparent",
+                color: activeTab === "content" ? "#1D61F2" : "#64748b",
+                boxShadow: activeTab === "content" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                border: activeTab === "content" ? "1px solid #cbd5e1" : "1px solid transparent",
+                "&:hover": {
+                  bgcolor: activeTab === "content" ? "#ffffff" : "#f1f5f9",
+                },
+              }}
+            >
+              Nội dung
+            </Button>
 
-        {/* ───────── LEFT: Form ───────── */}
-        <Box sx={{
-          width:'50%', overflowY:'auto', bgcolor:'#f8fafc', borderRight:'1px solid #e2e8f0',
-          '&::-webkit-scrollbar':{ width:6 },
-          '&::-webkit-scrollbar-thumb':{ bgcolor:'#cbd5e1', borderRadius:3 },
-        }}>
-          <Box sx={{ p: 3 }}>
-            {/* Tabs */}
-            <Paper elevation={0} sx={{ mb:3, borderRadius:3, overflow:'hidden', border:'1px solid #e2e8f0' }}>
-              <Tabs value={tabIndex} onChange={(_,v) => setTabIndex(v)} variant="fullWidth"
-                sx={{
-                  '& .MuiTab-root':{ textTransform:'none', fontWeight:600, fontSize:'0.82rem', minHeight:52 },
-                  '& .MuiTabs-indicator':{ background:'linear-gradient(90deg,#2563eb,#3b82f6)', height:3, borderRadius:'3px 3px 0 0' },
-                  '& .Mui-selected':{ color:'#2563eb !important' },
-                }}>
-                {TABS.map((t,i) => <Tab key={i} label={t.label} icon={t.icon} iconPosition="start" />)}
-              </Tabs>
-            </Paper>
+            <Button
+              fullWidth
+              size="small"
+              onClick={() => setActiveTab("reorder")}
+              startIcon={<Layers size={16} />}
+              sx={{
+                textTransform: "none",
+                fontWeight: 700,
+                fontSize: "0.85rem",
+                borderRadius: "8px",
+                py: 0.9,
+                bgcolor: activeTab === "reorder" ? "#ffffff" : "transparent",
+                color: activeTab === "reorder" ? "#1D61F2" : "#64748b",
+                boxShadow: activeTab === "reorder" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                border: activeTab === "reorder" ? "1px solid #cbd5e1" : "1px solid transparent",
+                "&:hover": {
+                  bgcolor: activeTab === "reorder" ? "#ffffff" : "#f1f5f9",
+                },
+              }}
+            >
+              Sắp xếp khối
+            </Button>
+          </Box>
 
-            {/* ── Tab 0: Personal Info ── */}
-            <TabPanel value={tabIndex} index={0}>
-              <Stack spacing={2}>
-                {/* Avatar upload */}
-                <SectionCard title="Ảnh đại diện">
-                  <Stack direction="row" alignItems="center" spacing={3}>
-                    <Box sx={{ position:'relative' }}>
-                      <Avatar
-                        src={avatarPreview}
-                        sx={{ width:90, height:90, border:'3px solid #2563eb', fontSize:'2rem',
-                          bgcolor: avatarPreview ? 'transparent' : '#eff6ff' }}>
-                        {!avatarPreview && <PersonIcon sx={{ fontSize:40, color:'#2563eb' }} />}
-                      </Avatar>
-                      <Tooltip title="Thay đổi ảnh">
-                        <IconButton size="small" onClick={() => avatarInputRef.current?.click()}
-                          sx={{ position:'absolute', bottom:-4, right:-4, bgcolor:'#2563eb', color:'#fff',
-                            width:28, height:28, '&:hover':{ bgcolor:'#1d4ed8' } }}>
-                          <CameraIcon sx={{ fontSize:14 }} />
-                        </IconButton>
-                      </Tooltip>
-                      <input ref={avatarInputRef} type="file" accept="image/*" hidden onChange={handleAvatarChange} />
-                    </Box>
-                    <Box>
-                      <Button variant="outlined" size="small" onClick={() => avatarInputRef.current?.click()}
-                        sx={{ textTransform:'none', borderColor:'#2563eb', color:'#2563eb', mb:0.5, display:'block' }}>
-                        Chọn ảnh
-                      </Button>
-                      {avatarFile && (
-                        <Typography variant="caption" color="text.secondary">{avatarFile.name}</Typography>
-                      )}
-                      {!avatarFile && (
-                        <Typography variant="caption" color="text.disabled">JPG, PNG – tối đa 5MB</Typography>
-                      )}
-                      {avatarPreview && (
-                        <Button size="small" color="error" sx={{ textTransform:'none', mt:0.5, display:'block', p:0 }}
-                          onClick={() => { setAvatarFile(null); setAvatarPreview(null); }}>
-                          Xóa ảnh
-                        </Button>
-                      )}
-                    </Box>
-                  </Stack>
-                </SectionCard>
-
-                <SectionCard title="Thông tin cá nhân">
-                  <Stack spacing={2}>
-                    <TextField fullWidth label="Họ và tên" name="fullName"
-                      value={personalInfo.fullName} onChange={handlePersonalInfoChange} />
-                    <TextField fullWidth label="Vị trí ứng tuyển" name="title"
-                      value={personalInfo.title} onChange={handlePersonalInfoChange} />
-                    <Stack direction="row" spacing={2}>
-                      <TextField fullWidth label="Email" type="email" name="email"
-                        value={personalInfo.email} onChange={handlePersonalInfoChange} />
-                      <TextField fullWidth label="Số điện thoại" name="phone"
-                        value={personalInfo.phone} onChange={handlePersonalInfoChange} />
-                    </Stack>
-                    <TextField fullWidth label="Địa chỉ" name="address"
-                      value={personalInfo.address} onChange={handlePersonalInfoChange} />
-                    <TextField fullWidth label="LinkedIn / Website" name="linkedin"
-                      value={personalInfo.linkedin} onChange={handlePersonalInfoChange} />
-                  </Stack>
-                </SectionCard>
-
-                <SectionCard title="Mục tiêu nghề nghiệp">
-                  <TextField fullWidth multiline rows={4} label="Mô tả ngắn về bản thân..."
-                    value={summary} onChange={handleSummaryChange} />
-                </SectionCard>
-              </Stack>
-            </TabPanel>
-
-            {/* ── Tab 1: Experience ── */}
-            <TabPanel value={tabIndex} index={1}>
-              <Stack spacing={2}>
-                {experience.map((exp, idx) => (
-                  <SectionCard key={idx} title={`Kinh nghiệm ${idx + 1}`} onDelete={() => removeArrayItem('experience', idx)}>
-                    <Stack spacing={1.5}>
-                      <Stack direction="row" spacing={2}>
-                        <TextField fullWidth size="small" label="Vị trí" value={exp.role}
-                          onChange={(e) => updateArrayItem('experience', idx, 'role', e.target.value)} />
-                        <TextField fullWidth size="small" label="Công ty" value={exp.company}
-                          onChange={(e) => updateArrayItem('experience', idx, 'company', e.target.value)} />
-                      </Stack>
-                      <Stack direction="row" spacing={2}>
-                        <TextField fullWidth size="small" label="Bắt đầu" placeholder="MM/YYYY"
-                          value={exp.startDate}
-                          onChange={(e) => updateArrayItem('experience', idx, 'startDate', e.target.value)} />
-                        <TextField fullWidth size="small" label="Kết thúc" placeholder="MM/YYYY hoặc Hiện tại"
-                          value={exp.endDate}
-                          onChange={(e) => updateArrayItem('experience', idx, 'endDate', e.target.value)} />
-                      </Stack>
-                      <TextField fullWidth size="small" multiline rows={3} label="Mô tả công việc"
-                        value={exp.description}
-                        onChange={(e) => updateArrayItem('experience', idx, 'description', e.target.value)} />
-                    </Stack>
-                  </SectionCard>
-                ))}
-                <AddButton label="Thêm kinh nghiệm"
-                  onClick={() => addArrayItem('experience', { role:'', company:'', startDate:'', endDate:'', description:'' })} />
-              </Stack>
-            </TabPanel>
-
-            {/* ── Tab 2: Education ── */}
-            <TabPanel value={tabIndex} index={2}>
-              <Stack spacing={2}>
-                {education.map((edu, idx) => (
-                  <SectionCard key={idx} title={`Học vấn ${idx + 1}`} onDelete={() => removeArrayItem('education', idx)}>
-                    <Stack spacing={1.5}>
-                      <Stack direction="row" spacing={2}>
-                        <TextField fullWidth size="small" label="Bằng cấp" value={edu.degree}
-                          onChange={(e) => updateArrayItem('education', idx, 'degree', e.target.value)} />
-                        <TextField fullWidth size="small" label="Trường" value={edu.school}
-                          onChange={(e) => updateArrayItem('education', idx, 'school', e.target.value)} />
-                      </Stack>
-                      <Stack direction="row" spacing={2}>
-                        <TextField fullWidth size="small" label="Bắt đầu" placeholder="MM/YYYY"
-                          value={edu.startDate}
-                          onChange={(e) => updateArrayItem('education', idx, 'startDate', e.target.value)} />
-                        <TextField fullWidth size="small" label="Kết thúc" placeholder="MM/YYYY"
-                          value={edu.endDate}
-                          onChange={(e) => updateArrayItem('education', idx, 'endDate', e.target.value)} />
-                      </Stack>
-                    </Stack>
-                  </SectionCard>
-                ))}
-                <AddButton label="Thêm học vấn"
-                  onClick={() => addArrayItem('education', { degree:'', school:'', startDate:'', endDate:'' })} />
-              </Stack>
-            </TabPanel>
-
-            {/* ── Tab 3: Skills ── */}
-            <TabPanel value={tabIndex} index={3}>
-              <SectionCard title="Kỹ năng của bạn">
-                <Stack spacing={2}>
-                  <Stack direction="row" spacing={1}>
-                    <TextField fullWidth size="small" label="Nhập kỹ năng" placeholder="VD: ReactJS, Node.js"
-                      value={skillInput}
-                      onChange={(e) => setSkillInput(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addSkill()} />
-                    <Button variant="contained" onClick={addSkill}
-                      sx={{ textTransform:'none', fontWeight:700, px:3, background:'linear-gradient(135deg,#2563eb,#3b82f6)' }}>
-                      Thêm
-                    </Button>
-                  </Stack>
-                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                    {skills.map((skill, idx) => (
-                      <Chip key={idx} label={skill} onDelete={() => removeSkill(idx)}
-                        sx={{ background:'#eff6ff',
-                          border:'1px solid #bfdbfe', fontWeight:600, color:'#1e40af' }} />
-                    ))}
-                    {skills.length === 0 && (
-                      <Typography variant="body2" color="text.disabled" sx={{ fontStyle:'italic' }}>
-                        Chưa có kỹ năng nào...
+          {/* NỘI DUNG CUỘN ĐỘC LẬP */}
+          <Box
+            sx={{
+              flex: 1,
+              overflowY: "auto",
+              p: 2,
+              "&::-webkit-scrollbar": { width: 6 },
+              "&::-webkit-scrollbar-thumb": { bgcolor: "#cbd5e1", borderRadius: 3 },
+            }}
+          >
+            {activeTab === "reorder" ? (
+              <CVSectionReorder
+                sectionOrder={sectionOrder}
+                onReorder={setSectionOrder}
+                hiddenSections={hiddenSections}
+                onToggleHide={handleToggleHide}
+              />
+            ) : (
+              /* TAB NỘI DUNG (ACCORDION CÁC KHỐI) */
+              <Stack spacing={1.5}>
+                {/* 1. Thông tin cá nhân */}
+                <Accordion defaultExpanded elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: "10px !important", "&:before": { display: "none" } }}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <PersonIcon sx={{ color: "#1D61F2", fontSize: 20 }} />
+                      <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
+                        Thông tin cá nhân
                       </Typography>
-                    )}
-                  </Stack>
-                </Stack>
-              </SectionCard>
-            </TabPanel>
+                    </Stack>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ pt: 0 }}>
+                    <Stack spacing={1.8}>
+                      {/* Avatar Upload */}
+                      <Stack direction="row" alignItems="center" spacing={2} sx={{ pb: 0.5 }}>
+                        <Box sx={{ position: "relative" }}>
+                          <Avatar
+                            src={avatarPreview || personalInfo.avatarUrl}
+                            sx={{
+                              width: 68,
+                              height: 68,
+                              border: `2px solid ${primaryColor}`,
+                              bgcolor: "#eff6ff",
+                            }}
+                          >
+                            <PersonIcon sx={{ fontSize: 32, color: primaryColor }} />
+                          </Avatar>
+                          <Tooltip title="Đổi ảnh đại diện">
+                            <IconButton
+                              size="small"
+                              onClick={() => avatarInputRef.current?.click()}
+                              sx={{
+                                position: "absolute",
+                                bottom: -2,
+                                right: -2,
+                                bgcolor: primaryColor,
+                                color: "#fff",
+                                width: 24,
+                                height: 24,
+                                "&:hover": { bgcolor: "#1752cd" },
+                              }}
+                            >
+                              <CameraIcon sx={{ fontSize: 13 }} />
+                            </IconButton>
+                          </Tooltip>
+                          <input ref={avatarInputRef} type="file" accept="image/*" hidden onChange={handleAvatarChange} />
+                        </Box>
+                        <Box>
+                          <Typography variant="body2" fontWeight={700} color="#334155">
+                            Ảnh đại diện
+                          </Typography>
+                          <Typography variant="caption" color="#94a3b8">
+                            Hỗ trợ JPG, PNG (tối đa 5MB)
+                          </Typography>
+                        </Box>
+                      </Stack>
+
+                      <TextField fullWidth size="small" label="Họ và tên" name="fullName" value={personalInfo.fullName} onChange={handlePersonalInfoChange} />
+                      <TextField fullWidth size="small" label="Vị trí ứng tuyển" name="title" value={personalInfo.title} onChange={handlePersonalInfoChange} />
+                      <TextField fullWidth size="small" label="Email" type="email" name="email" value={personalInfo.email} onChange={handlePersonalInfoChange} />
+                      <TextField fullWidth size="small" label="Số điện thoại" name="phone" value={personalInfo.phone} onChange={handlePersonalInfoChange} />
+                      <TextField fullWidth size="small" label="GitHub (link / username)" name="github" placeholder="github.com/username" value={personalInfo.github || ""} onChange={handlePersonalInfoChange} />
+                      <TextField fullWidth size="small" label="LinkedIn / Portfolio" name="linkedin" value={personalInfo.linkedin} onChange={handlePersonalInfoChange} />
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
+
+                {/* 2. Mục tiêu nghề nghiệp */}
+                <Accordion elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: "10px !important", "&:before": { display: "none" } }}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <SummaryIcon sx={{ color: "#1D61F2", fontSize: 20 }} />
+                      <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
+                        Mục tiêu nghề nghiệp
+                      </Typography>
+                    </Stack>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ pt: 0 }}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={4}
+                      placeholder="Mô tả tóm tắt kỹ năng nổi bật, kinh nghiệm cốt lõi và định hướng phát triển sự nghiệp..."
+                      value={summary}
+                      onChange={handleSummaryChange}
+                    />
+                  </AccordionDetails>
+                </Accordion>
+
+                {/* 3. Kinh nghiệm làm việc */}
+                <Accordion elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: "10px !important", "&:before": { display: "none" } }}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <WorkIcon sx={{ color: "#1D61F2", fontSize: 20 }} />
+                      <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
+                        Kinh nghiệm làm việc ({experience.length})
+                      </Typography>
+                    </Stack>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ pt: 0 }}>
+                    <Stack spacing={2}>
+                      {experience.map((exp, idx) => (
+                        <Box key={idx} sx={{ p: 1.5, border: "1px solid #e2e8f0", borderRadius: "8px", bgcolor: "#f8fafc" }}>
+                          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+                            <Typography variant="caption" fontWeight={800} color="#1D61F2">
+                              Kinh nghiệm #{idx + 1}
+                            </Typography>
+                            <IconButton size="small" color="error" onClick={() => removeArrayItem("experience", idx)}>
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Stack>
+                          <Stack spacing={1.2}>
+                            <TextField fullWidth size="small" label="Vị trí / Chức danh" value={exp.role} onChange={(e) => updateArrayItem("experience", idx, "role", e.target.value)} />
+                            <TextField fullWidth size="small" label="Tên công ty" value={exp.company} onChange={(e) => updateArrayItem("experience", idx, "company", e.target.value)} />
+                            <Stack direction="row" spacing={1}>
+                              <TextField fullWidth size="small" label="Bắt đầu" placeholder="MM/YYYY" value={exp.startDate} onChange={(e) => updateArrayItem("experience", idx, "startDate", e.target.value)} />
+                              <TextField fullWidth size="small" label="Kết thúc" placeholder="MM/YYYY hoặc Hiện tại" value={exp.endDate} onChange={(e) => updateArrayItem("experience", idx, "endDate", e.target.value)} />
+                            </Stack>
+                            <TextField fullWidth size="small" multiline rows={3} label="Mô tả công việc & kết quả" value={exp.description} onChange={(e) => updateArrayItem("experience", idx, "description", e.target.value)} />
+                          </Stack>
+                        </Box>
+                      ))}
+
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        size="small"
+                        startIcon={<Plus size={16} />}
+                        onClick={() => addArrayItem("experience", { role: "", company: "", startDate: "", endDate: "", description: "" })}
+                        sx={{ textTransform: "none", fontWeight: 700, borderRadius: "8px", borderColor: "#cbd5e1", color: "#1D61F2" }}
+                      >
+                        Thêm kinh nghiệm
+                      </Button>
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
+
+                {/* 4. Học vấn */}
+                <Accordion elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: "10px !important", "&:before": { display: "none" } }}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <SchoolIcon sx={{ color: "#1D61F2", fontSize: 20 }} />
+                      <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
+                        Học vấn ({education.length})
+                      </Typography>
+                    </Stack>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ pt: 0 }}>
+                    <Stack spacing={2}>
+                      {education.map((edu, idx) => (
+                        <Box key={idx} sx={{ p: 1.5, border: "1px solid #e2e8f0", borderRadius: "8px", bgcolor: "#f8fafc" }}>
+                          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+                            <Typography variant="caption" fontWeight={800} color="#1D61F2">
+                              Học vấn #{idx + 1}
+                            </Typography>
+                            <IconButton size="small" color="error" onClick={() => removeArrayItem("education", idx)}>
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Stack>
+                          <Stack spacing={1.2}>
+                            <TextField fullWidth size="small" label="Bằng cấp / Chuyên ngành" value={edu.degree} onChange={(e) => updateArrayItem("education", idx, "degree", e.target.value)} />
+                            <TextField fullWidth size="small" label="Trường đào tạo" value={edu.school} onChange={(e) => updateArrayItem("education", idx, "school", e.target.value)} />
+                            <Stack direction="row" spacing={1}>
+                              <TextField fullWidth size="small" label="Bắt đầu" placeholder="YYYY" value={edu.startDate} onChange={(e) => updateArrayItem("education", idx, "startDate", e.target.value)} />
+                              <TextField fullWidth size="small" label="Kết thúc" placeholder="YYYY" value={edu.endDate} onChange={(e) => updateArrayItem("education", idx, "endDate", e.target.value)} />
+                            </Stack>
+                          </Stack>
+                        </Box>
+                      ))}
+
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        size="small"
+                        startIcon={<Plus size={16} />}
+                        onClick={() => addArrayItem("education", { degree: "", school: "", startDate: "", endDate: "" })}
+                        sx={{ textTransform: "none", fontWeight: 700, borderRadius: "8px", borderColor: "#cbd5e1", color: "#1D61F2" }}
+                      >
+                        Thêm học vấn
+                      </Button>
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
+
+                {/* 5. Kỹ năng */}
+                <Accordion elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: "10px !important", "&:before": { display: "none" } }}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <SkillIcon sx={{ color: "#1D61F2", fontSize: 20 }} />
+                      <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
+                        Kỹ năng ({skills.length})
+                      </Typography>
+                    </Stack>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ pt: 0 }}>
+                    <Stack spacing={1.5}>
+                      <Stack direction="row" spacing={1}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          placeholder="VD: React.js, Docker, Java..."
+                          value={skillInput}
+                          onChange={(e) => setSkillInput(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && addSkill()}
+                        />
+                        <Button
+                          variant="contained"
+                          size="small"
+                          onClick={addSkill}
+                          sx={{ textTransform: "none", fontWeight: 700, bgcolor: "#1D61F2", "&:hover": { bgcolor: "#1752cd" } }}
+                        >
+                          Thêm
+                        </Button>
+                      </Stack>
+
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8 }}>
+                        {skills.map((skill, idx) => (
+                          <Chip
+                            key={idx}
+                            label={skill}
+                            onDelete={() => removeSkill(idx)}
+                            size="small"
+                            sx={{
+                              bgcolor: "#eff6ff",
+                              border: "1px solid #bfdbfe",
+                              color: "#1e40af",
+                              fontWeight: 600,
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
+
+                {/* 6. Dự án tiêu biểu */}
+                <Accordion elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: "10px !important", "&:before": { display: "none" } }}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <ProjectIcon sx={{ color: "#1D61F2", fontSize: 20 }} />
+                      <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
+                        Dự án tiêu biểu ({projects.length})
+                      </Typography>
+                    </Stack>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ pt: 0 }}>
+                    <Stack spacing={2}>
+                      {projects.map((proj, idx) => (
+                        <Box key={idx} sx={{ p: 1.5, border: "1px solid #e2e8f0", borderRadius: "8px", bgcolor: "#f8fafc" }}>
+                          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+                            <Typography variant="caption" fontWeight={800} color="#1D61F2">
+                              Dự án #{idx + 1}
+                            </Typography>
+                            <IconButton size="small" color="error" onClick={() => removeArrayItem("projects", idx)}>
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Stack>
+                          <Stack spacing={1.2}>
+                            <TextField fullWidth size="small" label="Tên dự án" value={proj.name} onChange={(e) => updateArrayItem("projects", idx, "name", e.target.value)} />
+                            <TextField fullWidth size="small" label="Vai trò" value={proj.role} onChange={(e) => updateArrayItem("projects", idx, "role", e.target.value)} />
+                            <TextField fullWidth size="small" label="Link / Github" value={proj.link} onChange={(e) => updateArrayItem("projects", idx, "link", e.target.value)} />
+                            <TextField fullWidth size="small" multiline rows={2} label="Mô tả dự án & công nghệ" value={proj.description} onChange={(e) => updateArrayItem("projects", idx, "description", e.target.value)} />
+                          </Stack>
+                        </Box>
+                      ))}
+
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        size="small"
+                        startIcon={<Plus size={16} />}
+                        onClick={() => addArrayItem("projects", { name: "", role: "", link: "", description: "" })}
+                        sx={{ textTransform: "none", fontWeight: 700, borderRadius: "8px", borderColor: "#cbd5e1", color: "#1D61F2" }}
+                      >
+                        Thêm dự án
+                      </Button>
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
+
+                {/* Khối nội dung tùy chỉnh */}
+                <Accordion elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: "10px !important", "&:before": { display: "none" } }}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <CustomSectionIcon sx={{ color: "#1D61F2", fontSize: 20 }} />
+                      <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
+                        Nội dung tùy chỉnh ({customSections.length})
+                      </Typography>
+                    </Stack>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ pt: 0 }}>
+                    <Stack spacing={2}>
+                      {customSections.map((section, idx) => (
+                        <Box key={section.id || idx} sx={{ p: 1.5, border: "1px solid #e2e8f0", borderRadius: "8px", bgcolor: "#f8fafc" }}>
+                          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+                            <Typography variant="caption" fontWeight={800} color="#1D61F2">
+                              Mục tùy chỉnh #{idx + 1}
+                            </Typography>
+                            <IconButton size="small" color="error" onClick={() => removeArrayItem("customSections", idx)}>
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Stack>
+                          <Stack spacing={1.2}>
+                            <TextField
+                              fullWidth
+                              size="small"
+                              label="Tiêu đề"
+                              placeholder="VD: Chứng chỉ, Giải thưởng, Ngoại ngữ..."
+                              value={section.title}
+                              onChange={(e) => updateArrayItem("customSections", idx, "title", e.target.value)}
+                            />
+                            <TextField
+                              fullWidth
+                              size="small"
+                              multiline
+                              minRows={3}
+                              label="Nội dung"
+                              value={section.content}
+                              onChange={(e) => updateArrayItem("customSections", idx, "content", e.target.value)}
+                            />
+                          </Stack>
+                        </Box>
+                      ))}
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        size="small"
+                        startIcon={<Plus size={16} />}
+                        onClick={() => addArrayItem("customSections", { id: `${Date.now()}-${Math.random()}`, title: "", content: "" })}
+                        sx={{ textTransform: "none", fontWeight: 700, borderRadius: "8px", borderColor: "#cbd5e1", color: "#1D61F2" }}
+                      >
+                        Thêm mục nội dung
+                      </Button>
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
+              </Stack>
+            )}
           </Box>
         </Box>
 
-        {/* ───────── RIGHT: CV Preview ───────── */}
-        <Box sx={{
-          width:'50%', overflowY:'auto', bgcolor:'#f1f5f9', p:3,
-          '&::-webkit-scrollbar':{ width:6 },
-          '&::-webkit-scrollbar-thumb':{ bgcolor:'#cbd5e1', borderRadius:3 },
-        }}>
-          <Typography variant="caption" fontWeight={700} color="#2563eb"
-            sx={{ display:'block', mb:1.5, textTransform:'uppercase', letterSpacing:1 }}>
-            👁 Xem trước CV
-          </Typography>
+        {/* ================= CỘT PHẢI: INTERACTIVE CANVAS PREVIEW ================= */}
+        <Box
+          ref={canvasRef}
+          sx={{
+            flex: 1,
+            bgcolor: "#f1f5f9",
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            p: { xs: 2, sm: 3, md: 4 },
+            position: "relative",
+            "&::-webkit-scrollbar": { width: 8 },
+            "&::-webkit-scrollbar-thumb": { bgcolor: "#cbd5e1", borderRadius: 4 },
+          }}
+        >
+          {/* Floating Bubble Toolbar khi bôi đen văn bản trong phạm vi tờ CV hoặc Form nhập liệu */}
+          <CVFloatingSelectionToolbar
+            containerRef={splitViewRef}
+            cvId={savedCvId}
+            onApplyText={handleApplyAiText}
+          />
 
-          <Paper ref={printRef} elevation={4}
-            sx={{ borderRadius:3, overflow:'hidden', boxShadow:'0 8px 40px rgba(37,99,235,0.12)', minHeight:700 }}>
-
-            {/* CV Header */}
-            <Box sx={{ background:'linear-gradient(135deg,#2563eb,#3b82f6)', px:4, py:3.5, color:'#fff' }}>
-              <Stack direction="row" spacing={2.5} alignItems="center">
-                {avatarPreview && (
-                  <Avatar src={avatarPreview}
-                    sx={{ width:80, height:80, border:'3px solid rgba(255,255,255,0.7)', flexShrink:0 }} />
-                )}
-                <Box>
-                  <Typography variant="h4" fontWeight={900} sx={{ letterSpacing:'-0.5px' }}>
-                    {personalInfo.fullName || <span style={{ opacity:0.4 }}>Họ và Tên</span>}
-                  </Typography>
-                  <Typography variant="subtitle1" fontWeight={600} sx={{ opacity:0.9, mt:0.25 }}>
-                    {personalInfo.title || <span style={{ opacity:0.4 }}>Vị trí ứng tuyển</span>}
-                  </Typography>
-                  <Stack direction="row" flexWrap="wrap" gap={1.5} sx={{ mt:1 }}>
-                    {personalInfo.email && (
-                      <Stack direction="row" alignItems="center" spacing={0.5}>
-                        <EmailIcon sx={{ fontSize:13, opacity:0.85 }} />
-                        <Typography variant="caption" sx={{ opacity:0.9 }}>{personalInfo.email}</Typography>
-                      </Stack>
-                    )}
-                    {personalInfo.phone && (
-                      <Stack direction="row" alignItems="center" spacing={0.5}>
-                        <PhoneIcon sx={{ fontSize:13, opacity:0.85 }} />
-                        <Typography variant="caption" sx={{ opacity:0.9 }}>{personalInfo.phone}</Typography>
-                      </Stack>
-                    )}
-                    {personalInfo.address && (
-                      <Stack direction="row" alignItems="center" spacing={0.5}>
-                        <LocationIcon sx={{ fontSize:13, opacity:0.85 }} />
-                        <Typography variant="caption" sx={{ opacity:0.9 }}>{personalInfo.address}</Typography>
-                      </Stack>
-                    )}
-                    {personalInfo.linkedin && (
-                      <Stack direction="row" alignItems="center" spacing={0.5}>
-                        <LinkedInIcon sx={{ fontSize:13, opacity:0.85 }} />
-                        <Typography variant="caption" sx={{ opacity:0.9 }}>{personalInfo.linkedin}</Typography>
-                      </Stack>
-                    )}
-                  </Stack>
-                </Box>
-              </Stack>
-            </Box>
-
-            {/* CV Body */}
-            <Box sx={{ px:4, py:3, bgcolor:'#fff' }}>
-              <Stack spacing={2.5}>
-                {summary && (
-                  <CVSection title="Mục tiêu nghề nghiệp">
-                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight:1.8 }}>
-                      {summary}
-                    </Typography>
-                  </CVSection>
-                )}
-
-                {experience.length > 0 && (
-                  <CVSection title="Kinh nghiệm làm việc">
-                    <Stack spacing={2}>
-                      {experience.map((exp, idx) => (
-                        <Box key={idx}>
-                          <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-                            <Box>
-                              <Typography variant="subtitle2" fontWeight={800} color="#1e293b">
-                                {exp.role || 'Vị trí'}
-                              </Typography>
-                              <Typography variant="body2" color="#2563eb" fontWeight={600}>
-                                {exp.company || 'Công ty'}
-                              </Typography>
-                            </Box>
-                            {(exp.startDate || exp.endDate) && (
-                              <Typography variant="caption" color="text.disabled"
-                                sx={{ bgcolor:'#f1f5f9', px:1, py:0.25, borderRadius:1, whiteSpace:'nowrap' }}>
-                                {exp.startDate} – {exp.endDate}
-                              </Typography>
-                            )}
-                          </Stack>
-                          {exp.description && (
-                            <Typography variant="body2" color="text.secondary" sx={{ mt:0.75, lineHeight:1.7 }}>
-                              {exp.description}
-                            </Typography>
-                          )}
-                          {idx < experience.length - 1 && <Divider sx={{ mt:2 }} />}
-                        </Box>
-                      ))}
-                    </Stack>
-                  </CVSection>
-                )}
-
-                {education.length > 0 && (
-                  <CVSection title="Học vấn">
-                    <Stack spacing={2}>
-                      {education.map((edu, idx) => (
-                        <Box key={idx}>
-                          <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-                            <Box>
-                              <Typography variant="subtitle2" fontWeight={800} color="#1e293b">
-                                {edu.degree || 'Bằng cấp'}
-                              </Typography>
-                              <Typography variant="body2" color="#2563eb" fontWeight={600}>
-                                {edu.school || 'Trường'}
-                              </Typography>
-                            </Box>
-                            {(edu.startDate || edu.endDate) && (
-                              <Typography variant="caption" color="text.disabled"
-                                sx={{ bgcolor:'#f1f5f9', px:1, py:0.25, borderRadius:1, whiteSpace:'nowrap' }}>
-                                {edu.startDate} – {edu.endDate}
-                              </Typography>
-                            )}
-                          </Stack>
-                          {idx < education.length - 1 && <Divider sx={{ mt:2 }} />}
-                        </Box>
-                      ))}
-                    </Stack>
-                  </CVSection>
-                )}
-
-                {skills.length > 0 && (
-                  <CVSection title="Kỹ năng">
-                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                      {skills.map((skill, idx) => (
-                        <Chip key={idx} label={skill} size="small"
-                          sx={{ fontWeight:600, fontSize:'0.78rem',
-                            background:'#eff6ff',
-                            border:'1px solid #bfdbfe', color:'#1e40af' }} />
-                      ))}
-                    </Stack>
-                  </CVSection>
-                )}
-
-                {!summary && experience.length === 0 && education.length === 0 && skills.length === 0 && !personalInfo.fullName && (
-                  <Box sx={{ textAlign:'center', py:8, color:'text.disabled' }}>
-                    <Typography variant="h3" sx={{ mb:1 }}>📄</Typography>
-                    <Typography variant="body2">Điền thông tin bên trái để xem CV của bạn</Typography>
-                  </Box>
-                )}
-              </Stack>
-            </Box>
+          {/* Khung Trang Giấy A4 Tỷ Lệ Chuẩn (width: 794px, min-height: 1123px) */}
+          <Paper
+            elevation={4}
+            sx={{
+              width: "794px",
+              minHeight: "1123px",
+              bgcolor: "#ffffff",
+              borderRadius: "4px",
+              boxShadow: "0 12px 48px rgba(15, 23, 42, 0.12)",
+              overflow: "hidden",
+              boxSizing: "border-box",
+              mb: 6,
+            }}
+          >
+            {selectedTemplate === "modern" ? (
+              <ModernTwoColumnTemplate
+                ref={printRef}
+                data={cvData}
+                primaryColor={primaryColor}
+                fontFamily={fontFamily}
+                hiddenSections={hiddenSections}
+                sectionOrder={sectionOrder}
+                isEditable={true}
+                onInlineUpdate={handleInlineUpdate}
+              />
+            ) : (
+              <ClassicTemplate
+                ref={printRef}
+                data={cvData}
+                primaryColor={primaryColor}
+                fontFamily={fontFamily}
+                hiddenSections={hiddenSections}
+                sectionOrder={sectionOrder}
+                isEditable={true}
+                onInlineUpdate={handleInlineUpdate}
+              />
+            )}
           </Paper>
         </Box>
       </Box>
-    </>
-  );
-}
 
-/* ── Helper components ──────────────────────────────── */
-function SectionCard({ title, children, onDelete }) {
-  return (
-    <Paper elevation={0} sx={{ borderRadius:3, border:'1px solid #e2e8f0', bgcolor:'#fff', overflow:'hidden' }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between"
-        sx={{ px:2.5, py:1.5, background:'linear-gradient(135deg,#f8fafc,#eff6ff)', borderBottom:'1px solid #e2e8f0' }}>
-        <Typography variant="subtitle2" fontWeight={700} color="#1e40af">{title}</Typography>
-        {onDelete && (
-          <IconButton size="small" color="error" onClick={onDelete}>
-            <DeleteIcon fontSize="small" />
-          </IconButton>
-        )}
-      </Stack>
-      <Box sx={{ p:2.5 }}>{children}</Box>
-    </Paper>
-  );
-}
 
-function CVSection({ title, children }) {
-  return (
-    <Box>
-      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb:1.5 }}>
-        <Typography variant="subtitle1" fontWeight={800} color="#1e293b"
-          sx={{ textTransform:'uppercase', letterSpacing:'0.5px', fontSize:'0.8rem', whiteSpace:'nowrap' }}>
-          {title}
-        </Typography>
-        <Box sx={{ flex:1, height:'2px', background:'linear-gradient(90deg,#2563eb,transparent)' }} />
-      </Stack>
-      {children}
     </Box>
-  );
-}
-
-function AddButton({ label, onClick }) {
-  return (
-    <Button fullWidth startIcon={<AddIcon />} onClick={onClick}
-      sx={{ textTransform:'none', fontWeight:600, py:1.5,
-        border:'2px dashed #bfdbfe', borderRadius:3, color:'#2563eb',
-        '&:hover':{ bgcolor:'#eff6ff', borderColor:'#2563eb' } }}>
-      {label}
-    </Button>
   );
 }
