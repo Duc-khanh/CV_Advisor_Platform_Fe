@@ -40,9 +40,7 @@ const AI_SUGGESTIONS = [
   },
 ];
 
-export default function CVFormattingToolbar({
-  onApplyText,
-}) {
+export default function CVFormattingToolbar() {
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState(null);
 

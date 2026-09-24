@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../../services/axios";
 import { useNavigate } from "react-router-dom";
 import {
   Typography,
@@ -45,8 +45,8 @@ export default function UserAppliedJobsTab({
   const fetchAppliedJobs = async () => {
     const token = localStorage.getItem("token");
     try {
-      const res = await axios.get(
-        "http://localhost:8080/api/user/jobs/apply/my-applications",
+      const res = await api.get(
+        "/api/user/jobs/apply/my-applications",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -60,7 +60,7 @@ export default function UserAppliedJobsTab({
   const fetchSavedJobs = async () => {
     const authHeader = getAuthHeader();
     try {
-      const res = await axios.get("http://localhost:8080/api/user/jobs/favorite/all", {
+      const res = await api.get("/api/user/jobs/favorite/all", {
         headers: authHeader,
       });
       setSavedJobs(res.data);
@@ -73,7 +73,7 @@ export default function UserAppliedJobsTab({
     e.stopPropagation();
     const authHeader = getAuthHeader();
     try {
-      await axios.delete(`http://localhost:8080/api/user/jobs/favorite/${jobId}`, {
+      await api.delete(`/api/user/jobs/favorite/${jobId}`, {
         headers: authHeader,
       });
       setSavedJobs((prev) => prev.filter((job) => job.jobId !== jobId));

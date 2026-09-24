@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Typography, Stack } from "@mui/material";
 import SkillItem from "./SkillItem";
 
-const SkillGroup = ({ title, skills, color, bgColor }) => (
+const SkillGroup = ({ title, skills, color }) => (
   <Box
     sx={{
       p: 0,

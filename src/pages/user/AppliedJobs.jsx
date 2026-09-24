@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../services/axios";
 import { useNavigate } from "react-router-dom";
 import { 
   Container, Typography, Box, Stack, Avatar, 
@@ -38,7 +38,7 @@ export default function AppliedJobs() {
     try {
       // Xây dựng URL với Query Parameter
       const query = status !== "ALL" ? `?status=${status}` : "";
-      const res = await axios.get(`http://localhost:8080/api/user/jobs/apply/my-applications${query}`, {
+      const res = await api.get(`/api/user/jobs/apply/my-applications${query}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setAppliedJobs(res.data);

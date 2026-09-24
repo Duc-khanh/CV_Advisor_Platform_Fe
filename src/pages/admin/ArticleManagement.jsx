@@ -259,24 +259,6 @@ export default function ArticleManagement() {
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "PUBLISHED": return "success";
-      case "HIDDEN": return "warning";
-      case "DRAFT": return "default";
-      default: return "default";
-    }
-  };
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case "PUBLISHED": return "Công khai";
-      case "HIDDEN": return "Ẩn";
-      case "DRAFT": return "Nháp";
-      default: return status;
-    }
-  };
-
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
     const date = new Date(dateStr);

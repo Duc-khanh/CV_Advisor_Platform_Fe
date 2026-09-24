@@ -163,11 +163,24 @@ export default function CVAnalysis() {
         setLoadingJobs(false);
       }
     } catch (err) {
-      const message =
-        err.response?.data?.message ||
-        err.response?.data ||
-        err.message ||
-        "Phân tích CV thất bại.";
+      const responseData = err.response?.data;
+      const rawMessage = typeof responseData?.message === "string"
+        ? responseData.message
+        : typeof responseData === "string"
+          ? responseData
+          : err.message || "";
+      const normalized = rawMessage.toLowerCase();
+      const quotaExceeded =
+        err.response?.status === 429 ||
+        responseData?.code === "AI_QUOTA_EXCEEDED" ||
+        normalized.includes("more credits") ||
+        normalized.includes("openrouter_credits") ||
+        normalized.includes('"code":402');
+      const message = quotaExceeded
+        ? "AI đã hết hạn mức sử dụng. Vui lòng nạp thêm credit OpenRouter rồi thử lại."
+        : rawMessage && rawMessage.length <= 180
+          ? rawMessage
+          : "Không thể phân tích CV lúc này. Vui lòng thử lại sau.";
 
       showToast(message, "error");
     } finally {

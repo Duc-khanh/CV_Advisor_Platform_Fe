@@ -51,7 +51,7 @@ import {
   FilePresent,
   Home,
 } from "@mui/icons-material";
-import axios from "axios";
+import api from "../../services/axios";
 import { useLocation } from "react-router-dom";
 import { getCurrentUser, updateCurrentUser } from "../../services/user/currentUser";
 import { useToast } from "../../contexts/ToastContext";
@@ -66,6 +66,7 @@ import UserAttachedCvTab from "./profile-components/UserAttachedCvTab";
 import UserAppliedJobsTab from "./profile-components/UserAppliedJobsTab";
 import UserSavedJobsTab from "./profile-components/UserSavedJobsTab";
 import UserProfileCompleteness from "./profile-components/UserProfileCompleteness";
+import UnderDevelopment from "../../components/common/UnderDevelopment";
 
 export default function UserProfile() {
   const showToast = useToast();
@@ -174,7 +175,7 @@ export default function UserProfile() {
       const token = localStorage.getItem("token");
       if (token) {
         try {
-          const appliedRes = await axios.get("http://localhost:8080/api/user/jobs/apply/my-applications", {
+          const appliedRes = await api.get("/api/user/jobs/apply/my-applications", {
             headers: { Authorization: `Bearer ${token}` }
           });
           setAppliedJobsCount(appliedRes.data.length);
@@ -183,7 +184,7 @@ export default function UserProfile() {
         }
 
         try {
-          const savedRes = await axios.get("http://localhost:8080/api/user/jobs/favorite/all", {
+          const savedRes = await api.get("/api/user/jobs/favorite/all", {
             headers: { Authorization: `Bearer ${token}` }
           });
           setSavedJobsCount(savedRes.data.length);
@@ -499,33 +500,41 @@ export default function UserProfile() {
       case "saved_jobs":
         return <UserSavedJobsTab />;
       case "invites":
+        return (
+          <UnderDevelopment
+            featureName="Lời mời công việc"
+            description="Tính năng nhận và quản lý lời mời phỏng vấn trực tiếp từ các nhà tuyển dụng đang được phát triển."
+            minHeight="55vh"
+            showHomeButton={false}
+          />
+        );
       case "email_subscribe":
+        return (
+          <UnderDevelopment
+            featureName="Đăng ký nhận email việc làm"
+            description="Tính năng gửi gợi ý việc làm phù hợp với hồ sơ qua email định kỳ đang được hoàn thiện."
+            minHeight="55vh"
+            showHomeButton={false}
+          />
+        );
       case "notifications":
+        return (
+          <UnderDevelopment
+            featureName="Thông báo hệ thống"
+            description="Trung tâm cập nhật trạng thái hồ sơ ứng tuyển và tin tuyển dụng mới đang được xây dựng."
+            minHeight="55vh"
+            showHomeButton={false}
+          />
+        );
       case "settings":
       default:
         return (
-          <Paper
-            sx={{
-              p: 4,
-              borderRadius: 4,
-              boxShadow: "0 1px 3px rgba(15,23,42,0.05)",
-              border: "1px solid #e2e8f0",
-              textAlign: "center",
-              bgcolor: "#ffffff",
-              minHeight: "50vh",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Typography variant="h6" fontWeight={800} color="#334155" mb={1}>
-              Tính năng đang phát triển
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Chức năng này đang được cập nhật. Vui lòng quay lại sau!
-            </Typography>
-          </Paper>
+          <UnderDevelopment
+            featureName="Cài đặt tài khoản"
+            description="Khu vực cấu hình bảo mật, đổi mật khẩu và tùy chọn quyền riêng tư đang được phát triển."
+            minHeight="55vh"
+            showHomeButton={false}
+          />
         );
     }
   };

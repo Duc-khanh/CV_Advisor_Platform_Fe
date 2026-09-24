@@ -1,12 +1,14 @@
 import { Box, Typography, Paper, Grid, Button } from "@mui/material";
 import { AddBox, PersonAdd, Event, NoteAdd } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
 export default function HRQuickActions() {
+  const navigate = useNavigate();
   const actions = [
-    { label: "Đăng tin mới", icon: <AddBox />, color: "#2d6a4f" },
-    { label: "Thêm ứng viên", icon: <PersonAdd />, color: "#0077b6" },
-    { label: "Tạo lịch hẹn", icon: <Event />, color: "#f59e0b" },
-    { label: "Tạo ghi chú", icon: <NoteAdd />, color: "#7209b7" },
+    { label: "Đăng tin mới", icon: <AddBox />, color: "#2d6a4f", path: "/hr/jobs" },
+    { label: "Thêm ứng viên", icon: <PersonAdd />, color: "#0077b6", path: "/hr/applications" },
+    { label: "Tạo lịch hẹn", icon: <Event />, color: "#f59e0b", path: "/hr/interviews" },
+    { label: "Tạo ghi chú", icon: <NoteAdd />, color: "#7209b7", path: "/hr/notes" },
   ];
 
   return (
@@ -32,6 +34,7 @@ export default function HRQuickActions() {
                 variant="outlined"
                 fullWidth
                 startIcon={action.icon}
+                onClick={() => action.path && navigate(action.path)}
                 sx={{
                   py: 1.8, // Tăng độ dày của nút (to hơn)
                   px: "calc(16px + 1cm)",

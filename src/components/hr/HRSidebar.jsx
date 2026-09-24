@@ -3,7 +3,7 @@ import {
   ListItemText, Toolbar, Typography, Box, Button, Divider 
 } from "@mui/material";
 import { 
-  Dashboard, PostAdd, Groups, EventNote, Settings, Logout 
+  Dashboard, PostAdd, Groups, EventNote, Settings, Logout, AutoAwesome
 } from "@mui/icons-material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +28,7 @@ export default function HRSidebar() {
 
   const menuItems = [
     { text: "Dashboard", icon: <Dashboard />, path: "/hr_dashboard", color: "#2d6a4f" }, 
+    { text: "Hạn mức AI", icon: <AutoAwesome />, path: "/hr/ai-usage", color: "#2563eb" },
     { text: "Tin tuyển dụng", icon: <PostAdd />, path: "/hr/jobs", color: "#0077b6" }, 
     { text: "Ứng viên", icon: <Groups />, path: "/hr/applications", color: "#d97706" }, 
     { text: "Lịch phỏng vấn", icon: <EventNote />, path: "/hr/interviews", color: "#7209b7" }, 

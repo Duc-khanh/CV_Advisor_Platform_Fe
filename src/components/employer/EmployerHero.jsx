@@ -1,11 +1,8 @@
 import React from "react";
 import { Box, Typography, Button, Stack, Container, Grid } from "@mui/material";
 import { Speed, GroupAdd, BarChart } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
 
 const EmployerHero = ({ onOpenRegister }) => {
-  const navigate = useNavigate();
-
   const stats = [
     {
       icon: <Speed fontSize="small" />,

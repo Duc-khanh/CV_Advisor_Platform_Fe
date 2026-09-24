@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../../services/axios";
 import HeroSection from "./HeroSection";
 import JobListSection from "./JobListSection";
 import { useToast } from "../../contexts/ToastContext";
@@ -21,7 +21,7 @@ export default function SearchResults() {
 
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [favoriteIds, setFavoriteIds] = useState(new Set());
+  const [, setFavoriteIds] = useState(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const jobsPerPage = 12;
 
@@ -34,7 +34,7 @@ export default function SearchResults() {
   const fetchFavoriteIds = async (authHeader) => {
     if (!authHeader) return new Set();
     try {
-      const res = await axios.get("http://localhost:8080/api/user/jobs/favorite/all", {
+      const res = await api.get("/api/user/jobs/favorite/all", {
         headers: authHeader,
       });
       return new Set(res.data.map((job) => job.jobId));
@@ -50,7 +50,7 @@ export default function SearchResults() {
     const favoriteIdsFromServer = await fetchFavoriteIds(authHeader);
 
     try {
-      const response = await axios.get("http://localhost:8080/api/public/jobs", {
+      const response = await api.get("/api/public/jobs", {
         params: { keyword, location, page: 0, size: 50 },
         headers: authHeader || {},
       });

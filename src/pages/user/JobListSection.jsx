@@ -68,7 +68,6 @@ const scrollRevealVariants = {
 
 export default function JobListSection({
   jobs = [],
-  currentPage = 1,
   jobsPerPage = 12,
   loading,
   onShowAllJobs,
@@ -128,8 +127,6 @@ export default function JobListSection({
 
   const themeColor = "#2563eb";
   const themeHover = "#eff6ff";
-  const themeBorder = "#dbeafe";
-
   return (
     <Box id="job-list-section" sx={{ py: 8, bgcolor: "#ffffff", }}>
       <Container maxWidth="xl">

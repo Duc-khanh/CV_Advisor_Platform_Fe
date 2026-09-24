@@ -27,7 +27,8 @@ import {
   InputLabel,
   Button,
   Divider,
-  Modal
+  Modal,
+  Alert
 } from "@mui/material";
 
 import {
@@ -46,6 +47,7 @@ import { useToast } from "../../contexts/ToastContext";
 const STATUS_OPTIONS = [
   "ALL",
   "PENDING",
+  "REVIEWING",
   "INTERVIEW",
   "ACCEPTED",
   "REJECTED"
@@ -59,9 +61,25 @@ const STATUS_COLOR = {
   REJECTED: "error"
 };
 
+const formatDate = (val) => {
+  if (!val) return "—";
+  try {
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return String(val);
+    return d.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    });
+  } catch {
+    return "—";
+  }
+};
+
 export default function HRApplications() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const showToast = useToast();
 
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -100,20 +118,34 @@ export default function HRApplications() {
   const fetchApplications = async () => {
     try {
       setLoading(true);
+      setError(null);
 
       const res = await api.get(
         "/api/hr/applications",
         getAuthHeader()
       );
 
-      setApplications(res.data);
+      const raw = res?.data;
+      let list = [];
+      if (Array.isArray(raw)) {
+        list = raw;
+      } else if (Array.isArray(raw?.data)) {
+        list = raw.data;
+      } else if (Array.isArray(raw?.content)) {
+        list = raw.content;
+      } else if (Array.isArray(raw?.applications)) {
+        list = raw.applications;
+      }
+
+      setApplications(list);
     } catch (err) {
       console.error(err);
-
-      showToast(
-        "Không thể tải danh sách ứng viên",
-        "error"
-      );
+      const errMsg =
+        err?.response?.data?.message ||
+        "Không thể tải danh sách ứng viên. Vui lòng kiểm tra lại quyền truy cập hoặc kết nối mạng.";
+      setError(errMsg);
+      setApplications([]);
+      showToast(errMsg, "error");
     } finally {
       setLoading(false);
     }
@@ -210,26 +242,34 @@ export default function HRApplications() {
 
   // FILTER + SEARCH
   const filteredApplications = useMemo(() => {
+    if (!Array.isArray(applications)) return [];
     return applications.filter(app => {
+      if (!app) return false;
+
       const matchStatus =
         statusFilter === "ALL" ||
-        app.status === statusFilter;
+        app.status?.toUpperCase() === statusFilter?.toUpperCase();
 
-      const keyword =
-        searchKeyword.toLowerCase();
+      const keyword = (searchKeyword || "").trim().toLowerCase();
+      if (!keyword) return matchStatus;
 
       const matchSearch =
-        app.jobTitle?.toLowerCase().includes(keyword) ||
-        app.location?.toLowerCase().includes(keyword) ||
-        app.userId?.toString().includes(keyword);
+        (app.fullName?.toLowerCase() || "").includes(keyword) ||
+        (app.candidateName?.toLowerCase() || "").includes(keyword) ||
+        (app.name?.toLowerCase() || "").includes(keyword) ||
+        (app.jobTitle?.toLowerCase() || "").includes(keyword) ||
+        (app.location?.toLowerCase() || "").includes(keyword) ||
+        (app.email?.toLowerCase() || "").includes(keyword) ||
+        (app.userId?.toString() || "").includes(keyword);
 
       return matchStatus && matchSearch;
     });
   }, [applications, statusFilter, searchKeyword]);
 
   // PAGINATION
-  const totalPages = Math.ceil(
-    filteredApplications.length / rowsPerPage
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredApplications.length / rowsPerPage)
   );
 
   const paginatedApplications =
@@ -408,11 +448,32 @@ export default function HRApplications() {
             </TableHead>
 
             <TableBody>
-              {paginatedApplications.length ===
-              0 ? (
+              {error ? (
                 <TableRow>
                   <TableCell
-                    colSpan={7}
+                    colSpan={8}
+                    align="center"
+                    sx={{ py: 6 }}
+                  >
+                    <Stack spacing={1.5} alignItems="center">
+                      <Typography color="error.main" fontWeight={600}>
+                        {error}
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<Refresh />}
+                        onClick={fetchApplications}
+                      >
+                        Thử lại
+                      </Button>
+                    </Stack>
+                  </TableCell>
+                </TableRow>
+              ) : paginatedApplications.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={8}
                     align="center"
                     sx={{ py: 6 }}
                   >
@@ -423,223 +484,239 @@ export default function HRApplications() {
                 </TableRow>
               ) : (
                 paginatedApplications.map(
-                  (app, index) => (
-                    <TableRow
-                      key={app.applicationId}
-                      hover
-                    >
-                      {/* STT */}
-                      <TableCell>
-                        {(page - 1) *
-                          rowsPerPage +
-                          index +
-                          1}
-                      </TableCell>
-<TableCell>
-  <Stack
-    direction="row"
-    spacing={2}
-    alignItems="center"
-  >
-    <Avatar
-      sx={{
-        bgcolor: "#1976d2",
-        width: 45,
-        height: 45,
-        fontWeight: 700
-      }}
-    >
-      {app.fullName?.charAt(0)}
-    </Avatar>
+                  (app, index) => {
+                    const candidateName =
+                      app.fullName ||
+                      app.candidateName ||
+                      app.name ||
+                      "Ứng viên";
+                    const avatarChar =
+                      candidateName.trim().charAt(0).toUpperCase() || "U";
+                    const currentStatus = app.status || "PENDING";
 
-    <Box>
-      <Typography fontWeight={700}>
-        {app.fullName}
-      </Typography>
-
-      {/* <Typography
-        variant="body2"
-        color="text.secondary"
-      >
-        {app.email}
-      </Typography> */}
-    </Box>
-  </Stack>
-</TableCell>
-
-                      {/* JOB */}
-                      <TableCell>
-                        <Stack spacing={0.5}>
-                          <Typography
-                            fontWeight={700}
-                          >
-                            {app.jobTitle}
-                          </Typography>
-
+                    return (
+                      <TableRow
+                        key={app.applicationId || index}
+                        hover
+                      >
+                        {/* STT */}
+                        <TableCell>
+                          {(page - 1) *
+                            rowsPerPage +
+                            index +
+                            1}
+                        </TableCell>
+                        <TableCell>
                           <Stack
                             direction="row"
-                            spacing={1}
+                            spacing={2}
                             alignItems="center"
                           >
-                            <Work
+                            <Avatar
                               sx={{
-                                fontSize: 16,
-                                color:
-                                  "text.secondary"
+                                bgcolor: "#1976d2",
+                                width: 45,
+                                height: 45,
+                                fontWeight: 700
                               }}
-                            />
-
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
                             >
-                              {app.location}
-                            </Typography>
+                              {avatarChar}
+                            </Avatar>
+
+                            <Box>
+                              <Typography fontWeight={700}>
+                                {candidateName}
+                              </Typography>
+                              {app.email && (
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                >
+                                  {app.email}
+                                </Typography>
+                              )}
+                            </Box>
                           </Stack>
-                        </Stack>
-                      </TableCell>
+                        </TableCell>
 
-                      {/* CV */}
-                      <TableCell>
-                        <Tooltip title="Mở CV">
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            startIcon={<Description />}
-                            onClick={() => handleViewCv(app.cvFileUrl)}
-                          >
-                            Xem CV
-                          </Button>
-                        </Tooltip>
-                      </TableCell>
+                        {/* JOB */}
+                        <TableCell>
+                          <Stack spacing={0.5}>
+                            <Typography
+                              fontWeight={700}
+                            >
+                              {app.jobTitle || "—"}
+                            </Typography>
 
-                      {/* DATE */}
-                      <TableCell>
-                        {new Date(
-                          app.appliedAt
-                        ).toLocaleDateString(
-                          "vi-VN"
-                        )}
-                      </TableCell>
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                            >
+                              <Work
+                                sx={{
+                                  fontSize: 16,
+                                  color:
+                                    "text.secondary"
+                                }}
+                              />
 
-                      {/* AI FIT */}
-                      <TableCell>
-                        {app.aiFit?.score != null ? (
-                          <Stack spacing={1}>
-                            <Chip
-                              label={`${app.aiFit.score}%`}
-                              color={
-                                getFitStatus(app.aiFit.score)
-                                  .color
-                              }
-                              sx={{
-                                fontWeight: 700,
-                                minWidth: 90
-                              }}
-                            />
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                {app.location || "Chưa cập nhật"}
+                              </Typography>
+                            </Stack>
+                          </Stack>
+                        </TableCell>
+
+                        {/* CV */}
+                        <TableCell>
+                          <Tooltip title="Mở CV">
+                            <span>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<Description />}
+                                onClick={() => handleViewCv(app.cvFileUrl)}
+                                disabled={!app.cvFileUrl}
+                              >
+                                Xem CV
+                              </Button>
+                            </span>
+                          </Tooltip>
+                        </TableCell>
+
+                        {/* DATE */}
+                        <TableCell>
+                          {formatDate(app.appliedAt)}
+                        </TableCell>
+
+                        {/* AI FIT */}
+                        <TableCell>
+                          {app.aiFit?.score != null ? (
+                            <Stack spacing={1}>
+                              <Chip
+                                label={`${app.aiFit.score}%`}
+                                color={
+                                  getFitStatus(app.aiFit.score)
+                                    .color
+                                }
+                                sx={{
+                                  fontWeight: 700,
+                                  minWidth: 90
+                                }}
+                              />
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={() => {
+                                  setFitModalData({
+                                    application: app,
+                                    aiFit: app.aiFit
+                                  });
+                                  setOpenFitModal(true);
+                                }}
+                                sx={{
+                                  textTransform: "none",
+                                  minWidth: 90
+                                }}
+                              >
+                                Chi tiết
+                              </Button>
+                            </Stack>
+                          ) : (
                             <Button
                               size="small"
-                              variant="outlined"
-                              onClick={() => {
-                                setFitModalData({
-                                  application: app,
-                                  aiFit: app.aiFit
-                                });
-                                setOpenFitModal(true);
-                              }}
+                              variant="contained"
+                              disableElevation
+                              onClick={() =>
+                                evaluateCandidateFit(app)
+                              }
+                              disabled={
+                                fitLoadingId ===
+                                app.applicationId
+                              }
+                              startIcon={
+                                fitLoadingId ===
+                                app.applicationId ? (
+                                  <CircularProgress
+                                    size={16}
+                                    color="inherit"
+                                  />
+                                ) : (
+                                  <AutoAwesome />
+                                )
+                              }
                               sx={{
                                 textTransform: "none",
                                 minWidth: 90
                               }}
                             >
-                              Chi tiết
+                              {fitLoadingId ===
+                              app.applicationId
+                                ? "Đang đánh giá"
+                                : "Đánh giá"}
                             </Button>
-                          </Stack>
-                        ) : (
-                          <Button
-                            size="small"
-                            variant="contained"
-                            disableElevation
-                            onClick={() =>
-                              evaluateCandidateFit(app)
+                          )}
+                        </TableCell>
+
+                        {/* STATUS */}
+                        <TableCell>
+                          <Chip
+                            label={currentStatus}
+                            color={
+                              STATUS_COLOR[
+                                currentStatus
+                              ] || "default"
                             }
+                            sx={{
+                              fontWeight: 700,
+                              minWidth: 110
+                            }}
+                          />
+                        </TableCell>
+
+                        {/* ACTION */}
+                        <TableCell align="center">
+                          <Select
+                            size="small"
+                            value={currentStatus}
                             disabled={
-                              fitLoadingId ===
+                              updatingId ===
                               app.applicationId
                             }
-                            startIcon={
-                              fitLoadingId ===
-                              app.applicationId ? (
-                                <CircularProgress
-                                  size={16}
-                                  color="inherit"
-                                />
-                              ) : (
-                                <AutoAwesome />
+                            onChange={e =>
+                              updateStatus(
+                                app.applicationId,
+                                e.target.value
                               )
                             }
                             sx={{
-                              textTransform: "none",
-                              minWidth: 90
+                              minWidth: 160
                             }}
                           >
-                            {fitLoadingId ===
-                            app.applicationId
-                              ? "Đang đánh giá"
-                              : "Đánh giá"}
-                          </Button>
-                        )}
-                      </TableCell>
-
-                      {/* STATUS */}
-                      <TableCell>
-                        <Chip
-                          label={app.status}
-                          color={
-                            STATUS_COLOR[
-                              app.status
-                            ]
-                          }
-                          sx={{
-                            fontWeight: 700,
-                            minWidth: 110
-                          }}
-                        />
-                      </TableCell>
-
-                      {/* ACTION */}
-                      <TableCell align="center">
-                        <Select
-                          size="small"
-                          value={app.status}
-                          disabled={
-                            updatingId ===
-                            app.applicationId
-                          }
-                          onChange={e =>
-                            updateStatus(
-                              app.applicationId,
-                              e.target.value
-                            )
-                          }
-                          sx={{
-                            minWidth: 160
-                          }}
-                        >
-                          {STATUS_OPTIONS.filter(
-                            s => s !== "ALL"
-                          ).map(status => (
-                            <MenuItem
-                              key={status}
-                              value={status}
-                            >
-                              {status}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </TableCell>
-                    </TableRow>
-                  )
+                            {STATUS_OPTIONS.filter(
+                              s => s !== "ALL"
+                            ).map(status => (
+                              <MenuItem
+                                key={status}
+                                value={status}
+                              >
+                                {status}
+                              </MenuItem>
+                            ))}
+                            {!STATUS_OPTIONS.includes(currentStatus) && (
+                              <MenuItem value={currentStatus}>
+                                {currentStatus}
+                              </MenuItem>
+                            )}
+                          </Select>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }
                 )
               )}
             </TableBody>
@@ -742,7 +819,7 @@ export default function HRApplications() {
                 </Box>
               )}
 
-              {fitModalData.aiFit.strengths?.length > 0 && (
+              {Array.isArray(fitModalData.aiFit.strengths) && fitModalData.aiFit.strengths.length > 0 && (
                 <Box>
                   <Typography fontWeight={700} mb={1}>Điểm mạnh</Typography>
                   {fitModalData.aiFit.strengths.map((item, index) => (
@@ -751,7 +828,7 @@ export default function HRApplications() {
                 </Box>
               )}
 
-              {fitModalData.aiFit.weaknesses?.length > 0 && (
+              {Array.isArray(fitModalData.aiFit.weaknesses) && fitModalData.aiFit.weaknesses.length > 0 && (
                 <Box>
                   <Typography fontWeight={700} mb={1}>Điểm cần cải thiện</Typography>
                   {fitModalData.aiFit.weaknesses.map((item, index) => (

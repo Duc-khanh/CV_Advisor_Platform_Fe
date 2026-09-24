@@ -24,6 +24,7 @@ import {
   FilePresent,
   Work,
   Settings,
+  AutoAwesome,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../contexts/ToastContext";
@@ -84,10 +85,6 @@ export default function CandidateHeader() {
   };
 
   // ===== HANDLER =====
-  const handleClickJob = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
   const handleCloseMenu = () => {
     setAnchorEl(null);
   };
@@ -298,6 +295,9 @@ export default function CandidateHeader() {
         <Divider />
 
         <MenuList dense>
+          <MenuItem onClick={() => goTo("/ai-usage")}>
+            <AutoAwesome fontSize="small" sx={{ mr: 1.5, color: "#2563eb" }} /> Hạn mức AI
+          </MenuItem>
           <MenuItem onClick={() => goTo("/profile?tab=overview")}>
             <Home fontSize="small" sx={{ mr: 1.5, color: "#64748b" }} /> Tổng quan
           </MenuItem>

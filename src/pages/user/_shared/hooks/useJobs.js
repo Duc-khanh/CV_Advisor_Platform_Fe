@@ -3,8 +3,8 @@
  */
 
 import { useState, useCallback, useEffect } from "react";
-import { jobService } from "../../services/user";
-import { useToast } from "../../contexts/ToastContext";
+import { jobService } from "../../../../services/user";
+import { useToast } from "../../../../contexts/ToastContext";
 
 export const useJobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -65,7 +65,7 @@ export const useJobs = () => {
   // Fetch jobs khi search params thay đổi
   useEffect(() => {
     fetchJobs(1);
-  }, []);
+  }, [fetchJobs]);
 
   return {
     jobs,

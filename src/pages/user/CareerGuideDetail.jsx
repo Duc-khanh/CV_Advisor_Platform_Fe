@@ -272,14 +272,7 @@ export default function CareerGuideDetail() {
 
   // Helper for strong & inline code
   const parseInlineStyles = (text) => {
-    let parts = [text];
-    
-    // Parse bold **text**
-    const boldRegex = /\*\*(.*?)\*\*/g;
     let match;
-    let newParts = [];
-    
-    text.split("").forEach(() => {}); // dummy logic to shut up linters if needed
 
     // Simple replacement for bold and inline code
     const elements = [];

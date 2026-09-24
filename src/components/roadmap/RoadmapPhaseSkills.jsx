@@ -13,7 +13,7 @@ const RoadmapPhaseSkills = ({ skills }) => {
   if (!skills || skills.length === 0) return null;
 
   // Hàm chọn icon dựa trên tên kỹ năng hoặc vị trí
-  const getSkillIcon = (skill, index) => {
+  const getSkillIcon = (skill) => {
     const s = skill.toLowerCase();
     if (s.includes("react") || s.includes("frontend") || s.includes("js")) return <CodeOutlined sx={{ fontSize: 18 }} />;
     if (s.includes("db") || s.includes("sql") || s.includes("redis") || s.includes("data")) return <StorageOutlined sx={{ fontSize: 18 }} />;

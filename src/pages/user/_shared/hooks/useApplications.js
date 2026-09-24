@@ -3,8 +3,8 @@
  */
 
 import { useState, useCallback, useEffect } from "react";
-import { jobService } from "../../services/user";
-import { useToast } from "../../contexts/ToastContext";
+import { jobService } from "../../../../services/user";
+import { useToast } from "../../../../contexts/ToastContext";
 
 export const useApplications = () => {
   const [applications, setApplications] = useState([]);
@@ -52,7 +52,7 @@ export const useApplications = () => {
   // Fetch applications on mount and when filter changes
   useEffect(() => {
     fetchApplications();
-  }, []);
+  }, [fetchApplications]);
 
   return {
     applications,

@@ -20,6 +20,7 @@ import {
   Settings,
   Logout,
   Book,
+  AutoAwesome,
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "../../contexts/ToastContext";
@@ -48,6 +49,7 @@ export default function AdminSidebar({ mobileOpen, handleDrawerToggle }) {
 
   const menuItems = [
     { text: "Dashboard", icon: <Dashboard />, path: "/admin_dashboard", color: "#0ea5e9" },
+    { text: "Quản lý AI", icon: <AutoAwesome />, path: "/admin/ai", color: "#2563eb" },
     { text: "Quản lý Người dùng", icon: <People />, path: "/admin/users", color: "#8b5cf6" },
     { text: "Quản lý Công ty", icon: <People />, path: "/admin/hrs", color: "#f43f5e" },
     // { text: "Quản lý Công ty", icon: <Business />, path: "/admin/companies", color: "#10b981" },
@@ -141,7 +143,9 @@ export default function AdminSidebar({ mobileOpen, handleDrawerToggle }) {
   return (
     <>
       <Drawer
-        variant="permanent"
+        variant={isMobile ? "temporary" : "permanent"}
+        open={isMobile ? mobileOpen : true}
+        onClose={handleDrawerToggle}
         sx={{
           left: 0,
           top: 0,

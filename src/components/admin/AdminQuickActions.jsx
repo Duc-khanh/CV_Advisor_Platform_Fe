@@ -12,8 +12,8 @@ export default function AdminQuickActions() {
   const actions = [
     { label: "Thêm người dùng", icon: <PersonAdd />, color: "#2d6a4f", path: "/admin/users", state: { action: "addUser" } },
     { label: "Thêm nhân sự HR", icon: <PeopleAlt />, color: "#0077b6", path: "/admin/users", state: { action: "addUser" } },
-    { label: "Phân quyền hệ thống", icon: <AdminPanelSettings />, color: "#f59e0b" },
-    { label: "Quản lý dữ liệu", icon: <Dataset />, color: "#7209b7" },
+    { label: "Phân quyền hệ thống", icon: <AdminPanelSettings />, color: "#f59e0b", path: "/admin/permissions" },
+    { label: "Quản lý dữ liệu", icon: <Dataset />, color: "#7209b7", path: "/admin/data" },
   ];
 
   return (

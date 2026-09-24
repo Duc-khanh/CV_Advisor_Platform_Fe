@@ -2,9 +2,10 @@
 import React, { useMemo } from "react";
 import { Box, Container } from "@mui/material";
 import { Outlet, useLocation } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import CandidateHeader from "../pages/user/CandidateHeader.jsx";
 import UserFooter from "../pages/user/UserFooter.jsx";
+import CareerAssistant from "../components/career/CareerAssistant.jsx";
 
 const UserLayout = () => {
   const location = useLocation();
@@ -19,7 +20,7 @@ const UserLayout = () => {
       <Box sx={{ flex: 1, py: isCvBuilder ? 0 : 4 }}>
         <Container maxWidth={false} disableGutters={isCvBuilder} sx={{ px: isCvBuilder ? 0 : { xs: 4, md: 10 } }}>
           <AnimatePresence mode="wait" initial={false}>
-            <motion.div
+            <Motion.div
               key={location.pathname}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
@@ -28,12 +29,13 @@ const UserLayout = () => {
               style={{ width: "100%" }}
             >
               <Outlet />
-            </motion.div>
+            </Motion.div>
           </AnimatePresence>
         </Container>
       </Box>
 
       {!location.pathname.startsWith("/for-employers") && !isCvBuilder && <UserFooter />}
+      {!location.pathname.startsWith("/for-employers") && <CareerAssistant />}
     </Box>
   );
 };

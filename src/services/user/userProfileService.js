@@ -3,7 +3,7 @@
  */
 
 import axios from "../axios";
-import { API_ENDPOINTS } from "../../pages/user/_shared/constants";
+import { API_ENDPOINTS } from "../../shared/api";
 
 export const userProfileService = {
   /**

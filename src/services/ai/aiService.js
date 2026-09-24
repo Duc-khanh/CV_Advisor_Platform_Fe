@@ -26,9 +26,8 @@ export const evaluateCvFile = async (cvFile, jobDescription = '') => {
 /**
  * Gọi API để lọc CV (Có thể phát triển thêm)
  */
-export const filterCvs = async (cvContents, criteria) => {
-    // Tương lai bạn có thể thêm endpoint này ở Backend
-    // return await axios.post('/ai/filter-cvs', { cvContents, criteria });
+export const filterCvs = async () => {
+    throw new Error('Tính năng lọc CV chưa được hỗ trợ.');
 };
 
 /**

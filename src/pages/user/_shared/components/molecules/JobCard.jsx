@@ -27,7 +27,6 @@ export const JobCard = ({
   onViewDetail,
   onToggleFavorite,
   isFavorite = false,
-  size = "normal",
 }) => {
   return (
     <Card

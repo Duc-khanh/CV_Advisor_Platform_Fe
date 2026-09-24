@@ -57,6 +57,10 @@ export const validateEmployerRegister = ({
     return { isValid: false, error: "Mật khẩu phải có ít nhất 6 ký tự" };
   }
 
+  if (password !== confirmPassword) {
+    return { isValid: false, error: "Mật khẩu xác nhận không khớp" };
+  }
+
   return { isValid: true, error: null };
 };
 

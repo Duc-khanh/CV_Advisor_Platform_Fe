@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { keyframes } from "@emotion/react";
 import { Box, Container, Typography, Paper, Avatar, Stack } from "@mui/material";
 import { Star } from "@mui/icons-material";
-import axios from "axios";
+import api from "../../services/axios";
 import { getMediaUrl } from "../../utils/urlHelpers";
 
 const marquee = keyframes`
@@ -17,7 +17,7 @@ export default function TopCompaniesSection({ onCompanyClick }) {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/public/companies");
+        const response = await api.get("/api/public/companies");
         setCompanies(response.data || []);
       } catch (error) {
         console.error("Lỗi khi tải danh sách công ty:", error);

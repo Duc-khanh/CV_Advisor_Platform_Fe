@@ -5,6 +5,14 @@ import { jwtDecode } from "jwt-decode";
 const LOGIN_REQUIRED_MESSAGE = "Bạn cần đăng nhập để sử dụng tính năng này.";
 const SESSION_EXPIRED_MESSAGE = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
 
+const ROLE_HOME = {
+  ADMIN: "/admin_dashboard",
+  HR: "/hr_dashboard",
+  USER: "/",
+};
+
+const normalizeRole = (value) => value?.toUpperCase().replace(/^ROLE_/, "");
+
 const decodeToken = (token) => {
   try {
     return jwtDecode(token);
@@ -41,8 +49,11 @@ export default function ProtectedRoute({ children, role }) {
     return redirectToLogin(SESSION_EXPIRED_MESSAGE);
   }
 
-  if (role && decoded.role !== role) {
-    return <Navigate to="/" replace />;
+  const currentRole = normalizeRole(decoded.role);
+  const requiredRole = normalizeRole(role);
+
+  if (requiredRole && currentRole !== requiredRole) {
+    return <Navigate to={ROLE_HOME[currentRole] || "/login"} replace />;
   }
 
   return children;

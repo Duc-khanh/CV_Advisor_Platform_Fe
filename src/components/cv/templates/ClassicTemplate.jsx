@@ -15,7 +15,6 @@ const ClassicTemplate = forwardRef(
       data,
       primaryColor = "#1D61F2",
       fontFamily = "Inter, sans-serif",
-      spacing = "normal",
       hiddenSections = [],
       sectionOrder = ["summary", "experience", "education", "skills", "projects"],
       isEditable = true,

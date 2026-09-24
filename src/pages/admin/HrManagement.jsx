@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 import {
   Table, TableHead, TableRow, TableCell, TableBody,
   Button, Stack, Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText,
@@ -23,8 +22,6 @@ import ConfirmDialog from "../../components/dialogs/ConfirmDialog";
 import { getMediaUrl } from "../../utils/urlHelpers";
 
 export default function HrManagement() {
-  const location = useLocation();
-  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [totalElements, setTotalElements] = useState(0);
   const [open, setOpen] = useState(false);
@@ -60,7 +57,7 @@ export default function HrManagement() {
     } catch (error) {
       showToast("Lỗi tải danh sách nhà tuyển dụng", "error");
     }
-  }, [filters]);
+  }, [filters, showToast]);
 
   useEffect(() => {
     loadUsers();

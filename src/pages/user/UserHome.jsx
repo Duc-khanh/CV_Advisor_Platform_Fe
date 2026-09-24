@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../services/axios";
 import { useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
 import {
@@ -26,11 +26,11 @@ export default function UserHome() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState({ keyword: "", location: "" });
-  const [favoriteIds, setFavoriteIds] = useState(new Set());
+  const [, setFavoriteIds] = useState(new Set());
 
   const [currentPage, setCurrentPage] = useState(1);
   const [showAllJobs, setShowAllJobs] = useState(false);
-  const [totalPages, setTotalPages] = useState(1);
+  const [, setTotalPages] = useState(1);
   const jobsPerPage = showAllJobs ? Math.max(jobs.length, 12) : 12;
 
   // Selected company state for detail view modal
@@ -60,7 +60,7 @@ export default function UserHome() {
   const fetchFavoriteIds = async (authHeader) => {
     if (!authHeader) return new Set();
     try {
-      const res = await axios.get("http://localhost:8080/api/user/jobs/favorite/all", {
+      const res = await api.get("/api/user/jobs/favorite/all", {
         headers: authHeader,
       });
       return new Set(res.data.map((job) => job.jobId));
@@ -76,7 +76,7 @@ export default function UserHome() {
     const favoriteIdsFromServer = await fetchFavoriteIds(authHeader);
 
     try {
-      const response = await axios.get("http://localhost:8080/api/public/jobs", {
+      const response = await api.get("/api/public/jobs", {
         params: {
           keyword: searchQuery.keyword,
           location: searchQuery.location,
@@ -123,7 +123,7 @@ export default function UserHome() {
 
     if (currentFavoriteStatus) {
       try {
-        await axios.delete(`http://localhost:8080/api/user/jobs/favorite/${jobId}`, {
+        await api.delete(`/api/user/jobs/favorite/${jobId}`, {
           headers: authHeader,
         });
 
@@ -144,7 +144,7 @@ export default function UserHome() {
       }
     } else {
       try {
-        await axios.post(`http://localhost:8080/api/user/jobs/favorite/add/${jobId}`, null, {
+        await api.post(`/api/user/jobs/favorite/add/${jobId}`, null, {
           headers: authHeader,
         });
 

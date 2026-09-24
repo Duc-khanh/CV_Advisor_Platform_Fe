@@ -3,8 +3,8 @@
  */
 
 import { useState, useCallback } from "react";
-import { cvService } from "../../services/user";
-import { useToast } from "../../contexts/ToastContext";
+import { cvService } from "../../../../services/user";
+import { useToast } from "../../../../contexts/ToastContext";
 
 export const useCVAnalysis = () => {
   const [analysis, setAnalysis] = useState(null);

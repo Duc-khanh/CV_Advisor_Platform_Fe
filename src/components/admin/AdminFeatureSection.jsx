@@ -83,32 +83,35 @@ export default function AdminFeatureSection() {
     {
       title: "Quản lý Người dùng",
       desc: "Thêm, sửa, khóa tài khoản người dùng",
-       path: "/admin/users",
+      path: "/admin/users",
       icon: <PeopleAlt />,
       bg: "linear-gradient(135deg, #6366f1, #4338ca)"
     },
     {
       title: "Quản lý HR",
       desc: "Nhân sự, hồ sơ và phân quyền hệ thống",
+      path: "/admin/hrs",
       icon: <WorkHistory />,
-  
       bg: "linear-gradient(135deg, #8b5cf6, #6d28d9)"
     },
     {
       title: "Quản lý đặt lịch",
       desc: "Theo dõi lịch đặt và trạng thái xử lý",
+      path: "/admin/schedules",
       icon: <CalendarMonth />,
       bg: "linear-gradient(135deg, #10b981, #047857)"
     },
     {
       title: "Báo cáo thống kê",
       desc: "Phân tích dữ liệu và doanh thu",
+      path: "/admin/stats",
       icon: <Assessment />,
       bg: "linear-gradient(135deg, #f97316, #c2410c)"
     },
     {
       title: "Cài đặt hệ thống",
       desc: "Cấu hình hệ thống và bảo mật",
+      path: "/admin/settings",
       icon: <Settings />,
       bg: "linear-gradient(135deg, #0ea5e9, #0369a1)"
     }

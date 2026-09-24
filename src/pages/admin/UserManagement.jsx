@@ -61,7 +61,7 @@ export default function UserManagement() {
     } catch (error) {
       showToast("Lỗi tải danh sách người dùng", "error");
     }
-  }, [filters]);
+  }, [filters, showToast]);
 
   useEffect(() => {
     loadUsers();

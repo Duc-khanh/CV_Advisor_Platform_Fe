@@ -17,7 +17,8 @@ export const ToastProvider = ({ children }) => {
   const [severity, setSeverity] = useState('success'); // 'success' | 'error' | 'warning' | 'info'
 
   const showToast = useCallback((msg, sev = 'success') => {
-    setMessage(msg);
+    const text = typeof msg === 'string' ? msg : 'Đã xảy ra lỗi. Vui lòng thử lại.';
+    setMessage(text.length > 220 ? text.slice(0, 217) + '...' : text);
     setSeverity(sev);
     setOpen(true);
   }, []);
@@ -34,11 +35,20 @@ export const ToastProvider = ({ children }) => {
       {children}
       <Snackbar 
         open={open} 
-        autoHideDuration={3000} 
+        autoHideDuration={severity === 'error' ? 5000 : 3000}
         onClose={handleClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        sx={{
+          maxWidth: { xs: 'calc(100vw - 32px)', sm: 420 },
+          '& .MuiSnackbarContent-root': { maxWidth: '100%' },
+        }}
       >
-        <Alert onClose={handleClose} severity={severity} sx={{ width: '100%' }} variant="filled">
+        <Alert
+          onClose={handleClose}
+          severity={severity}
+          sx={{ width: '100%', alignItems: 'center', '& .MuiAlert-message': { lineHeight: 1.45 } }}
+          variant="filled"
+        >
           {message}
         </Alert>
       </Snackbar>

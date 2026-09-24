@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../services/axios";
 import { useNavigate } from "react-router-dom";
 import { 
   Container, Typography, Box, Stack, Avatar, 
@@ -24,7 +24,7 @@ export default function FavoriteJobs() {
     setLoading(true);
     const authHeader = getAuthHeader();
     try {
-      const res = await axios.get("http://localhost:8080/api/user/jobs/favorite/all", {
+      const res = await api.get("/api/user/jobs/favorite/all", {
         headers: authHeader,
       });
       // Äáº£m báº£o dá»¯ liá»‡u tá»« server luÃ´n hiá»ƒn thá»‹ tráº¡ng thÃ¡i Ä‘Ã£ lÆ°u
@@ -46,7 +46,7 @@ export default function FavoriteJobs() {
     e.stopPropagation();
     const authHeader = getAuthHeader();
     try {
-      await axios.delete(`http://localhost:8080/api/user/jobs/favorite/${jobId}`, {
+      await api.delete(`/api/user/jobs/favorite/${jobId}`, {
         headers: authHeader,
       });
       // XÃ³a khá»i danh sÃ¡ch hiá»ƒn thá»‹ ngay láº­p tá»©c Ä‘á»ƒ ngÆ°á»i dÃ¹ng tháº¥y káº¿t quáº£

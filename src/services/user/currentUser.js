@@ -1,6 +1,6 @@
-import axios from "axios";
+import api from "../axios";
 
-const API_URL = "http://localhost:8080/api/me";
+const API_URL = "/api/me";
 
 // Cấu hình Header lấy Token từ localStorage
 const getAuthHeader = () => {
@@ -18,7 +18,7 @@ const getAuthHeader = () => {
  */
 export const getCurrentUser = async () => {
     try {
-        const res = await axios.get(API_URL, getAuthHeader());
+        const res = await api.get(API_URL, getAuthHeader());
         return res;
     } catch (error) {
         console.error("Error fetching current user:", error);
@@ -45,7 +45,7 @@ export const updateCurrentUser = async (data, avatarFile) => {
         formData.append("avatar", avatarFile);
     }
 
-    return await axios.put(API_URL, formData, {
+    return await api.put(API_URL, formData, {
         headers: {
             ...getAuthHeader().headers,
             "Content-Type": "multipart/form-data",
