@@ -4,10 +4,16 @@ import {
   Button, Stack, Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText,
   TextField, MenuItem, Select, FormControl, InputLabel,
   TablePagination, Chip, InputAdornment, Avatar,
-  Typography, Paper, Box
+  Typography, Paper, Box,
+  IconButton, Tooltip
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import LockIcon from "@mui/icons-material/Lock";
+import LockOpenIcon from "@mui/icons-material/LockOpen";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
 
 import {
   getUsers,
@@ -277,36 +283,52 @@ export default function HrManagement() {
                         <Stack direction="row" spacing={1} justifyContent="flex-end">
                           {u.role === "HR" && u.hrApprovalStatus === "PENDING" ? (
                             <>
-                              <Button
-                                size="small"
-                                variant="contained"
-                                color="success"
-                                sx={{ textTransform: "none", fontWeight: 700 }}
-                                onClick={() => handleApproveHr(u, "APPROVED")}
-                              >
-                                Duyệt
-                              </Button>
-                              <Button
-                                size="small"
-                                variant="outlined"
-                                color="error"
-                                sx={{ textTransform: "none", fontWeight: 700 }}
-                                onClick={() => handleApproveHr(u, "REJECTED")}
-                              >
-                                Từ chối
-                              </Button>
+                              <Tooltip title="Phê duyệt">
+                                <IconButton
+                                  size="small"
+                                  color="success"
+                                  onClick={() => handleApproveHr(u, "APPROVED")}
+                                  sx={{ bgcolor: "#f0fdf4", "&:hover": { bgcolor: "#dcfce7" } }}
+                                >
+                                  <CheckIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Từ chối">
+                                <IconButton
+                                  size="small"
+                                  color="error"
+                                  onClick={() => handleApproveHr(u, "REJECTED")}
+                                  sx={{ bgcolor: "#fef2f2", "&:hover": { bgcolor: "#fee2e2" } }}
+                                >
+                                  <CloseIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
                             </>
                           ) : (
                             <>
-                              <Button size="small" onClick={() => { setSelectedUser({ ...u, role: "HR" }); setOpen(true); }}>Sửa</Button>
-                              <Button 
-                                size="small" 
-                                variant="outlined" 
-                                color={u.enabled ? "error" : "success"}
-                                onClick={() => handleToggleStatus(u)}
-                              >
-                                {u.enabled ? "Khóa" : "Mở"}
-                              </Button>
+                              <Tooltip title="Chỉnh sửa thông tin">
+                                <IconButton
+                                  size="small"
+                                  color="primary"
+                                  onClick={() => { setSelectedUser({ ...u, role: "HR" }); setOpen(true); }}
+                                  sx={{ bgcolor: "#eff6ff", "&:hover": { bgcolor: "#dbeafe" } }}
+                                >
+                                  <EditIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title={u.enabled ? "Khóa tài khoản" : "Mở khóa tài khoản"}>
+                                <IconButton 
+                                  size="small" 
+                                  color={u.enabled ? "error" : "success"}
+                                  onClick={() => handleToggleStatus(u)}
+                                  sx={{
+                                    bgcolor: u.enabled ? "#fef2f2" : "#f0fdf4",
+                                    "&:hover": { bgcolor: u.enabled ? "#fee2e2" : "#dcfce7" }
+                                  }}
+                                >
+                                  {u.enabled ? <LockIcon fontSize="small" /> : <LockOpenIcon fontSize="small" />}
+                                </IconButton>
+                              </Tooltip>
                             </>
                           )}
                         </Stack>

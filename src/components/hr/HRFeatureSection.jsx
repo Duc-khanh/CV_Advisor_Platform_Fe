@@ -1,69 +1,176 @@
-import { Grid, Typography, Box, Paper } from "@mui/material";
-import { PostAdd, People, EventAvailable, RateReview } from "@mui/icons-material";
+import React from "react";
+import { Paper, Typography, Stack, Box, Tooltip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import AdminFeatureCard from "../admin/AdminFeatureCard";
+import {
+  PostAdd,
+  People,
+  EventAvailable,
+  RateReview,
+  AutoAwesome,
+  Settings
+} from "@mui/icons-material";
+
+const HRFeatureCard = ({ title, description, icon, gradient, onClick }) => {
+  return (
+    <Paper
+      onClick={onClick}
+      elevation={0}
+      sx={{
+        width: "100%",
+        height: 145,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        p: 1.5,
+        borderRadius: 3,
+        background: gradient,
+        cursor: "pointer",
+        textAlign: "center",
+        transition: "all 0.25s ease",
+        boxShadow: "0 6px 15px rgba(0,0,0,0.1)",
+        boxSizing: "border-box",
+        overflow: "hidden",
+        minWidth: 0,
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: "0 10px 20px rgba(0,0,0,0.15)",
+        }
+      }}
+    >
+      <Stack spacing={1} alignItems="center" sx={{ width: "100%", minWidth: 0, px: 0.5 }}>
+        <Box sx={{ color: "#ffffff", display: "flex", mb: 0.25 }}>
+          {React.cloneElement(icon, { sx: { fontSize: 30 } })} 
+        </Box>
+
+        <Tooltip title={title} arrow placement="top">
+          <Typography
+            fontWeight={700}
+            fontSize={13.5}
+            sx={{
+              color: "#ffffff",
+              width: "100%",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              lineHeight: 1.2,
+            }}
+          >
+            {title}
+          </Typography>
+        </Tooltip>
+
+        <Tooltip title={description} arrow placement="bottom">
+          <Typography
+            fontSize={11.5}
+            sx={{
+              color: "rgba(255,255,255,0.85)",
+              width: "100%",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              lineHeight: 1.3,
+            }}
+          >
+            {description}
+          </Typography>
+        </Tooltip>
+      </Stack>
+    </Paper>
+  );
+};
 
 export default function HRFeatureSection() {
   const navigate = useNavigate();
 
+  const features = [
+    {
+      title: "Tin tuyển dụng",
+      desc: "Tạo và quản lý tin tuyển dụng",
+      path: "/hr/jobs",
+      icon: <PostAdd />,
+      bg: "linear-gradient(135deg, #10b981, #059669)",
+    },
+    {
+      title: "Hạn mức AI",
+      desc: "Theo dõi gói cước & quota AI",
+      path: "/hr/ai-usage",
+      icon: <AutoAwesome />,
+      bg: "linear-gradient(135deg, #2563eb, #1d4ed8)",
+    },
+    {
+      title: "Quản lý Ứng viên",
+      desc: "Xem hồ sơ & đánh giá ứng viên",
+      path: "/hr/applications",
+      icon: <People />,
+      bg: "linear-gradient(135deg, #6366f1, #4338ca)",
+    },
+    {
+      title: "Lịch phỏng vấn",
+      desc: "Sắp xếp lịch hẹn & phỏng vấn",
+      path: "/hr/interviews",
+      icon: <EventAvailable />,
+      bg: "linear-gradient(135deg, #f59e0b, #d97706)",
+    },
+    {
+      title: "Đánh giá ứng viên",
+      desc: "Chấm điểm bài test & kỹ năng",
+      path: "/hr/reviews",
+      icon: <RateReview />,
+      bg: "linear-gradient(135deg, #8b5cf6, #6d28d9)",
+    },
+    {
+      title: "Cài đặt doanh nghiệp",
+      desc: "Cấu hình thông tin nhà tuyển dụng",
+      path: "/hr/settings",
+      icon: <Settings />,
+      bg: "linear-gradient(135deg, #0ea5e9, #0369a1)",
+    },
+  ];
+
   return (
-    <Box sx={{ width: "100%", mt: 5 }}>
-      <Typography variant="h6" fontWeight="700" sx={{ mb: 3, color: "#1e293b" }}>
-        Quản lý tuyển dụng
+    <Paper
+      elevation={0}
+      sx={{
+        p: 2.5,
+        borderRadius: 3,
+        border: "1px solid #e2e8f0",
+        backgroundColor: "#ffffff",
+        mt: 4,
+      }}
+    >
+      <Typography
+        variant="subtitle1"
+        fontWeight={700}
+        sx={{ mb: 2.5, color: "#0f172a" }}
+      >
+        Quản lý chức năng tuyển dụng
       </Typography>
 
-      <Paper
-        elevation={0}
+      <Box
         sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "repeat(1, 1fr)",
+            sm: "repeat(2, 1fr)",
+            md: "repeat(3, 1fr)",
+            lg: "repeat(6, minmax(0, 1fr))",
+          },
+          gap: 2,
           width: "100%",
-          p: { xs: 3, md: 6 },
-          borderRadius: 8,
-          border: "1px solid #f1f5f9",
-          backgroundColor: "#ffffff",
         }}
       >
-        <Grid container spacing={9}>
-          <Grid item xs={12} sm={6} md={3}>
-            <AdminFeatureCard
-              title="Đăng tin"
-              description="Tạo tin tuyển dụng mới"
-              icon={<PostAdd sx={{ fontSize: 28 }} />}
-              gradient="linear-gradient(135deg, #10b981 0%, #059669 100%)"
-              onClick={() => navigate("/hr/jobs")}
-            />
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <AdminFeatureCard
-              title="Duyệt hồ sơ"
-              description="Xem danh sách ứng viên"
-              icon={<People sx={{ fontSize: 28 }} />}
-              gradient="linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)"
-              onClick={() => navigate("/hr/applications")}
-            />
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <AdminFeatureCard
-              title="Lịch hẹn"
-              description="Quản lý lịch phỏng vấn"
-              icon={<EventAvailable sx={{ fontSize: 28 }} />}
-              gradient="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
-              onClick={() => navigate("/hr/interviews")}
-            />
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <AdminFeatureCard
-              title="Đánh giá"
-              description="Chấm điểm bài test"
-              icon={<RateReview sx={{ fontSize: 28 }} />}
-              gradient="linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)"
-              onClick={() => navigate("/hr/reviews")}
-            />
-          </Grid>
-        </Grid>
-      </Paper>
-    </Box>
+        {features.map((item, idx) => (
+          <HRFeatureCard
+            key={idx}
+            title={item.title}
+            description={item.desc}
+            icon={item.icon}
+            gradient={item.bg}
+            onClick={() => navigate(item.path)}
+          />
+        ))}
+      </Box>
+    </Paper>
   );
 }

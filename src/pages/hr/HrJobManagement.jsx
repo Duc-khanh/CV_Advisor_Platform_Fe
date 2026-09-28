@@ -10,13 +10,22 @@ import {
   Typography,
   TextField,
   MenuItem,
-  Pagination,
   IconButton,
   Button,
   CircularProgress,
-  Box
+  Box,
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
+  Chip,
+  Tooltip,
+  Avatar,
+  TablePagination
 } from "@mui/material";
 
+import SearchIcon from "@mui/icons-material/Search";
+import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
@@ -24,14 +33,8 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 
 import HrJobForm from "../../components/forms/HrJobForm";
 import HrJobDetail from "../../components/hr/HrJobDetail";
-
 import HRLayout from "../../layouts/HRLayout";
-
-import {
-  getMyJobs,
-  deleteJob
-} from "../../services/job/hrJobService";
-
+import { getMyJobs, deleteJob } from "../../services/job/hrJobService";
 import { useToast } from "../../contexts/ToastContext";
 import { getMediaUrl } from "../../utils/urlHelpers";
 import ConfirmDialog from "../../components/dialogs/ConfirmDialog";
@@ -39,21 +42,17 @@ import ConfirmDialog from "../../components/dialogs/ConfirmDialog";
 const DEFAULT_IMAGE =
   "https://i.pinimg.com/736x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg";
 
-const PAGE_SIZE = 5;
-
 export default function HrJobManagement() {
-
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [keyword, setKeyword] = useState("");
   const [experience, setExperience] = useState("ALL");
   const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const [openModal, setOpenModal] = useState(false);
-
   const [editingJob, setEditingJob] = useState(null);
-
   const [viewJob, setViewJob] = useState(null);
   const showToast = useToast();
 
@@ -67,67 +66,40 @@ export default function HrJobManagement() {
   });
 
   /* ================= LOAD JOB ================= */
-
   const loadJobs = async () => {
-
     try {
-
       setLoading(true);
-
       const data = await getMyJobs({
         keyword,
-        experienceLevel:
-          experience === "ALL"
-            ? null
-            : experience
+        experienceLevel: experience === "ALL" ? null : experience,
       });
-
       setJobs(data || []);
-
     } catch (error) {
-
       console.error(error);
-
-      showToast(
-        "Không thể tải danh sách công việc",
-        "error"
-      );
-
+      showToast("Không thể tải danh sách công việc", "error");
     } finally {
-
       setLoading(false);
     }
   };
 
   useEffect(() => {
-
     loadJobs();
-
   }, [keyword, experience]);
 
   /* ================= PAGINATION ================= */
-
-  const totalPages =
-    Math.ceil(jobs.length / PAGE_SIZE);
-
   const paginatedJobs = jobs.slice(
-    (page - 1) * PAGE_SIZE,
-    page * PAGE_SIZE
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
   );
 
-  /* ================= HANDLER ================= */
-
+  /* ================= HANDLERS ================= */
   const handleOpenCreate = () => {
-
     setEditingJob(null);
-
     setOpenModal(true);
   };
 
   const handleOpenEdit = (job) => {
-
     setEditingJob(job);
-
     setOpenModal(true);
   };
 
@@ -140,23 +112,13 @@ export default function HrJobManagement() {
       onConfirm: async () => {
         try {
           await deleteJob(jobId);
-          setJobs(prev =>
-            prev.filter(
-              item => item.jobId !== jobId
-            )
-          );
-          showToast(
-            "Xóa tin tuyển dụng thành công",
-            "success"
-          );
+          setJobs((prev) => prev.filter((item) => item.jobId !== jobId));
+          showToast("Xóa tin tuyển dụng thành công", "success");
         } catch (error) {
           console.error(error);
-          showToast(
-            "Xóa thất bại",
-            "error"
-          );
+          showToast("Xóa thất bại", "error");
         }
-      }
+      },
     });
     setConfirmOpen(true);
   };
@@ -166,384 +128,332 @@ export default function HrJobManagement() {
     showToast("Làm mới danh sách thành công", "success");
   };
 
-  /* ================= RENDER ================= */
-
   return (
-
     <HRLayout>
-
-      <Stack spacing={3}>
-
-        {/* BLUE BANNER */}
-        <Box
-          sx={{
-            backgroundColor: "#0066CC",
-            borderRadius: "8px",
-            padding: "16px 20px",
-            color: "white"
-          }}
-        >
-          <Typography variant="body1" fontWeight={500}>
-            Theo dõi trạng thái tuyển dụng và quản lý các tin tuyển dụng hiệu quả
-          </Typography>
-        </Box>
-
-        {/* HEADER WITH CREATE BUTTON */}
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-        >
-
-          <Typography
-            variant="h5"
-            fontWeight={800}
+      <Box sx={{ width: "100%", margin: "0 auto", pt: 0, px: { xs: 1, md: 2 } }}>
+        <Stack spacing={3}>
+          {/* HEADER (ĐỒNG BỘ VỚI ADMIN) */}
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            justifyContent="space-between"
+            alignItems={{ xs: "flex-start", sm: "center" }}
+            spacing={2}
+            sx={{ mt: 1 }}
           >
-            Quản lý tin tuyển dụng
-          </Typography>
+            <Box>
+              <Typography variant="h4" fontWeight={800} color="#1e293b">
+                Quản lý tin tuyển dụng
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                Theo dõi trạng thái tuyển dụng và quản lý các tin tuyển dụng hiệu quả
+              </Typography>
+            </Box>
 
-          <Button
-            variant="contained"
-            onClick={handleOpenCreate}
-          >
-            Đăng tin
-          </Button>
+            <Stack direction="row" spacing={1.5}>
+              <Button
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                onClick={handleRefresh}
+                sx={{
+                  borderRadius: 2,
+                  fontWeight: 700,
+                  textTransform: "none",
+                  borderColor: "#cbd5e1",
+                  color: "#475569",
+                  "&:hover": { borderColor: "#94a3b8", bgcolor: "#f8fafc" },
+                }}
+              >
+                Làm mới
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleOpenCreate}
+                sx={{
+                  borderRadius: 2,
+                  px: 3,
+                  py: 1,
+                  fontWeight: 700,
+                  textTransform: "none",
+                  bgcolor: "#2d6a4f",
+                  "&:hover": { bgcolor: "#1b4332" },
+                  boxShadow: "0 4px 12px rgba(45,106,79,0.25)",
+                }}
+              >
+                Đăng tin mới
+              </Button>
+            </Stack>
+          </Stack>
 
-        </Stack>
+          {/* FILTER CARD (ĐỒNG BỘ VỚI ADMIN) */}
+          <Paper sx={{ p: 2.5, borderRadius: 3, boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+            <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap gap={2} alignItems="center">
+              <TextField
+                size="small"
+                placeholder="Tìm kiếm theo tiêu đề công việc, địa điểm..."
+                value={keyword}
+                onChange={(e) => {
+                  setKeyword(e.target.value);
+                  setPage(1);
+                }}
+                sx={{ flexGrow: 1, minWidth: "260px" }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: "#94a3b8" }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
-        {/* SEARCH & FILTER ROW */}
-        <Stack
-          direction="row"
-          spacing={2}
-          alignItems="center"
-        >
-
-          <TextField
-            size="small"
-            placeholder="Tìm theo job, địa điểm, user..."
-            value={keyword}
-            onChange={(e) =>
-              setKeyword(e.target.value)
-            }
-            sx={{ flex: 1 }}
-          />
-
-          <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
-            Lọc trạng thái
-          </Typography>
-
-          <TextField
-            size="small"
-            select
-            value={experience}
-            onChange={(e) =>
-              setExperience(e.target.value)
-            }
-            sx={{ width: 200 }}
-          >
-
-            <MenuItem value="ALL">
-              ALL
-            </MenuItem>
-
-            <MenuItem value="INTERN">
-              Intern
-            </MenuItem>
-
-            <MenuItem value="MID">
-              Mid
-            </MenuItem>
-
-            <MenuItem value="SENIOR">
-              Senior
-            </MenuItem>
-
-          </TextField>
-
-          <Button
-            variant="outlined"
-            startIcon={<RefreshIcon />}
-            onClick={handleRefresh}
-            sx={{ whiteSpace: "nowrap" }}
-          >
-            LÀM MỚI
-          </Button>
-
-        </Stack>
-
-        {/* LOADING */}
-
-        {loading ? (
-
-          <Box
-            display="flex"
-            justifyContent="center"
-            py={10}
-          >
-            <CircularProgress />
-          </Box>
-
-        ) : (
-
-          <Paper elevation={3}>
-
-            <Table>
-
-              <TableHead>
-
-                <TableRow
-                  sx={{
-                    backgroundColor: "#0066CC",
-                    "& th": {
-                      backgroundColor: "#0066CC",
-                      color: "white",
-                      fontWeight: 700,
-                      fontSize: "14px"
-                    }
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <InputLabel>Kinh nghiệm</InputLabel>
+                <Select
+                  value={experience}
+                  label="Kinh nghiệm"
+                  onChange={(e) => {
+                    setExperience(e.target.value);
+                    setPage(1);
                   }}
                 >
-
-                  <TableCell align="center" sx={{ color: "white", fontWeight: 700 }}>
-                    STT
-                  </TableCell>
-
-                  <TableCell align="center" sx={{ color: "white", fontWeight: 700 }}>
-                    Hình ảnh
-                  </TableCell>
-
-                  <TableCell align="center" sx={{ color: "white", fontWeight: 700 }}>
-                    Tiêu đề
-                  </TableCell>
-
-                  <TableCell align="center" sx={{ color: "white", fontWeight: 700 }}>
-                    Kinh nghiệm
-                  </TableCell>
-
-                  <TableCell align="center" sx={{ color: "white", fontWeight: 700 }}>
-                    Mô tả
-                  </TableCell>
-
-                  <TableCell align="center" sx={{ color: "white", fontWeight: 700 }}>
-                    Ngày đăng
-                  </TableCell>
-
-                  <TableCell align="center" sx={{ color: "white", fontWeight: 700 }}>
-                    Hành động
-                  </TableCell>
-
-                </TableRow>
-
-              </TableHead>
-
-              <TableBody>
-
-                {paginatedJobs.length === 0 && (
-
-                  <TableRow>
-
-                    <TableCell
-                      colSpan={7}
-                      align="center"
-                      sx={{ padding: "20px" }}
-                    >
-
-                      Không có tin tuyển dụng
-
-                    </TableCell>
-
-                  </TableRow>
-                )}
-
-                {paginatedJobs.map((job, index) => (
-
-                  <TableRow
-                    key={job.jobId}
-                    hover
-                  >
-
-                    <TableCell align="center">
-
-                      {(page - 1) *
-                        PAGE_SIZE +
-                        index +
-                        1}
-
-                    </TableCell>
-
-                    <TableCell align="center">
-
-                      <img
-                        src={job.imageUrl ? getMediaUrl(job.imageUrl) : DEFAULT_IMAGE}
-                        alt="job"
-                        style={{
-                          width: 70,
-                          height: 70,
-                          borderRadius: 8,
-                          objectFit: "cover"
-                        }}
-                        onError={(e) => {
-                          e.target.src =
-                            DEFAULT_IMAGE;
-                        }}
-                      />
-
-                    </TableCell>
-
-                    <TableCell align="center">
-                      {job.title}
-                    </TableCell>
-
-                    <TableCell align="center">
-                      {job.experienceLevel}
-                    </TableCell>
-
-                    <TableCell align="center">
-
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          maxWidth: 250,
-                          overflow: "hidden",
-                          whiteSpace: "nowrap",
-                          textOverflow: "ellipsis",
-                          mx: "auto"
-                        }}
-                      >
-                        {job.description}
-                      </Typography>
-
-                    </TableCell>
-
-                    <TableCell align="center">
-
-                      {new Date(
-                        job.createdAt
-                      ).toLocaleDateString("vi-VN")}
-
-                    </TableCell>
-
-                    <TableCell align="center">
-
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        justifyContent="center"
-                      >
-
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            setViewJob(job)
-                          }
-                        >
-                          <VisibilityOutlinedIcon />
-                        </IconButton>
-
-                        <IconButton
-                          size="small"
-                          color="warning"
-                          onClick={() =>
-                            handleOpenEdit(job)
-                          }
-                        >
-                          <EditOutlinedIcon />
-                        </IconButton>
-
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() =>
-                            handleDelete(job.jobId)
-                          }
-                        >
-                          <DeleteOutlineIcon />
-                        </IconButton>
-
-                      </Stack>
-
-                    </TableCell>
-
-                  </TableRow>
-                ))}
-
-              </TableBody>
-
-            </Table>
-
+                  <MenuItem value="ALL">Tất cả kinh nghiệm</MenuItem>
+                  <MenuItem value="INTERN">Intern</MenuItem>
+                  <MenuItem value="FRESHER">Fresher</MenuItem>
+                  <MenuItem value="JUNIOR">Junior</MenuItem>
+                  <MenuItem value="MID">Mid-level</MenuItem>
+                  <MenuItem value="SENIOR">Senior</MenuItem>
+                  <MenuItem value="LEAD">Lead / Manager</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
           </Paper>
-        )}
 
-        {/* PAGINATION INFO & CONTROLS */}
+          {/* TABLE (ĐỒNG BỘ VỚI ADMIN) */}
+          <Paper sx={{ borderRadius: 3, overflow: "hidden", boxShadow: "0 4px 15px rgba(0,0,0,0.05)" }}>
+            {loading ? (
+              <Box display="flex" justifyContent="center" py={10}>
+                <CircularProgress sx={{ color: "#2d6a4f" }} />
+              </Box>
+            ) : (
+              <>
+                <Box sx={{ width: "100%", overflowX: "auto" }}>
+                  <Table>
+                    <TableHead sx={{ bgcolor: "#f8fafc" }}>
+                      <TableRow>
+                        <TableCell align="center" sx={{ fontWeight: 700, color: "#475569", width: 60 }}>
+                          STT
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: "#475569" }}>
+                          Công việc
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: "#475569" }}>
+                          Kinh nghiệm
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: "#475569" }}>
+                          Mô tả tóm tắt
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: "#475569" }}>
+                          Ngày đăng
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 700, color: "#475569" }}>
+                          Hành động
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
 
-        {!loading && jobs.length > 0 && (
-          <Stack spacing={2} alignItems="flex-start">
-            <Typography variant="body2">
-              Tổng công việc: {jobs.length}
-            </Typography>
-            
-            {totalPages > 1 && (
-              <Stack alignItems="center" width="100%">
-                <Pagination
-                  count={totalPages}
-                  page={page}
-                  onChange={(_, value) =>
-                    setPage(value)
+                    <TableBody>
+                      {paginatedJobs.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                            <Typography color="text.secondary">
+                              Không tìm thấy tin tuyển dụng nào phù hợp
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        paginatedJobs.map((job, index) => (
+                          <TableRow key={job.jobId} hover sx={{ "&:hover": { bgcolor: "#f8fafc" } }}>
+                            {/* STT */}
+                            <TableCell align="center" sx={{ color: "#64748b", fontWeight: 500 }}>
+                              {(page - 1) * rowsPerPage + index + 1}
+                            </TableCell>
+
+                            {/* CÔNG VIỆC + HÌNH ẢNH */}
+                            <TableCell>
+                              <Stack direction="row" spacing={2} alignItems="center">
+                                <Avatar
+                                  variant="rounded"
+                                  src={job.imageUrl ? getMediaUrl(job.imageUrl) : DEFAULT_IMAGE}
+                                  sx={{
+                                    width: 48,
+                                    height: 48,
+                                    borderRadius: 2,
+                                    bgcolor: "#f1f5f9"
+                                  }}
+                                  imgProps={{
+                                    onError: (e) => { e.target.src = DEFAULT_IMAGE; }
+                                  }}
+                                />
+                                <Box>
+                                  <Typography variant="subtitle2" fontWeight={700} color="#1e293b">
+                                    {job.title}
+                                  </Typography>
+                                  {job.location && (
+                                    <Typography variant="caption" sx={{ color: "#64748b" }}>
+                                      {job.location}
+                                    </Typography>
+                                  )}
+                                </Box>
+                              </Stack>
+                            </TableCell>
+
+                            {/* KINH NGHIỆM */}
+                            <TableCell>
+                              <Chip
+                                label={job.experienceLevel || "Không yêu cầu"}
+                                size="small"
+                                variant="outlined"
+                                sx={{
+                                  fontWeight: 600,
+                                  color: "#2d6a4f",
+                                  borderColor: "#2d6a4f40",
+                                  bgcolor: "#2d6a4f08",
+                                }}
+                              />
+                            </TableCell>
+
+                            {/* MÔ TẢ */}
+                            <TableCell>
+                              <Tooltip title={job.description || ""}>
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    maxWidth: 260,
+                                    overflow: "hidden",
+                                    whiteSpace: "nowrap",
+                                    textOverflow: "ellipsis",
+                                    color: "#475569",
+                                  }}
+                                >
+                                  {job.description || "—"}
+                                </Typography>
+                              </Tooltip>
+                            </TableCell>
+
+                            {/* NGÀY ĐĂNG */}
+                            <TableCell sx={{ color: "#64748b", fontSize: "0.875rem" }}>
+                              {job.createdAt
+                                ? new Date(job.createdAt).toLocaleDateString("vi-VN")
+                                : "—"}
+                            </TableCell>
+
+                            {/* HÀNH ĐỘNG (ICON BUTTONS ĐỒNG BỘ VỚI ADMIN) */}
+                            <TableCell align="right">
+                              <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                <Tooltip title="Xem chi tiết">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => setViewJob(job)}
+                                    sx={{
+                                      bgcolor: "#eff6ff",
+                                      color: "#2563eb",
+                                      "&:hover": { bgcolor: "#dbeafe" },
+                                    }}
+                                  >
+                                    <VisibilityOutlinedIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Chỉnh sửa tin">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleOpenEdit(job)}
+                                    sx={{
+                                      bgcolor: "#f0fdf4",
+                                      color: "#16a34a",
+                                      "&:hover": { bgcolor: "#dcfce7" },
+                                    }}
+                                  >
+                                    <EditOutlinedIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Xóa tin">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleDelete(job.jobId)}
+                                    sx={{
+                                      bgcolor: "#fef2f2",
+                                      color: "#dc2626",
+                                      "&:hover": { bgcolor: "#fee2e2" },
+                                    }}
+                                  >
+                                    <DeleteOutlineIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </Stack>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </Box>
+
+                {/* PAGINATION (ĐỒNG BỘ VỚI ADMIN) */}
+                <TablePagination
+                  component="div"
+                  count={jobs.length}
+                  page={page - 1}
+                  onPageChange={(e, newPage) => setPage(newPage + 1)}
+                  rowsPerPage={rowsPerPage}
+                  onRowsPerPageChange={(e) => {
+                    setRowsPerPage(parseInt(e.target.value, 10));
+                    setPage(1);
+                  }}
+                  rowsPerPageOptions={[5, 10, 25]}
+                  labelRowsPerPage="Số dòng mỗi trang:"
+                  labelDisplayedRows={({ from, to, count }) =>
+                    `${from}-${to} trong ${count}`
                   }
+                  sx={{
+                    borderTop: "1px solid #f1f5f9",
+                    color: "#64748b",
+                  }}
                 />
-              </Stack>
+              </>
             )}
-          </Stack>
+          </Paper>
+        </Stack>
+
+        {/* MODAL FORM TẠO/SỬA */}
+        {openModal && (
+          <HrJobForm
+            open={openModal}
+            onClose={() => setOpenModal(false)}
+            onSaved={loadJobs}
+            editingJob={editingJob}
+          />
         )}
 
-      </Stack>
+        {/* MODAL CHI TIẾT */}
+        {viewJob && (
+          <HrJobDetail
+            job={viewJob}
+            open={Boolean(viewJob)}
+            onClose={() => setViewJob(null)}
+          />
+        )}
 
-      {/* DETAIL */}
-
-      <HrJobDetail
-        job={viewJob}
-        open={Boolean(viewJob)}
-        onClose={() => setViewJob(null)}
-      />
-
-      {/* FORM */}
-
-      {openModal && (
-
-        <HrJobForm
-
-          job={editingJob}
-
-          onClose={() =>
-            setOpenModal(false)
-          }
-
-          onSuccess={async () => {
-
-            await loadJobs();
-
-            setOpenModal(false);
-
-            showToast(
-              editingJob
-                ? "Cập nhật thành công"
-                : "Đăng tin thành công",
-              "success"
-            );
-          }}
+        {/* DIALOG XÁC NHẬN */}
+        <ConfirmDialog
+          open={confirmOpen}
+          onClose={() => setConfirmOpen(false)}
+          onConfirm={confirmConfig.onConfirm}
+          title={confirmConfig.title}
+          message={confirmConfig.message}
+          type={confirmConfig.type}
+          confirmText={confirmConfig.confirmText}
         />
-      )}
-
-      {/* CONFIRM DIALOG */}
-      <ConfirmDialog
-        open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
-        onConfirm={confirmConfig.onConfirm}
-        title={confirmConfig.title}
-        message={confirmConfig.message}
-        type={confirmConfig.type}
-        confirmText={confirmConfig.confirmText}
-      />
-
+      </Box>
     </HRLayout>
   );
 }

@@ -1,11 +1,11 @@
 import { Box, Typography, CircularProgress } from "@mui/material";
-import { People, AssignmentTurnedIn, TrendingUp } from "@mui/icons-material";
+import { People, AssignmentTurnedIn, TrendingUp, EventNote } from "@mui/icons-material";
 import StatCard from "../ui/StatCard";
 
 export default function HrDashboardStats({ jobsCount, applicationsCount, interviewCount, acceptRate, loading }) {
   return (
-    <Box sx={{ mt: 6, mb: 2, opacity: loading ? 0.6 : 1 }}>
-      <Typography variant="h5" fontWeight={700} mb={3} color="text.primary">
+    <Box sx={{ mt: 1, mb: 2, opacity: loading ? 0.6 : 1 }}>
+      <Typography variant="h5" fontWeight={800} mb={2.5} color="#1e293b">
         Thống kê tổng quan
       </Typography>
       {loading ? (
@@ -16,12 +16,12 @@ export default function HrDashboardStats({ jobsCount, applicationsCount, intervi
             justifyContent: "center",
             py: 8,
             bgcolor: "#ffffff",
-            borderRadius: 4,
+            borderRadius: 3,
             border: "1px solid #f1f5f9",
-            boxShadow: "0 10px 30px rgba(15, 23, 42, 0.04)",
+            boxShadow: "0 4px 15px rgba(15, 23, 42, 0.04)",
           }}
         >
-          <CircularProgress />
+          <CircularProgress sx={{ color: "#2d6a4f" }} />
         </Box>
       ) : (
         <Box sx={{ 
@@ -36,7 +36,7 @@ export default function HrDashboardStats({ jobsCount, applicationsCount, intervi
             color="#2d6a4f"
           />
           <StatCard
-            title="Ứng viên đang ứng tuyển"
+            title="Ứng viên nộp hồ sơ"
             value={applicationsCount.toString()}
             icon={<People />}
             color="#0077b6"
@@ -44,11 +44,11 @@ export default function HrDashboardStats({ jobsCount, applicationsCount, intervi
           <StatCard
             title="Lịch phỏng vấn"
             value={interviewCount.toString()}
-            icon={<TrendingUp />}
+            icon={<EventNote />}
             color="#f59e0b"
           />
           <StatCard
-            title="Tỷ lệ đạt"
+            title="Tỷ lệ đạt tuyển dụng"
             value={acceptRate}
             icon={<TrendingUp />}
             color="#7209b7"

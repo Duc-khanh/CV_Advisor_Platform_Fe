@@ -21,6 +21,7 @@ export const API_ENDPOINTS = {
   MY_AI_USAGE: "/api/me/ai-usage",
   AI_PLANS: "/api/me/ai-usage/plans",
   ADMIN_AI_DASHBOARD: "/api/admin/ai/dashboard",
+  ADMIN_AI_SUBSCRIPTIONS: "/api/admin/ai/subscriptions",
   ADMIN_AI_PLANS: "/api/admin/ai/plans",
   ADMIN_AI_PLAN: (id) => `/api/admin/ai/plans/${id}`,
   ADMIN_AI_SUBSCRIPTION: (userId) => `/api/admin/ai/subscriptions/${userId}`,

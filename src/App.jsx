@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import UserLayout from "./layouts/UserLayout";
 import UserHome from "./pages/user/UserHome";
 import AdminHome from "./pages/admin/AdminHome";
+import AdminStats from "./pages/admin/AdminStats";
+import AdminSettings from "./pages/admin/AdminSettings";
 import HrDashboard from "./pages/hr/HrDashboard";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -120,12 +122,7 @@ export default function App() {
         element={
           <ProtectedRoute role="ADMIN">
             <AdminLayout>
-              <UnderDevelopment
-                featureName="Thống kê hệ thống & Báo cáo"
-                description="Bảng phân tích chi tiết dữ liệu người dùng, việc làm và doanh thu đang được hoàn thiện."
-                homeUrl="/admin_dashboard"
-                homeLabel="Về trang Admin"
-              />
+              <AdminStats />
             </AdminLayout>
           </ProtectedRoute>
         }
@@ -135,12 +132,7 @@ export default function App() {
         element={
           <ProtectedRoute role="ADMIN">
             <AdminLayout>
-              <UnderDevelopment
-                featureName="Cài đặt hệ thống"
-                description="Cấu hình hệ thống, tham số bảo mật, email server và thông số kết nối đang được nâng cấp."
-                homeUrl="/admin_dashboard"
-                homeLabel="Về trang Admin"
-              />
+              <AdminSettings />
             </AdminLayout>
           </ProtectedRoute>
         }

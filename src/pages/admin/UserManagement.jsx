@@ -5,10 +5,14 @@ import {
   Button, Stack, Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText,
   TextField, MenuItem, Select, FormControl, InputLabel,
   TablePagination, Chip, InputAdornment, Avatar,
-  Typography, Paper, Box
+  Typography, Paper, Box,
+  IconButton, Tooltip
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import LockIcon from "@mui/icons-material/Lock";
+import LockOpenIcon from "@mui/icons-material/LockOpen";
 
 import {
   getUsers,
@@ -253,15 +257,29 @@ export default function UserManagement() {
                       </TableCell>
                       <TableCell align="right">
                         <Stack direction="row" spacing={1} justifyContent="flex-end">
-                          <Button size="small" onClick={() => { setSelectedUser(u); setOpen(true); }}>Sửa</Button>
-                          <Button 
-                            size="small" 
-                            variant="outlined" 
-                            color={u.enabled ? "error" : "success"}
-                            onClick={() => handleToggleStatus(u)}
-                          >
-                            {u.enabled ? "Khóa" : "Mở"}
-                          </Button>
+                          <Tooltip title="Chỉnh sửa thông tin">
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => { setSelectedUser(u); setOpen(true); }}
+                              sx={{ bgcolor: "#eff6ff", "&:hover": { bgcolor: "#dbeafe" } }}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title={u.enabled ? "Khóa tài khoản" : "Mở khóa tài khoản"}>
+                            <IconButton 
+                              size="small" 
+                              color={u.enabled ? "error" : "success"}
+                              onClick={() => handleToggleStatus(u)}
+                              sx={{
+                                bgcolor: u.enabled ? "#fef2f2" : "#f0fdf4",
+                                "&:hover": { bgcolor: u.enabled ? "#fee2e2" : "#dcfce7" }
+                              }}
+                            >
+                              {u.enabled ? <LockIcon fontSize="small" /> : <LockOpenIcon fontSize="small" />}
+                            </IconButton>
+                          </Tooltip>
                         </Stack>
                       </TableCell>
                     </TableRow>

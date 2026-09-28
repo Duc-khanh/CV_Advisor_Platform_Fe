@@ -8,7 +8,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
   Paper,
@@ -16,7 +15,6 @@ import {
   Select,
   MenuItem,
   CircularProgress,
-  Pagination,
   TextField,
   InputAdornment,
   Stack,
@@ -26,17 +24,14 @@ import {
   FormControl,
   InputLabel,
   Button,
-  Divider,
   Modal,
-  Alert
+  TablePagination
 } from "@mui/material";
 
 import {
   Search,
   Refresh,
-  Description,
-  Person,
-  Work,
+  PictureAsPdf,
   Close,
   AutoAwesome
 } from "@mui/icons-material";
@@ -44,21 +39,38 @@ import {
 import HRLayout from "../../layouts/HRLayout";
 import { useToast } from "../../contexts/ToastContext";
 
+// Bỏ "REVIEWING" (Đang xem xét) ở bộ lọc và thao tác theo yêu cầu của user
 const STATUS_OPTIONS = [
   "ALL",
   "PENDING",
-  "REVIEWING",
   "INTERVIEW",
   "ACCEPTED",
   "REJECTED"
 ];
 
+const ACTION_STATUS_OPTIONS = [
+  "PENDING",
+  "INTERVIEW",
+  "ACCEPTED",
+  "REJECTED"
+];
+
+const STATUS_LABELS = {
+  PENDING: "Chờ xử lý",
+  INTERVIEW: "Phỏng vấn",
+  ACCEPTED: "Đã tuyển",
+  REJECTED: "Từ chối",
+  REVIEWED: "Đã xem",
+  REVIEWING: "Đang xem xét"
+};
+
 const STATUS_COLOR = {
   PENDING: "default",
-  REVIEWING: "info",
   INTERVIEW: "warning",
   ACCEPTED: "success",
-  REJECTED: "error"
+  REJECTED: "error",
+  REVIEWED: "info",
+  REVIEWING: "info"
 };
 
 const formatDate = (val) => {
@@ -83,22 +95,49 @@ export default function HRApplications() {
   const showToast = useToast();
 
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [fitFilter, setFitFilter] = useState("ALL");
   const [searchKeyword, setSearchKeyword] = useState("");
   const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const [updatingId, setUpdatingId] = useState(null);
 
   const [viewCvUrl, setViewCvUrl] = useState(null);
   const [openCvModal, setOpenCvModal] = useState(false);
+  const [cvLoading, setCvLoading] = useState(false);
+
   const [fitLoadingId, setFitLoadingId] = useState(null);
   const [fitModalData, setFitModalData] = useState(null);
   const [openFitModal, setOpenFitModal] = useState(false);
 
-  const rowsPerPage = 5;
-
-  const handleViewCv = (cvFileUrl) => {
-    setViewCvUrl(getCvUrl(cvFileUrl));
+  const handleViewCv = async (cvFileUrl) => {
+    if (!cvFileUrl) return;
     setOpenCvModal(true);
+    setCvLoading(true);
+    setViewCvUrl(null);
+
+    try {
+      const url = cvFileUrl.startsWith("/") ? cvFileUrl : `/${cvFileUrl}`;
+      const response = await api.get(url, { responseType: "blob" });
+      const blob = new Blob([response.data], {
+        type: response.headers["content-type"] || "application/pdf"
+      });
+      const blobUrl = URL.createObjectURL(blob);
+      setViewCvUrl(blobUrl);
+    } catch (err) {
+      console.error("Lỗi tải CV:", err);
+      showToast("Không thể tải file CV. Vui lòng kiểm tra lại quyền hoặc thử lại sau.", "error");
+    } finally {
+      setCvLoading(false);
+    }
+  };
+
+  const handleCloseCvModal = () => {
+    if (viewCvUrl && viewCvUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(viewCvUrl);
+    }
+    setViewCvUrl(null);
+    setOpenCvModal(false);
   };
 
   useEffect(() => {
@@ -107,7 +146,6 @@ export default function HRApplications() {
 
   const getAuthHeader = () => {
     const token = localStorage.getItem("token");
-
     return {
       headers: {
         Authorization: `Bearer ${token}`
@@ -120,10 +158,7 @@ export default function HRApplications() {
       setLoading(true);
       setError(null);
 
-      const res = await api.get(
-        "/api/hr/applications",
-        getAuthHeader()
-      );
+      const res = await api.get("/api/hr/applications", getAuthHeader());
 
       const raw = res?.data;
       let list = [];
@@ -155,15 +190,12 @@ export default function HRApplications() {
     if (score == null) {
       return { label: "Chưa đánh giá", color: "default" };
     }
-
     if (score >= 80) {
       return { label: "Rất phù hợp", color: "success" };
     }
-
     if (score >= 60) {
       return { label: "Phù hợp", color: "warning" };
     }
-
     return { label: "Ít phù hợp", color: "error" };
   };
 
@@ -192,11 +224,19 @@ export default function HRApplications() {
         )
       );
 
-      setFitModalData({ application, aiFit });
+      setFitModalData({
+        application,
+        aiFit
+      });
       setOpenFitModal(true);
+
+      showToast("Đánh giá độ phù hợp ứng viên thành công", "success");
     } catch (err) {
       console.error(err);
-      showToast("Đánh giá AI thất bại", "error");
+      const errMsg =
+        err?.response?.data?.message ||
+        "Đánh giá ứng viên thất bại. Vui lòng thử lại sau.";
+      showToast(errMsg, "error");
     } finally {
       setFitLoadingId(null);
     }
@@ -210,31 +250,25 @@ export default function HRApplications() {
         `/api/hr/applications/${applicationId}/status`,
         null,
         {
-          params: {
-            status: newStatus
-          },
+          params: { status: newStatus },
           ...getAuthHeader()
         }
       );
 
-      setApplications(prev =>
-        prev.map(app =>
+      setApplications((prev) =>
+        prev.map((app) =>
           app.applicationId === applicationId
             ? { ...app, status: newStatus }
             : app
         )
       );
 
-      showToast(
-        "Cập nhật trạng thái thành công",
-        "success"
-      );
+      showToast("Cập nhật trạng thái thành công", "success");
     } catch (err) {
       console.error(err);
-      showToast(
-        "Cập nhật trạng thái thất bại",
-        "error"
-      );
+      const errMsg =
+        err?.response?.data?.message || "Cập nhật trạng thái thất bại";
+      showToast(errMsg, "error");
     } finally {
       setUpdatingId(null);
     }
@@ -243,15 +277,29 @@ export default function HRApplications() {
   // FILTER + SEARCH
   const filteredApplications = useMemo(() => {
     if (!Array.isArray(applications)) return [];
-    return applications.filter(app => {
+    return applications.filter((app) => {
       if (!app) return false;
 
       const matchStatus =
         statusFilter === "ALL" ||
         app.status?.toUpperCase() === statusFilter?.toUpperCase();
 
+      let matchFit = true;
+      const score = app.aiFit?.score;
+      if (fitFilter === "HIGH") {
+        matchFit = score != null && score >= 80;
+      } else if (fitFilter === "MEDIUM") {
+        matchFit = score != null && score >= 60 && score < 80;
+      } else if (fitFilter === "LOW") {
+        matchFit = score != null && score < 60;
+      } else if (fitFilter === "UNRATED") {
+        matchFit = score == null;
+      }
+
+      if (!matchStatus || !matchFit) return false;
+
       const keyword = (searchKeyword || "").trim().toLowerCase();
-      if (!keyword) return matchStatus;
+      if (!keyword) return true;
 
       const matchSearch =
         (app.fullName?.toLowerCase() || "").includes(keyword) ||
@@ -262,594 +310,634 @@ export default function HRApplications() {
         (app.email?.toLowerCase() || "").includes(keyword) ||
         (app.userId?.toString() || "").includes(keyword);
 
-      return matchStatus && matchSearch;
+      return matchSearch;
     });
-  }, [applications, statusFilter, searchKeyword]);
+  }, [applications, statusFilter, fitFilter, searchKeyword]);
 
-  // PAGINATION
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredApplications.length / rowsPerPage)
+  const paginatedApplications = filteredApplications.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
   );
-
-  const paginatedApplications =
-    filteredApplications.slice(
-      (page - 1) * rowsPerPage,
-      page * rowsPerPage
-    );
 
   useEffect(() => {
     setPage(1);
-  }, [statusFilter, searchKeyword]);
-
-  if (loading) {
-    return (
-      <HRLayout>
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="70vh"
-        >
-          <CircularProgress />
-        </Box>
-      </HRLayout>
-    );
-  }
+  }, [statusFilter, fitFilter, searchKeyword]);
 
   return (
     <HRLayout>
-      <Box p={3}>
-        {/* HEADER */}
-        <Paper
-          elevation={0}
-          sx={{
-            p: 3,
-            mb: 3,
-            borderRadius: 4,
-            background:
-              "linear-gradient(to right, #1976d2, #42a5f5)",
-            color: "white"
-          }}
-        >
-          <Typography
-            variant="h4"
-            fontWeight={700}
-          >
-            Quản lý ứng viên
-          </Typography>
-
-          <Typography mt={1}>
-            Theo dõi trạng thái ứng tuyển và
-            quản lý ứng viên hiệu quả
-          </Typography>
-        </Paper>
-
-        {/* FILTER */}
-        <Paper
-          sx={{
-            p: 2,
-            mb: 3,
-            borderRadius: 3
-          }}
-        >
+      <Box sx={{ width: "100%", margin: "0 auto", pt: 0, px: { xs: 1, md: 2 } }}>
+        <Stack spacing={3}>
+          {/* HEADER (ĐỒNG BỘ VỚI ADMIN) */}
           <Stack
-            direction={{
-              xs: "column",
-              md: "row"
-            }}
-            spacing={2}
-            alignItems="center"
+            direction={{ xs: "column", sm: "row" }}
             justifyContent="space-between"
+            alignItems={{ xs: "flex-start", sm: "center" }}
+            spacing={2}
+            sx={{ mt: 1 }}
           >
-            <TextField
-              size="small"
-              placeholder="Tìm theo job, địa điểm, user..."
-              value={searchKeyword}
-              onChange={e =>
-                setSearchKeyword(e.target.value)
-              }
-              sx={{ width: 320 }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search />
-                  </InputAdornment>
-                )
-              }}
-            />
+            <Box>
+              <Typography variant="h4" fontWeight={800} color="#1e293b">
+                Quản lý ứng viên
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                Theo dõi hồ sơ ứng tuyển, phân tích độ phù hợp và cập nhật trạng thái tuyển dụng
+              </Typography>
+            </Box>
 
-            <Stack direction="row" spacing={2}>
-              <FormControl size="small">
-                <InputLabel>
-                  Lọc trạng thái
-                </InputLabel>
-
-                <Select
-                  value={statusFilter}
-                  label="Lọc trạng thái"
-                  onChange={e =>
-                    setStatusFilter(e.target.value)
-                  }
-                  sx={{ minWidth: 180 }}
-                >
-                  {STATUS_OPTIONS.map(status => (
-                    <MenuItem
-                      key={status}
-                      value={status}
-                    >
-                      {status}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
+            <Tooltip title="Tải lại danh sách ứng viên mới nhất" arrow>
               <Button
                 variant="outlined"
                 startIcon={<Refresh />}
                 onClick={fetchApplications}
+                sx={{
+                  borderRadius: 2,
+                  fontWeight: 700,
+                  textTransform: "none",
+                  borderColor: "#cbd5e1",
+                  color: "#475569",
+                  "&:hover": { borderColor: "#94a3b8", bgcolor: "#f8fafc" },
+                }}
               >
                 Làm mới
               </Button>
-            </Stack>
+            </Tooltip>
           </Stack>
-        </Paper>
 
-        {/* TABLE */}
-        <TableContainer
-          component={Paper}
-          sx={{
-            borderRadius: 4,
-            overflow: "hidden"
-          }}
-        >
-          <Table>
-            <TableHead>
-              <TableRow
-                sx={{
-                  bgcolor: "#1976d2"
+          {/* FILTER CARD (ĐỒNG BỘ VỚI ADMIN) */}
+          <Paper sx={{ p: 2.5, borderRadius: 3, boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+            <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap gap={2} alignItems="center">
+              <TextField
+                size="small"
+                placeholder="Tìm theo tên ứng viên, vị trí, email..."
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                sx={{ flexGrow: 1, minWidth: "260px" }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search sx={{ color: "#94a3b8" }} />
+                    </InputAdornment>
+                  ),
                 }}
-              >
-                <TableCell sx={{ color: "white" }}>
-                  STT
-                </TableCell>
+              />
 
-                <TableCell sx={{ color: "white" }}>
-                  Ứng viên
-                </TableCell>
-
-                <TableCell sx={{ color: "white" }}>
-                  Công việc
-                </TableCell>
-
-                <TableCell sx={{ color: "white" }}>
-                  CV
-                </TableCell>
-
-                <TableCell sx={{ color: "white" }}>
-                  Ngày ứng tuyển
-                </TableCell>
-
-                <TableCell sx={{ color: "white" }}>
-                  AI Fit
-                </TableCell>
-
-                <TableCell sx={{ color: "white" }}>
-                  Trạng thái
-                </TableCell>
-
-                <TableCell
-                  align="center"
-                  sx={{ color: "white" }}
+              <FormControl size="small" sx={{ minWidth: 180 }}>
+                <InputLabel>Trạng thái</InputLabel>
+                <Select
+                  value={statusFilter}
+                  label="Trạng thái"
+                  onChange={(e) => setStatusFilter(e.target.value)}
                 >
-                  Thao tác
-                </TableCell>
-              </TableRow>
-            </TableHead>
+                  <MenuItem value="ALL">Tất cả trạng thái</MenuItem>
+                  <MenuItem value="PENDING">Chờ xử lý</MenuItem>
+                  <MenuItem value="INTERVIEW">Phỏng vấn</MenuItem>
+                  <MenuItem value="ACCEPTED">Đã tuyển</MenuItem>
+                  <MenuItem value="REJECTED">Từ chối</MenuItem>
+                </Select>
+              </FormControl>
 
-            <TableBody>
-              {error ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={8}
-                    align="center"
-                    sx={{ py: 6 }}
-                  >
-                    <Stack spacing={1.5} alignItems="center">
-                      <Typography color="error.main" fontWeight={600}>
-                        {error}
-                      </Typography>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        startIcon={<Refresh />}
-                        onClick={fetchApplications}
-                      >
-                        Thử lại
-                      </Button>
-                    </Stack>
-                  </TableCell>
-                </TableRow>
-              ) : paginatedApplications.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={8}
-                    align="center"
-                    sx={{ py: 6 }}
-                  >
-                    <Typography color="text.secondary">
-                      Không có dữ liệu ứng viên
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                paginatedApplications.map(
-                  (app, index) => {
-                    const candidateName =
-                      app.fullName ||
-                      app.candidateName ||
-                      app.name ||
-                      "Ứng viên";
-                    const avatarChar =
-                      candidateName.trim().charAt(0).toUpperCase() || "U";
-                    const currentStatus = app.status || "PENDING";
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <InputLabel>Mức độ phù hợp</InputLabel>
+                <Select
+                  value={fitFilter}
+                  label="Mức độ phù hợp"
+                  onChange={(e) => setFitFilter(e.target.value)}
+                >
+                  <MenuItem value="ALL">Tất cả mức độ</MenuItem>
+                  <MenuItem value="HIGH">Rất phù hợp (≥ 80%)</MenuItem>
+                  <MenuItem value="MEDIUM">Phù hợp (60% - 79%)</MenuItem>
+                  <MenuItem value="LOW">Ít phù hợp (&lt; 60%)</MenuItem>
+                  <MenuItem value="UNRATED">Chưa đánh giá</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
+          </Paper>
 
-                    return (
-                      <TableRow
-                        key={app.applicationId || index}
-                        hover
-                      >
-                        {/* STT */}
-                        <TableCell>
-                          {(page - 1) *
-                            rowsPerPage +
-                            index +
-                            1}
+          {/* TABLE (ĐỒNG BỘ VỚI ADMIN) */}
+          <Paper sx={{ borderRadius: 3, overflow: "hidden", boxShadow: "0 4px 15px rgba(0,0,0,0.05)" }}>
+            {loading ? (
+              <Box display="flex" justifyContent="center" py={10}>
+                <CircularProgress sx={{ color: "#2d6a4f" }} />
+              </Box>
+            ) : (
+              <>
+                <Box sx={{ width: "100%", overflowX: "auto" }}>
+                  <Table>
+                    <TableHead sx={{ bgcolor: "#f8fafc" }}>
+                      <TableRow>
+                        <TableCell align="center" sx={{ fontWeight: 700, color: "#475569", width: 60 }}>
+                          STT
                         </TableCell>
-                        <TableCell>
-                          <Stack
-                            direction="row"
-                            spacing={2}
-                            alignItems="center"
-                          >
-                            <Avatar
-                              sx={{
-                                bgcolor: "#1976d2",
-                                width: 45,
-                                height: 45,
-                                fontWeight: 700
-                              }}
-                            >
-                              {avatarChar}
-                            </Avatar>
-
-                            <Box>
-                              <Typography fontWeight={700}>
-                                {candidateName}
-                              </Typography>
-                              {app.email && (
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                >
-                                  {app.email}
-                                </Typography>
-                              )}
-                            </Box>
-                          </Stack>
+                        <TableCell sx={{ fontWeight: 700, color: "#475569" }}>
+                          Ứng viên
                         </TableCell>
-
-                        {/* JOB */}
-                        <TableCell>
-                          <Stack spacing={0.5}>
-                            <Typography
-                              fontWeight={700}
-                            >
-                              {app.jobTitle || "—"}
-                            </Typography>
-
-                            <Stack
-                              direction="row"
-                              spacing={1}
-                              alignItems="center"
-                            >
-                              <Work
-                                sx={{
-                                  fontSize: 16,
-                                  color:
-                                    "text.secondary"
-                                }}
-                              />
-
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                {app.location || "Chưa cập nhật"}
-                              </Typography>
-                            </Stack>
-                          </Stack>
+                        <TableCell sx={{ fontWeight: 700, color: "#475569" }}>
+                          Vị trí ứng tuyển
                         </TableCell>
-
-                        {/* CV */}
-                        <TableCell>
-                          <Tooltip title="Mở CV">
-                            <span>
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                startIcon={<Description />}
-                                onClick={() => handleViewCv(app.cvFileUrl)}
-                                disabled={!app.cvFileUrl}
-                              >
-                                Xem CV
-                              </Button>
-                            </span>
-                          </Tooltip>
+                        <TableCell align="center" sx={{ fontWeight: 700, color: "#475569", width: 90 }}>
+                          Hồ sơ
                         </TableCell>
-
-                        {/* DATE */}
-                        <TableCell>
-                          {formatDate(app.appliedAt)}
+                        <TableCell sx={{ fontWeight: 700, color: "#475569", width: 110 }}>
+                          Ngày nộp
                         </TableCell>
-
-                        {/* AI FIT */}
-                        <TableCell>
-                          {app.aiFit?.score != null ? (
-                            <Stack spacing={1}>
-                              <Chip
-                                label={`${app.aiFit.score}%`}
-                                color={
-                                  getFitStatus(app.aiFit.score)
-                                    .color
-                                }
-                                sx={{
-                                  fontWeight: 700,
-                                  minWidth: 90
-                                }}
-                              />
-                              <Button
-                                size="small"
-                                variant="outlined"
-                                onClick={() => {
-                                  setFitModalData({
-                                    application: app,
-                                    aiFit: app.aiFit
-                                  });
-                                  setOpenFitModal(true);
-                                }}
-                                sx={{
-                                  textTransform: "none",
-                                  minWidth: 90
-                                }}
-                              >
-                                Chi tiết
-                              </Button>
-                            </Stack>
-                          ) : (
-                            <Button
-                              size="small"
-                              variant="contained"
-                              disableElevation
-                              onClick={() =>
-                                evaluateCandidateFit(app)
-                              }
-                              disabled={
-                                fitLoadingId ===
-                                app.applicationId
-                              }
-                              startIcon={
-                                fitLoadingId ===
-                                app.applicationId ? (
-                                  <CircularProgress
-                                    size={16}
-                                    color="inherit"
-                                  />
-                                ) : (
-                                  <AutoAwesome />
-                                )
-                              }
-                              sx={{
-                                textTransform: "none",
-                                minWidth: 90
-                              }}
-                            >
-                              {fitLoadingId ===
-                              app.applicationId
-                                ? "Đang đánh giá"
-                                : "Đánh giá"}
-                            </Button>
-                          )}
+                        <TableCell align="center" sx={{ fontWeight: 700, color: "#475569", width: 140 }}>
+                          Độ phù hợp
                         </TableCell>
-
-                        {/* STATUS */}
-                        <TableCell>
-                          <Chip
-                            label={currentStatus}
-                            color={
-                              STATUS_COLOR[
-                                currentStatus
-                              ] || "default"
-                            }
-                            sx={{
-                              fontWeight: 700,
-                              minWidth: 110
-                            }}
-                          />
+                        <TableCell sx={{ fontWeight: 700, color: "#475569", width: 110 }}>
+                          Trạng thái
                         </TableCell>
-
-                        {/* ACTION */}
-                        <TableCell align="center">
-                          <Select
-                            size="small"
-                            value={currentStatus}
-                            disabled={
-                              updatingId ===
-                              app.applicationId
-                            }
-                            onChange={e =>
-                              updateStatus(
-                                app.applicationId,
-                                e.target.value
-                              )
-                            }
-                            sx={{
-                              minWidth: 160
-                            }}
-                          >
-                            {STATUS_OPTIONS.filter(
-                              s => s !== "ALL"
-                            ).map(status => (
-                              <MenuItem
-                                key={status}
-                                value={status}
-                              >
-                                {status}
-                              </MenuItem>
-                            ))}
-                            {!STATUS_OPTIONS.includes(currentStatus) && (
-                              <MenuItem value={currentStatus}>
-                                {currentStatus}
-                              </MenuItem>
-                            )}
-                          </Select>
+                        <TableCell align="center" sx={{ fontWeight: 700, color: "#475569", width: 130 }}>
+                          Thao tác
                         </TableCell>
                       </TableRow>
-                    );
+                    </TableHead>
+
+                    <TableBody>
+                      {error ? (
+                        <TableRow>
+                          <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
+                            <Stack spacing={1.5} alignItems="center">
+                              <Typography color="error.main" fontWeight={600}>
+                                {error}
+                              </Typography>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<Refresh />}
+                                onClick={fetchApplications}
+                              >
+                                Thử lại
+                              </Button>
+                            </Stack>
+                          </TableCell>
+                        </TableRow>
+                      ) : paginatedApplications.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
+                            <Typography color="text.secondary">
+                              Không tìm thấy ứng viên nào phù hợp
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        paginatedApplications.map((app, index) => {
+                          const candidateName =
+                            app.fullName ||
+                            app.candidateName ||
+                            app.name ||
+                            "Ứng viên";
+                          const avatarChar =
+                            candidateName.trim().charAt(0).toUpperCase() || "U";
+                          const currentStatus = app.status || "PENDING";
+
+                          return (
+                            <TableRow key={app.applicationId || index} hover sx={{ "&:hover": { bgcolor: "#f8fafc" } }}>
+                              {/* STT */}
+                              <TableCell align="center" sx={{ color: "#64748b", fontWeight: 500 }}>
+                                {(page - 1) * rowsPerPage + index + 1}
+                              </TableCell>
+
+                              {/* ỨNG VIÊN */}
+                              <TableCell>
+                                <Stack direction="row" spacing={1.5} alignItems="center">
+                                  <Avatar
+                                    sx={{
+                                      bgcolor: "#2d6a4f",
+                                      width: 40,
+                                      height: 40,
+                                      fontWeight: 700,
+                                      fontSize: "0.95rem"
+                                    }}
+                                  >
+                                    {avatarChar}
+                                  </Avatar>
+                                  <Box>
+                                    <Typography variant="subtitle2" fontWeight={700} color="#1e293b">
+                                      {candidateName}
+                                    </Typography>
+                                    <Typography variant="caption" sx={{ color: "#64748b" }}>
+                                      {app.email || "—"}
+                                    </Typography>
+                                  </Box>
+                                </Stack>
+                              </TableCell>
+
+                              {/* VỊ TRÍ ỨNG TUYỂN (BỎ ĐỊA CHỈ Ở DƯỚI THEO YÊU CẦU) */}
+                              <TableCell>
+                                <Typography variant="subtitle2" fontWeight={600} color="#1e293b">
+                                  {app.jobTitle || "—"}
+                                </Typography>
+                              </TableCell>
+
+                              {/* HỒ SƠ CV (CHỈ HIỂN THỊ ICON ĐÚNG VÀ BỎ TEXT) */}
+                              <TableCell align="center">
+                                <Tooltip title={app.cvFileUrl ? "Xem trước hồ sơ CV ứng viên" : "Chưa có file CV"} arrow>
+                                  <span>
+                                    <IconButton
+                                      size="small"
+                                      onClick={() => handleViewCv(app.cvFileUrl)}
+                                      disabled={!app.cvFileUrl}
+                                      sx={{
+                                        bgcolor: "#f1f5f9",
+                                        color: "#0284c7",
+                                        border: "1px solid #e2e8f0",
+                                        borderRadius: 2,
+                                        p: 0.8,
+                                        transition: "all 0.2s ease",
+                                        "&:hover": {
+                                          bgcolor: "#e0f2fe",
+                                          borderColor: "#38bdf8",
+                                          color: "#0369a1",
+                                          transform: "translateY(-1px)",
+                                          boxShadow: "0 2px 8px rgba(2, 132, 199, 0.2)",
+                                        },
+                                        "&.Mui-disabled": {
+                                          bgcolor: "#f8fafc",
+                                          color: "#cbd5e1",
+                                        },
+                                      }}
+                                    >
+                                      <PictureAsPdf sx={{ fontSize: 20 }} />
+                                    </IconButton>
+                                  </span>
+                                </Tooltip>
+                              </TableCell>
+
+                              {/* NGÀY NỘP */}
+                              <TableCell sx={{ color: "#64748b", fontSize: "0.875rem" }}>
+                                {formatDate(app.appliedAt)}
+                              </TableCell>
+
+                              {/* ĐỘ PHÙ HỢP (LỒNG XEM CHI TIẾT VÀO % CHIP, NÚT ĐÁNH GIÁ CHỈ ĐỂ LẠI ICON) */}
+                              <TableCell align="center">
+                                {app.aiFit?.score != null ? (
+                                  <Tooltip
+                                    title={`Độ phù hợp: ${app.aiFit.score}% - Nhấn để xem chi tiết phân tích AI`}
+                                    arrow
+                                  >
+                                    <Chip
+                                      label={`${app.aiFit.score}% ${getFitStatus(app.aiFit.score).label}`}
+                                      color={getFitStatus(app.aiFit.score).color}
+                                      size="small"
+                                      onClick={() => {
+                                        setFitModalData({
+                                          application: app,
+                                          aiFit: app.aiFit
+                                        });
+                                        setOpenFitModal(true);
+                                      }}
+                                      sx={{
+                                        fontWeight: 700,
+                                        fontSize: "0.8rem",
+                                        cursor: "pointer",
+                                        px: 0.5,
+                                        py: 1.8,
+                                        borderRadius: 2,
+                                        transition: "all 0.2s ease",
+                                        "&:hover": {
+                                          transform: "scale(1.05)",
+                                          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                                          filter: "brightness(0.95)"
+                                        }
+                                      }}
+                                    />
+                                  </Tooltip>
+                                ) : (
+                                  <Tooltip title="Nhấn để AI đánh giá mức độ phù hợp" arrow>
+                                    <span>
+                                      <IconButton
+                                        size="small"
+                                        onClick={() => evaluateCandidateFit(app)}
+                                        disabled={fitLoadingId === app.applicationId}
+                                        sx={{
+                                          bgcolor: "#eff6ff",
+                                          color: "#2563eb",
+                                          border: "1px solid #bfdbfe",
+                                          borderRadius: 2,
+                                          p: 0.8,
+                                          transition: "all 0.2s ease",
+                                          "&:hover": {
+                                            bgcolor: "#dbeafe",
+                                            borderColor: "#3b82f6",
+                                            transform: "translateY(-1px)",
+                                            boxShadow: "0 2px 8px rgba(37, 99, 235, 0.25)",
+                                          },
+                                        }}
+                                      >
+                                        {fitLoadingId === app.applicationId ? (
+                                          <CircularProgress size={18} color="inherit" />
+                                        ) : (
+                                          <AutoAwesome sx={{ fontSize: 20 }} />
+                                        )}
+                                      </IconButton>
+                                    </span>
+                                  </Tooltip>
+                                )}
+                              </TableCell>
+
+                              {/* TRẠNG THÁI */}
+                              <TableCell>
+                                <Tooltip title={`Trạng thái hiện tại: ${STATUS_LABELS[currentStatus] || currentStatus}`} arrow>
+                                  <Chip
+                                    label={STATUS_LABELS[currentStatus] || currentStatus}
+                                    color={STATUS_COLOR[currentStatus] || "default"}
+                                    size="small"
+                                    sx={{ fontWeight: 700 }}
+                                  />
+                                </Tooltip>
+                              </TableCell>
+
+                              {/* THAO TÁC (GỌN GÀNG, BỎ ĐANG XEM XÉT) */}
+                              <TableCell align="center">
+                                <Tooltip title="Cập nhật trạng thái ứng viên" arrow>
+                                  <Select
+                                    size="small"
+                                    value={ACTION_STATUS_OPTIONS.includes(currentStatus) ? currentStatus : "PENDING"}
+                                    disabled={updatingId === app.applicationId}
+                                    onChange={(e) =>
+                                      updateStatus(app.applicationId, e.target.value)
+                                    }
+                                    sx={{
+                                      width: 118,
+                                      height: 34,
+                                      borderRadius: 2,
+                                      fontSize: "0.82rem",
+                                      bgcolor: "#ffffff",
+                                      "& .MuiSelect-select": {
+                                        py: 0.6,
+                                        px: 1.2,
+                                      },
+                                    }}
+                                  >
+                                    {ACTION_STATUS_OPTIONS.map((status) => (
+                                      <MenuItem key={status} value={status} sx={{ fontSize: "0.82rem" }}>
+                                        {STATUS_LABELS[status] || status}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                </Tooltip>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                </Box>
+
+                {/* PAGINATION (ĐỒNG BỘ VỚI ADMIN) */}
+                <TablePagination
+                  component="div"
+                  count={filteredApplications.length}
+                  page={page - 1}
+                  onPageChange={(e, newPage) => setPage(newPage + 1)}
+                  rowsPerPage={rowsPerPage}
+                  onRowsPerPageChange={(e) => {
+                    setRowsPerPage(parseInt(e.target.value, 10));
+                    setPage(1);
+                  }}
+                  rowsPerPageOptions={[5, 10, 25]}
+                  labelRowsPerPage="Số dòng mỗi trang:"
+                  labelDisplayedRows={({ from, to, count }) =>
+                    `${from}-${to} trong ${count}`
                   }
-                )
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                  sx={{
+                    borderTop: "1px solid #f1f5f9",
+                    color: "#64748b",
+                  }}
+                />
+              </>
+            )}
+          </Paper>
+        </Stack>
 
-        {/* FOOTER */}
-        <Paper
-          sx={{
-            mt: 2,
-            p: 2,
-            borderRadius: 3
-          }}
-        >
-          <Stack
-            direction={{
-              xs: "column",
-              md: "row"
+        {/* CV VIEWER MODAL */}
+        <Modal open={openCvModal} onClose={handleCloseCvModal}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: { xs: "95%", md: "85%", lg: "1000px" },
+              height: "90vh",
+              bgcolor: "background.paper",
+              borderRadius: 3,
+              boxShadow: 24,
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
             }}
-            justifyContent="space-between"
-            alignItems="center"
-            spacing={2}
           >
-            <Typography color="text.secondary">
-              Tổng ứng viên:{" "}
-              <strong>
-                {filteredApplications.length}
-              </strong>
-            </Typography>
-
-            <Pagination
-              count={totalPages}
-              page={page}
-              onChange={(e, value) =>
-                setPage(value)
-              }
-              color="primary"
-            />
-          </Stack>
-        </Paper>
-      </Box>
-
-      {/* CV VIEWER MODAL */}
-      <Modal open={openCvModal} onClose={() => setOpenCvModal(false)}>
-        <Box sx={{
-          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-          width: { xs: '95%', md: '80%', lg: '1000px' }, height: '90vh', bgcolor: 'background.paper',
-          borderRadius: 3, boxShadow: 24, display: 'flex', flexDirection: 'column', overflow: 'hidden'
-        }}>
-          <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee' }}>
-            <Typography variant="h6" fontWeight={700}>Xem trước CV ứng viên</Typography>
-            <IconButton onClick={() => setOpenCvModal(false)}><Close /></IconButton>
+            <Box
+              sx={{
+                p: 2,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                borderBottom: "1px solid #edf2f7",
+              }}
+            >
+              <Typography variant="h6" fontWeight={700} color="#1e293b">
+                Xem trước CV ứng viên
+              </Typography>
+              <IconButton onClick={handleCloseCvModal}>
+                <Close />
+              </IconButton>
+            </Box>
+            <Box sx={{ flexGrow: 1, p: 0, bgcolor: "#f1f5f9" }}>
+              {cvLoading ? (
+                <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" height="100%" gap={2}>
+                  <CircularProgress sx={{ color: "#2d6a4f" }} />
+                  <Typography variant="body2" color="text.secondary">
+                    Đang tải tài liệu CV...
+                  </Typography>
+                </Box>
+              ) : viewCvUrl ? (
+                <iframe
+                  src={viewCvUrl}
+                  width="100%"
+                  height="100%"
+                  style={{ border: "none" }}
+                  title="CV Preview"
+                />
+              ) : (
+                <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+                  <Typography color="text.secondary">Không tìm thấy tài liệu CV để hiển thị.</Typography>
+                </Box>
+              )}
+            </Box>
+            <Box
+              sx={{
+                p: 2,
+                borderTop: "1px solid #edf2f7",
+                display: "flex",
+                justifyContent: "flex-end",
+                bgcolor: "white",
+                gap: 1.5,
+              }}
+            >
+              <Button
+                variant="outlined"
+                onClick={handleCloseCvModal}
+                sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600 }}
+              >
+                Đóng
+              </Button>
+              <Button
+                variant="contained"
+                component="a"
+                href={viewCvUrl || "#"}
+                target="_blank"
+                download="CV_UngVien.pdf"
+                disabled={!viewCvUrl}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  bgcolor: "#2d6a4f",
+                  "&:hover": { bgcolor: "#1b4332" },
+                }}
+              >
+                Tải xuống
+              </Button>
+            </Box>
           </Box>
-          <Box sx={{ flexGrow: 1, p: 0, bgcolor: '#f1f5f9' }}>
-            {viewCvUrl ? (
-              <iframe 
-                src={viewCvUrl} 
-                width="100%" 
-                height="100%" 
-                style={{ border: 'none' }} 
-                title="CV Preview" 
-              />
-            ) : (
-              <Box display="flex" justifyContent="center" alignItems="center" height="100%">
-                <CircularProgress />
+        </Modal>
+
+        {/* AI FIT DETAIL MODAL */}
+        <Modal open={openFitModal} onClose={() => setOpenFitModal(false)}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: { xs: "95%", md: "620px" },
+              maxHeight: "90vh",
+              overflowY: "auto",
+              bgcolor: "background.paper",
+              borderRadius: 3,
+              boxShadow: 24,
+              p: 3,
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2,
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <AutoAwesome sx={{ color: "#2563eb", fontSize: 24 }} />
+                <Typography variant="h6" fontWeight={800} color="#1e293b">
+                  Đánh giá mức độ phù hợp
+                </Typography>
               </Box>
+              <IconButton onClick={() => setOpenFitModal(false)}>
+                <Close />
+              </IconButton>
+            </Box>
+
+            {fitModalData?.aiFit ? (
+              <Stack spacing={2.5}>
+                <Box
+                  sx={{
+                    p: 2,
+                    borderRadius: 2.5,
+                    bgcolor: "#f8fafc",
+                    border: "1px solid #edf2f7",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Typography variant="subtitle2" fontWeight={600} color="#475569">
+                    Điểm tương thích công việc:
+                  </Typography>
+                  <Chip
+                    label={`${fitModalData.aiFit.score ?? 0}% - ${getFitStatus(fitModalData.aiFit.score).label}`}
+                    color={getFitStatus(fitModalData.aiFit.score).color}
+                    sx={{ fontWeight: 800, fontSize: "0.9rem" }}
+                  />
+                </Box>
+
+                {fitModalData.aiFit.summary && (
+                  <Box>
+                    <Typography fontWeight={700} color="#1e293b" mb={0.75}>
+                      Nhận xét tổng quan
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "#475569", lineHeight: 1.6, bgcolor: "#f8fafc", p: 1.5, borderRadius: 2 }}
+                    >
+                      {fitModalData.aiFit.summary}
+                    </Typography>
+                  </Box>
+                )}
+
+                {Array.isArray(fitModalData.aiFit.strengths) &&
+                  fitModalData.aiFit.strengths.length > 0 && (
+                    <Box>
+                      <Typography fontWeight={700} color="#16a34a" mb={1}>
+                        Điểm mạnh nổi bật
+                      </Typography>
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                        {fitModalData.aiFit.strengths.map((item, index) => (
+                          <Chip
+                            key={index}
+                            label={item}
+                            size="small"
+                            variant="outlined"
+                            sx={{ color: "#16a34a", borderColor: "#86efac", bgcolor: "#f0fdf4" }}
+                          />
+                        ))}
+                      </Box>
+                    </Box>
+                  )}
+
+                {Array.isArray(fitModalData.aiFit.weaknesses) &&
+                  fitModalData.aiFit.weaknesses.length > 0 && (
+                    <Box>
+                      <Typography fontWeight={700} color="#ea580c" mb={1}>
+                        Điểm cần bổ sung / cải thiện
+                      </Typography>
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                        {fitModalData.aiFit.weaknesses.map((item, index) => (
+                          <Chip
+                            key={index}
+                            label={item}
+                            size="small"
+                            variant="outlined"
+                            sx={{ color: "#ea580c", borderColor: "#fed7aa", bgcolor: "#fff7ed" }}
+                          />
+                        ))}
+                      </Box>
+                    </Box>
+                  )}
+
+                {fitModalData.aiFit.recommendations && (
+                  <Box>
+                    <Typography fontWeight={700} color="#2563eb" mb={0.75}>
+                      Đề xuất cho nhà tuyển dụng
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "#475569", lineHeight: 1.6, bgcolor: "#eff6ff", p: 1.5, borderRadius: 2 }}
+                    >
+                      {fitModalData.aiFit.recommendations}
+                    </Typography>
+                  </Box>
+                )}
+              </Stack>
+            ) : (
+              <Typography color="text.secondary">Không có dữ liệu đánh giá.</Typography>
             )}
           </Box>
-          <Box sx={{ p: 2, borderTop: '1px solid #eee', display: 'flex', justifyContent: 'flex-end', bgcolor: 'white' }}>
-            <Button variant="outlined" onClick={() => setOpenCvModal(false)} sx={{ mr: 2 }}>Đóng</Button>
-            <Button variant="contained" component="a" href={viewCvUrl} target="_blank" download>Tải xuống</Button>
-          </Box>
-        </Box>
-      </Modal>
-
-      {/* AI FIT DETAIL MODAL */}
-      <Modal open={openFitModal} onClose={() => setOpenFitModal(false)}>
-        <Box sx={{
-          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-          width: { xs: '95%', md: '600px' }, bgcolor: 'background.paper',
-          borderRadius: 3, boxShadow: 24, p: 3
-        }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6" fontWeight={700}>Đánh giá AI ứng viên</Typography>
-            <IconButton onClick={() => setOpenFitModal(false)}><Close /></IconButton>
-          </Box>
-
-          {fitModalData?.aiFit ? (
-            <Stack spacing={2}>
-              <Chip
-                label={`${fitModalData.aiFit.score ?? 0}% - ${getFitStatus(fitModalData.aiFit.score).label}`}
-                color={getFitStatus(fitModalData.aiFit.score).color}
-                sx={{ fontWeight: 700, mb: 1 }}
-              />
-
-              {fitModalData.aiFit.summary && (
-                <Box>
-                  <Typography fontWeight={700} mb={1}>Tóm tắt</Typography>
-                  <Typography color="text.secondary">{fitModalData.aiFit.summary}</Typography>
-                </Box>
-              )}
-
-              {Array.isArray(fitModalData.aiFit.strengths) && fitModalData.aiFit.strengths.length > 0 && (
-                <Box>
-                  <Typography fontWeight={700} mb={1}>Điểm mạnh</Typography>
-                  {fitModalData.aiFit.strengths.map((item, index) => (
-                    <Chip key={index} label={item} variant="outlined" sx={{ mr: 1, mb: 1 }} />
-                  ))}
-                </Box>
-              )}
-
-              {Array.isArray(fitModalData.aiFit.weaknesses) && fitModalData.aiFit.weaknesses.length > 0 && (
-                <Box>
-                  <Typography fontWeight={700} mb={1}>Điểm cần cải thiện</Typography>
-                  {fitModalData.aiFit.weaknesses.map((item, index) => (
-                    <Chip key={index} label={item} variant="outlined" color="warning" sx={{ mr: 1, mb: 1 }} />
-                  ))}
-                </Box>
-              )}
-
-              {fitModalData.aiFit.recommendations && (
-                <Box>
-                  <Typography fontWeight={700} mb={1}>Gợi ý</Typography>
-                  <Typography color="text.secondary">{fitModalData.aiFit.recommendations}</Typography>
-                </Box>
-              )}
-            </Stack>
-          ) : (
-            <Typography>Không có dữ liệu đánh giá.</Typography>
-          )}
-        </Box>
-      </Modal>
-
+        </Modal>
+      </Box>
     </HRLayout>
   );
 }

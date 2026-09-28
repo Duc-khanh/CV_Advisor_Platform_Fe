@@ -1,12 +1,13 @@
 import React from "react";
-import { Paper, Typography, Grid, Stack, Box } from "@mui/material";
+import { Paper, Typography, Stack, Box, Tooltip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import {
   PeopleAlt,
   WorkHistory,
   CalendarMonth,
   Assessment,
-  Settings
+  Settings,
+  AutoAwesome
 } from "@mui/icons-material";
 
 const AdminFeatureCard = ({ title, description, icon, gradient, onClick }) => {
@@ -16,62 +17,64 @@ const AdminFeatureCard = ({ title, description, icon, gradient, onClick }) => {
       elevation={0}
       sx={{
         width: "100%",
-        minHeight: 160,          // Giảm chiều cao từ 200 xuống 160
+        height: 145,
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        p: 2,                   // Giảm padding từ 3 xuống 2
-        borderRadius: 3,        // Bo góc nhẹ hơn cho hợp với kích thước bé
+        p: 1.5,
+        borderRadius: 3,
         background: gradient,
         cursor: "pointer",
         textAlign: "center",
         transition: "all 0.25s ease",
         boxShadow: "0 6px 15px rgba(0,0,0,0.1)",
+        boxSizing: "border-box",
+        overflow: "hidden",
+        minWidth: 0,
         "&:hover": {
           transform: "translateY(-4px)",
           boxShadow: "0 10px 20px rgba(0,0,0,0.15)",
         }
       }}
     >
-      <Stack spacing={1} alignItems="center" sx={{ width: "100%" }}>
-        {/* Icon thu nhỏ lại */}
-        <Box sx={{ color: "#ffffff", display: "flex" }}>
-          {React.cloneElement(icon, { sx: { fontSize: 32 } })} 
+      <Stack spacing={1} alignItems="center" sx={{ width: "100%", minWidth: 0, px: 0.5 }}>
+        <Box sx={{ color: "#ffffff", display: "flex", mb: 0.25 }}>
+          {React.cloneElement(icon, { sx: { fontSize: 30 } })} 
         </Box>
 
-        {/* Tiêu đề thu nhỏ font */}
-        <Typography
-          fontWeight={700}
-          fontSize={14}          // Giảm từ 16 xuống 14
-          sx={{
-            color: "#ffffff",
-            lineHeight: 1.2,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            display: "-webkit-box",
-            WebkitLineClamp: 1,
-            WebkitBoxOrient: "vertical",
-          }}
-        >
-          {title}
-        </Typography>
+        <Tooltip title={title} arrow placement="top">
+          <Typography
+            fontWeight={700}
+            fontSize={13.5}
+            sx={{
+              color: "#ffffff",
+              width: "100%",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              lineHeight: 1.2,
+            }}
+          >
+            {title}
+          </Typography>
+        </Tooltip>
 
-        {/* Mô tả thu nhỏ font và chiều cao */}
-        <Typography
-          fontSize={11.5}         // Giảm từ 12.5 xuống 11.5
-          sx={{
-            color: "rgba(255,255,255,0.85)",
-            lineHeight: 1.4,
-            height: "2.8em", 
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden"
-          }}
-        >
-          {description}
-        </Typography>
+        <Tooltip title={description} arrow placement="bottom">
+          <Typography
+            fontSize={11.5}
+            sx={{
+              color: "rgba(255,255,255,0.85)",
+              width: "100%",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              lineHeight: 1.3,
+            }}
+          >
+            {description}
+          </Typography>
+        </Tooltip>
       </Stack>
     </Paper>
   );
@@ -80,6 +83,13 @@ const AdminFeatureCard = ({ title, description, icon, gradient, onClick }) => {
 export default function AdminFeatureSection() {
   const navigate = useNavigate();
   const features = [
+    {
+      title: "Quản lý AI",
+      desc: "Gói cước, hạn mức và lịch sử AI",
+      path: "/admin/ai",
+      icon: <AutoAwesome />,
+      bg: "linear-gradient(135deg, #2563eb, #1d4ed8)"
+    },
     {
       title: "Quản lý Người dùng",
       desc: "Thêm, sửa, khóa tài khoản người dùng",
@@ -128,34 +138,36 @@ export default function AdminFeatureSection() {
       }}
     >
       <Typography
-        variant="subtitle1" // Đổi từ h6 xuống subtitle1 để chữ nhỏ hơn
+        variant="subtitle1"
         fontWeight={700}
         sx={{ mb: 2.5, color: "#0f172a" }}
       >
         Quản lý chức năng hệ thống
       </Typography>
 
-      <Grid container spacing={2}>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "repeat(2, minmax(0, 1fr))",
+            sm: "repeat(3, minmax(0, 1fr))",
+            md: "repeat(6, minmax(0, 1fr))",
+          },
+          gap: 2,
+          width: "100%",
+        }}
+      >
         {features.map((item, index) => (
-         <Grid
-  item
-  xs={6}
-  sm={4}
-  md={3}
-  key={index}
-  sx={{ display: "flex" }}
->
-
-            <AdminFeatureCard
-              title={item.title}
-              description={item.desc}
-              icon={item.icon}
-              gradient={item.bg}
-              onClick={() => item.path ? navigate(item.path) : console.log(item.title)}
-            />
-          </Grid>
+          <AdminFeatureCard
+            key={index}
+            title={item.title}
+            description={item.desc}
+            icon={item.icon}
+            gradient={item.bg}
+            onClick={() => item.path ? navigate(item.path) : console.log(item.title)}
+          />
         ))}
-      </Grid>
+      </Box>
     </Paper>
   );
 }

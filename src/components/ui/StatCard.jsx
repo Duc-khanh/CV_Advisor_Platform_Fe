@@ -1,6 +1,18 @@
+import React from "react";
 import { Paper, Typography, Box } from "@mui/material";
 
-export default function StatCard({ title, value, icon, color }) {
+export default function StatCard({ title, value, icon, color = "#3b82f6" }) {
+  const resolvedColor = color && color.startsWith("#") ? color : "#3b82f6";
+
+  const renderIcon = () => {
+    if (React.isValidElement(icon)) return icon;
+    if (typeof icon === "function") {
+      const IconComp = icon;
+      return <IconComp size={24} />;
+    }
+    return null;
+  };
+
   return (
     <Paper 
       elevation={0} 
@@ -19,11 +31,11 @@ export default function StatCard({ title, value, icon, color }) {
       <Box sx={{ 
         p: 1.5, 
         borderRadius: 3, 
-        bgcolor: `${color}10`, 
-        color: color,
+        bgcolor: `${resolvedColor}15`, 
+        color: resolvedColor,
         display: "flex"
       }}>
-        {icon}
+        {renderIcon()}
       </Box>
       <Box>
         <Typography variant="body2" color="text.secondary" fontWeight="500">{title}</Typography>

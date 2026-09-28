@@ -8,6 +8,8 @@ export const getAiPlans = () => api.get(API_ENDPOINTS.AI_PLANS).then(unwrap);
 
 export const getAdminAiDashboard = () =>
   api.get(API_ENDPOINTS.ADMIN_AI_DASHBOARD).then(unwrap);
+export const getAdminAiSubscriptions = (params) =>
+  api.get(API_ENDPOINTS.ADMIN_AI_SUBSCRIPTIONS, { params }).then(unwrap);
 export const getAdminAiPlans = () =>
   api.get(API_ENDPOINTS.ADMIN_AI_PLANS).then(unwrap);
 export const createAdminAiPlan = (payload) =>
