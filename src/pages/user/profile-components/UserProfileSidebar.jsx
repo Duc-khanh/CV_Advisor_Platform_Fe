@@ -9,6 +9,7 @@ import {
   Chip,
 } from "@mui/material";
 import {
+  CalendarMonth,
   Home,
   FilePresent,
   Person,
@@ -26,12 +27,14 @@ export default function UserProfileSidebar({
   user,
   searchActive,
   setSearchActive,
+  interviewCount = 0,
 }) {
   const menuItems = [
     { id: "overview", icon: <Home fontSize="small" />, text: "Tổng quan" },
     { id: "attached_cv", icon: <FilePresent fontSize="small" />, text: "Hồ sơ đính kèm" },
     { id: "profile_itviec", icon: <Person fontSize="small" />, text: "Hồ sơ cá nhân" },
     { id: "my_jobs", icon: <Work fontSize="small" />, text: "Việc làm của tôi" },
+    { id: "interviews", icon: <CalendarMonth fontSize="small" />, text: "Lịch phỏng vấn", badge: interviewCount > 0 ? interviewCount : undefined },
     { id: "invites", icon: <Email fontSize="small" />, text: "Lời mời công việc", badge: 0 },
     { id: "email_subscribe", icon: <Assignment fontSize="small" />, text: "Đăng ký nhận email" },
     { id: "notifications", icon: <Notifications fontSize="small" />, text: "Thông báo" },
@@ -67,9 +70,11 @@ export default function UserProfileSidebar({
               sx={{
                 width: 48,
                 height: 48,
-                bgcolor: "#f43f5e",
+                background: "linear-gradient(135deg, #0284c7, #2563eb)",
+                color: "#ffffff",
                 fontSize: "1.2rem",
-                fontWeight: 700,
+                fontWeight: 800,
+                boxShadow: "0 2px 8px rgba(2,132,199,0.25)",
               }}
             >
               {user.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}
@@ -103,12 +108,13 @@ export default function UserProfileSidebar({
               sx={{
                 fontWeight: 700,
                 fontSize: "0.75rem",
-                bgcolor: searchActive ? "#2563eb" : "#f1f5f9",
+                bgcolor: searchActive ? "#0284c7" : "#f1f5f9",
                 color: searchActive ? "#ffffff" : "#64748b",
                 px: 1.2,
                 cursor: "pointer",
+                transition: "all 0.2s ease",
                 "&:hover": {
-                  bgcolor: searchActive ? "#1d4ed8" : "#e2e8f0",
+                  bgcolor: searchActive ? "#0369a1" : "#e2e8f0",
                 },
               }}
             />
@@ -119,17 +125,22 @@ export default function UserProfileSidebar({
             <Typography variant="body2" fontWeight={700} color="#334155" sx={{ fontSize: "0.85rem" }}>
               Nhà tuyển dụng xem CV
             </Typography>
-            <Avatar
+            <Box
               sx={{
                 width: 24,
                 height: 24,
-                bgcolor: "#10b981",
+                borderRadius: "50%",
+                bgcolor: "#f0f9ff",
+                color: "#0284c7",
+                border: "1px solid #bae6fd",
+                display: "grid",
+                placeItems: "center",
                 fontSize: "0.75rem",
-                fontWeight: 700,
+                fontWeight: 800,
               }}
             >
               0
-            </Avatar>
+            </Box>
           </Box>
         </Stack>
       </Paper>
@@ -156,36 +167,44 @@ export default function UserProfileSidebar({
                   alignItems: "center",
                   justifyContent: "space-between",
                   px: 2,
-                  py: 1.5,
+                  py: 1.4,
                   borderRadius: 2.5,
                   cursor: "pointer",
-                  transition: "0.2s",
-                  bgcolor: isSelected ? "#fff5f5" : "transparent",
-                  color: isSelected ? "#ef4444" : "#64748b",
+                  transition: "all 0.2s ease",
+                  bgcolor: isSelected ? "#f0f9ff" : "transparent",
+                  color: isSelected ? "#0284c7" : "#475569",
+                  border: isSelected ? "1px solid #bae6fd" : "1px solid transparent",
                   "&:hover": {
-                    bgcolor: isSelected ? "#fff5f5" : "#f1f5f9",
-                    color: isSelected ? "#ef4444" : "#0f172a",
+                    bgcolor: isSelected ? "#f0f9ff" : "#f8fafc",
+                    color: isSelected ? "#0284c7" : "#0f172a",
                   },
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                  {item.icon}
+                  <Box sx={{ display: "flex", color: isSelected ? "#0284c7" : "#64748b" }}>
+                    {item.icon}
+                  </Box>
                   <Typography variant="body2" fontWeight={isSelected ? 800 : 600} sx={{ fontSize: "0.875rem" }}>
                     {item.text}
                   </Typography>
                 </Box>
                 {item.badge !== undefined && (
-                  <Avatar
+                  <Box
                     sx={{
-                      width: 20,
+                      minWidth: 20,
                       height: 20,
-                      bgcolor: "#2563eb",
-                      fontSize: "0.65rem",
-                      fontWeight: 700,
+                      px: 0.6,
+                      borderRadius: "10px",
+                      bgcolor: isSelected ? "#0284c7" : "#e0f2fe",
+                      color: isSelected ? "#ffffff" : "#0284c7",
+                      fontSize: "0.7rem",
+                      fontWeight: 800,
+                      display: "grid",
+                      placeItems: "center",
                     }}
                   >
                     {item.badge}
-                  </Avatar>
+                  </Box>
                 )}
               </Box>
             );

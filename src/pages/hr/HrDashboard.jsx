@@ -39,7 +39,7 @@ const STATUS_COLORS = {
   "Đang xem xét": "#8b5cf6"
 };
 
-const BAR_COLORS = ["#2d6a4f", "#0077b6", "#0284c7", "#3b82f6", "#6366f1"];
+const BAR_COLORS = ["#0ea5e9", "#2563eb", "#0284c7", "#3b82f6", "#6366f1"];
 
 export default function HrDashboard() {
   const [jobsCount, setJobsCount] = useState(0);
@@ -216,7 +216,7 @@ export default function HrDashboard() {
               bgcolor: "rgba(255,255,255,0.6)",
             }}
           >
-            <CircularProgress sx={{ color: "#2d6a4f" }} />
+            <CircularProgress sx={{ color: "#0ea5e9" }} />
           </Box>
         )}
 
@@ -271,7 +271,7 @@ export default function HrDashboard() {
                   Số lượng hồ sơ nộp theo từng mốc ngày
                 </Typography>
               </Box>
-              <Chip label="Biểu đồ miền" size="small" sx={{ bgcolor: "#eff6ff", color: "#2563eb", fontWeight: 700, fontSize: "0.75rem" }} />
+              
             </Stack>
 
             <Box sx={{ height: 350, width: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>

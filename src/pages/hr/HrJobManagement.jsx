@@ -132,81 +132,45 @@ export default function HrJobManagement() {
     <HRLayout>
       <Box sx={{ width: "100%", margin: "0 auto", pt: 0, px: { xs: 1, md: 2 } }}>
         <Stack spacing={3}>
-          {/* HEADER (ĐỒNG BỘ VỚI ADMIN) */}
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            justifyContent="space-between"
-            alignItems={{ xs: "flex-start", sm: "center" }}
-            spacing={2}
-            sx={{ mt: 1 }}
-          >
-            <Box>
-              <Typography variant="h4" fontWeight={800} color="#1e293b">
-                Quản lý tin tuyển dụng
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                Theo dõi trạng thái tuyển dụng và quản lý các tin tuyển dụng hiệu quả
-              </Typography>
-            </Box>
+          {/* HEADER GỌN GÀNG */}
+          <Box sx={{ mt: 1 }}>
+            <Typography variant="h4" fontWeight={800} color="#1e293b">
+              Quản lý tin tuyển dụng
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              Theo dõi trạng thái tuyển dụng và quản lý các tin tuyển dụng hiệu quả
+            </Typography>
+          </Box>
 
-            <Stack direction="row" spacing={1.5}>
-              <Button
-                variant="outlined"
-                startIcon={<RefreshIcon />}
-                onClick={handleRefresh}
-                sx={{
-                  borderRadius: 2,
-                  fontWeight: 700,
-                  textTransform: "none",
-                  borderColor: "#cbd5e1",
-                  color: "#475569",
-                  "&:hover": { borderColor: "#94a3b8", bgcolor: "#f8fafc" },
-                }}
-              >
-                Làm mới
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleOpenCreate}
-                sx={{
-                  borderRadius: 2,
-                  px: 3,
-                  py: 1,
-                  fontWeight: 700,
-                  textTransform: "none",
-                  bgcolor: "#2d6a4f",
-                  "&:hover": { bgcolor: "#1b4332" },
-                  boxShadow: "0 4px 12px rgba(45,106,79,0.25)",
-                }}
-              >
-                Đăng tin mới
-              </Button>
-            </Stack>
-          </Stack>
+          {/* FILTER & ACTION BAR GỌN GÀNG */}
+          <Paper sx={{ p: 2, borderRadius: 3, boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              justifyContent="space-between"
+              alignItems={{ xs: "stretch", sm: "center" }}
+              spacing={2}
+            >
+              {/* Tìm kiếm và Lọc */}
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center" sx={{ flexWrap: "wrap", gap: 1.5 }}>
+                <TextField
+                  size="small"
+                  placeholder="Tìm theo tiêu đề, địa điểm..."
+                  value={keyword}
+                  onChange={(e) => {
+                    setKeyword(e.target.value);
+                    setPage(1);
+                  }}
+                  sx={{ width: { xs: "100%", sm: 280, md: 320 } }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon sx={{ color: "#94a3b8" }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
 
-          {/* FILTER CARD (ĐỒNG BỘ VỚI ADMIN) */}
-          <Paper sx={{ p: 2.5, borderRadius: 3, boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
-            <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap gap={2} alignItems="center">
-              <TextField
-                size="small"
-                placeholder="Tìm kiếm theo tiêu đề công việc, địa điểm..."
-                value={keyword}
-                onChange={(e) => {
-                  setKeyword(e.target.value);
-                  setPage(1);
-                }}
-                sx={{ flexGrow: 1, minWidth: "260px" }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon sx={{ color: "#94a3b8" }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-
-              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <FormControl size="small" sx={{ minWidth: 180 }}>
                 <InputLabel>Kinh nghiệm</InputLabel>
                 <Select
                   value={experience}
@@ -225,6 +189,27 @@ export default function HrJobManagement() {
                   <MenuItem value="LEAD">Lead / Manager</MenuItem>
                 </Select>
               </FormControl>
+              </Stack>
+
+              {/* Nút Đăng tin mới đưa xuống thanh công cụ */}
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleOpenCreate}
+                sx={{
+                  borderRadius: 2,
+                  px: 2.5,
+                  py: 0.9,
+                  fontWeight: 700,
+                  textTransform: "none",
+                  whiteSpace: "nowrap",
+                  background: "linear-gradient(135deg, #0ea5e9, #2563eb)",
+                  "&:hover": { background: "linear-gradient(135deg, #0284c7, #1d4ed8)" },
+                  boxShadow: "0 4px 12px rgba(14,165,233,0.3)",
+                }}
+              >
+                Đăng tin mới
+              </Button>
             </Stack>
           </Paper>
 
@@ -232,7 +217,7 @@ export default function HrJobManagement() {
           <Paper sx={{ borderRadius: 3, overflow: "hidden", boxShadow: "0 4px 15px rgba(0,0,0,0.05)" }}>
             {loading ? (
               <Box display="flex" justifyContent="center" py={10}>
-                <CircularProgress sx={{ color: "#2d6a4f" }} />
+                <CircularProgress sx={{ color: "#0ea5e9" }} />
               </Box>
             ) : (
               <>
@@ -315,9 +300,9 @@ export default function HrJobManagement() {
                                 variant="outlined"
                                 sx={{
                                   fontWeight: 600,
-                                  color: "#2d6a4f",
-                                  borderColor: "#2d6a4f40",
-                                  bgcolor: "#2d6a4f08",
+                                  color: "#0284c7",
+                                  borderColor: "#0284c740",
+                                  bgcolor: "#0284c708",
                                 }}
                               />
                             </TableCell>

@@ -57,9 +57,9 @@ export default function UserProfileItviecTab({
             position: "absolute",
             top: 16,
             right: 16,
-            border: "1px solid #fee2e2",
-            color: "#ef4444",
-            "&:hover": { bgcolor: "#fee2e2" },
+            border: "1px solid #e0f2fe",
+            color: "#0284c7",
+            "&:hover": { bgcolor: "#e0f2fe" },
           }}
         >
           <Edit fontSize="small" />
@@ -99,7 +99,7 @@ export default function UserProfileItviecTab({
                   href={user.personalLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: "#ef4444", textDecoration: "none", fontWeight: 700 }}
+                  style={{ color: "#0284c7", textDecoration: "none", fontWeight: 700 }}
                 >
                   Link cá nhân
                 </a>
@@ -163,7 +163,7 @@ export default function UserProfileItviecTab({
           </Typography>
           <IconButton
             onClick={openAddProjectDialog}
-            sx={{ border: "1px solid #fee2e2", color: "#ef4444", "&:hover": { bgcolor: "#fee2e2" } }}
+            sx={{ border: "1px solid #e0f2fe", color: "#0284c7", "&:hover": { bgcolor: "#e0f2fe" } }}
           >
             <Add fontSize="small" />
           </IconButton>
@@ -198,7 +198,7 @@ export default function UserProfileItviecTab({
                     href={proj.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ color: "#ef4444", textDecoration: "none", fontSize: "0.85rem", fontWeight: 700 }}
+                    style={{ color: "#0284c7", textDecoration: "none", fontSize: "0.85rem", fontWeight: 700 }}
                   >
                     Xem chi tiết dự án →
                   </a>
@@ -225,7 +225,7 @@ export default function UserProfileItviecTab({
           </Typography>
           <IconButton
             onClick={openAddEduDialog}
-            sx={{ border: "1px solid #fee2e2", color: "#ef4444", "&:hover": { bgcolor: "#fee2e2" } }}
+            sx={{ border: "1px solid #e0f2fe", color: "#0284c7", "&:hover": { bgcolor: "#e0f2fe" } }}
           >
             <Add fontSize="small" />
           </IconButton>
@@ -277,7 +277,7 @@ export default function UserProfileItviecTab({
           </Typography>
           <IconButton
             onClick={openAddExpDialog}
-            sx={{ border: "1px solid #fee2e2", color: "#ef4444", "&:hover": { bgcolor: "#fee2e2" } }}
+            sx={{ border: "1px solid #e0f2fe", color: "#0284c7", "&:hover": { bgcolor: "#e0f2fe" } }}
           >
             <Add fontSize="small" />
           </IconButton>

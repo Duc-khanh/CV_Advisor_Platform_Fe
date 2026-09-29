@@ -141,10 +141,30 @@ export default function JobDetailPage() {
         const res = await api.get(`/api/public/jobs/${id}`, {
           headers: authHeader || {},
         });
-        setJob(res.data);
-        // Đọc trạng thái isFavorite từ response luôn
+                setJob(res.data);
         if (res.data.favorite !== undefined) {
           setIsFavorite(res.data.favorite);
+        }
+        // Lưu tin tuyển dụng vào danh sách đã xem gần đây (localStorage)
+        try {
+          const viewedKey = "recent_viewed_jobs";
+          const currentList = JSON.parse(localStorage.getItem(viewedKey) || "[]");
+          const newEntry = {
+            jobId: res.data.jobId || id,
+            title: res.data.title || "Công việc",
+            companyName: res.data.companyName || res.data.company?.name || "Công ty",
+            location: res.data.location || "Toàn quốc",
+            salaryRange: res.data.salaryRange || "Thỏa thuận",
+            viewedDate: new Date().toLocaleDateString("vi-VN"),
+            viewedTimestamp: Date.now(),
+          };
+          const filtered = currentList.filter(
+            (item) => String(item.jobId) !== String(newEntry.jobId)
+          );
+          const updated = [newEntry, ...filtered].slice(0, 30);
+          localStorage.setItem(viewedKey, JSON.stringify(updated));
+        } catch (storageErr) {
+          console.error("Lỗi lưu việc làm đã xem:", storageErr);
         }
         isFetched.current = true;
       } catch (err) {

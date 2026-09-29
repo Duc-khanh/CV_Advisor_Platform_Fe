@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+﻿import { Routes, Route, Navigate } from "react-router-dom";
 import UserLayout from "./layouts/UserLayout";
 import UserHome from "./pages/user/UserHome";
 import AdminHome from "./pages/admin/AdminHome";
@@ -32,6 +32,7 @@ import HrManagement from "./pages/admin/HrManagement";
 import UnderDevelopment from "./components/common/UnderDevelopment";
 import { AiUsagePage } from "./features/ai-usage";
 import { AdminAiManagementPage } from "./features/admin/ai-management";
+import HrInterviews from "./pages/hr/HrInterviews";
 
 export default function App() {
   return (
@@ -231,14 +232,7 @@ export default function App() {
         path="/hr/interviews"
         element={
           <ProtectedRoute role="HR">
-            <HRLayout>
-              <UnderDevelopment
-                featureName="Lịch phỏng vấn & Hẹn gặp"
-                description="Chức năng quản lý lịch phỏng vấn, gửi lời mời và đồng bộ lịch họp trực tuyến đang được hoàn thiện."
-                homeUrl="/hr_dashboard"
-                homeLabel="Về HR Dashboard"
-              />
-            </HRLayout>
+            <HrInterviews />
           </ProtectedRoute>
         }
       />
@@ -308,3 +302,5 @@ export default function App() {
     </Routes>
   );
 }
+
+

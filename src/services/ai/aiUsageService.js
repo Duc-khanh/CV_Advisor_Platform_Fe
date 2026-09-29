@@ -5,6 +5,7 @@ const unwrap = (response) => response.data?.data ?? response.data;
 
 export const getMyAiUsage = () => api.get(API_ENDPOINTS.MY_AI_USAGE).then(unwrap);
 export const getAiPlans = () => api.get(API_ENDPOINTS.AI_PLANS).then(unwrap);
+export const upgradeAiPlan = (payload) => api.post(API_ENDPOINTS.UPGRADE_AI_PLAN, payload).then(unwrap);
 
 export const getAdminAiDashboard = () =>
   api.get(API_ENDPOINTS.ADMIN_AI_DASHBOARD).then(unwrap);
@@ -27,3 +28,12 @@ export const getAdminAiUsage = (params) =>
 
 export const getApiErrorMessage = (error, fallback) =>
   error.response?.data?.message || error.response?.data?.error || fallback;
+
+export const createPaymentOrder = (payload) =>
+  api.post(API_ENDPOINTS.CREATE_PAYMENT_ORDER, payload).then(unwrap);
+
+export const getPaymentOrderStatus = (orderCode) =>
+  api.get(API_ENDPOINTS.PAYMENT_ORDER_STATUS(orderCode)).then(unwrap);
+
+export const simulatePayment = (orderCode) =>
+  api.post(API_ENDPOINTS.SIMULATE_PAYMENT(orderCode)).then(unwrap);

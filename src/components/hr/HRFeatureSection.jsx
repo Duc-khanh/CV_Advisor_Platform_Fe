@@ -89,7 +89,7 @@ export default function HRFeatureSection() {
       desc: "Tạo và quản lý tin tuyển dụng",
       path: "/hr/jobs",
       icon: <PostAdd />,
-      bg: "linear-gradient(135deg, #10b981, #059669)",
+      bg: "linear-gradient(135deg, #0ea5e9, #0284c7)",
     },
     {
       title: "Hạn mức AI",

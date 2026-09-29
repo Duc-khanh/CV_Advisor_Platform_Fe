@@ -12,7 +12,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useToast } from "../../contexts/ToastContext";
 import LogoutConfirmDialog from "../dialogs/LogoutConfirmDialog";
 
-const drawerWidth = 260; // Đồng bộ 260px với AdminHeader & AdminSidebar
+const drawerWidth = 260;
 
 export default function HRSidebar({ mobileOpen, handleDrawerToggle }) {
   const navigate = useNavigate();
@@ -32,11 +32,11 @@ export default function HRSidebar({ mobileOpen, handleDrawerToggle }) {
   };
 
   const menuItems = [
-    { text: "Dashboard", icon: <Dashboard />, path: "/hr_dashboard", color: "#2d6a4f" }, 
+    { text: "Dashboard", icon: <Dashboard />, path: "/hr_dashboard", color: "#0ea5e9" }, 
     { text: "Hạn mức AI", icon: <AutoAwesome />, path: "/hr/ai-usage", color: "#2563eb" },
-    { text: "Tin tuyển dụng", icon: <PostAdd />, path: "/hr/jobs", color: "#0077b6" }, 
-    { text: "Ứng viên", icon: <Groups />, path: "/hr/applications", color: "#d97706" }, 
-    { text: "Lịch phỏng vấn", icon: <EventNote />, path: "/hr/interviews", color: "#7209b7" }, 
+    { text: "Tin tuyển dụng", icon: <PostAdd />, path: "/hr/jobs", color: "#0284c7" }, 
+    { text: "Ứng viên", icon: <Groups />, path: "/hr/applications", color: "#0369a1" }, 
+    { text: "Lịch phỏng vấn", icon: <EventNote />, path: "/hr/interviews", color: "#2563eb" }, 
     { text: "Cài đặt", icon: <Settings />, path: "/hr/settings", color: "#64748b" }, 
   ];
 
@@ -60,12 +60,12 @@ export default function HRSidebar({ mobileOpen, handleDrawerToggle }) {
               width: 34,
               height: 34,
               borderRadius: "10px",
-              background: "linear-gradient(135deg, #10b981, #2d6a4f)",
+              background: "linear-gradient(135deg, #0ea5e9, #2563eb)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               color: "white",
-              boxShadow: "0 2px 6px rgba(45,106,79,0.25)",
+              boxShadow: "0 2px 6px rgba(14,165,233,0.25)",
             }}
           >
             <Business sx={{ fontSize: 20 }} />
@@ -74,7 +74,7 @@ export default function HRSidebar({ mobileOpen, handleDrawerToggle }) {
             variant="h6"
             sx={{
               fontWeight: "bold",
-              color: "#2d6a4f",
+              color: "#0ea5e9",
               letterSpacing: 1,
             }}
           >

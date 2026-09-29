@@ -5,8 +5,8 @@ import { useNavigate } from "react-router-dom";
 export default function HRQuickActions() {
   const navigate = useNavigate();
   const actions = [
-    { label: "Đăng tin mới", icon: <AddBox />, color: "#2d6a4f", path: "/hr/jobs" },
-    { label: "Xem ứng viên", icon: <PersonAdd />, color: "#0077b6", path: "/hr/applications" },
+    { label: "Đăng tin mới", icon: <AddBox />, color: "#0ea5e9", path: "/hr/jobs" },
+    { label: "Xem ứng viên", icon: <PersonAdd />, color: "#2563eb", path: "/hr/applications" },
     { label: "Tạo lịch hẹn", icon: <Event />, color: "#f59e0b", path: "/hr/interviews" },
     { label: "Hạn mức AI", icon: <AutoAwesome />, color: "#2563eb", path: "/hr/ai-usage" },
   ];

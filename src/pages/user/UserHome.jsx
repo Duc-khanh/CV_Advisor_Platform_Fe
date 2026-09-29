@@ -195,8 +195,7 @@ export default function UserHome() {
   return (
     <Box
       sx={{
-        "& .MuiPaper-root": { border: "1px solid #e2e8f0" },
-        "& .MuiPaper-root:hover": { borderColor: "#e2e8f0" },
+        "& .MuiPaper-root": { border: "none" },
       }}
     >
       <HeroSection searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={handleSearch} />

@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { AutoAwesome } from "@mui/icons-material";
 
-export default function UserProfileCompleteness({ completionPercent }) {
+export default function UserProfileCompleteness({ completionPercent, onAutoFill }) {
   return (
     <Stack spacing={3}>
       {/* Completeness Meter */}
@@ -34,7 +34,7 @@ export default function UserProfileCompleteness({ completionPercent }) {
             value={100}
             size={100}
             thickness={6}
-            sx={{ color: "#fee2e2" }}
+            sx={{ color: "#e0f2fe" }}
           />
           <CircularProgress
             variant="determinate"
@@ -42,7 +42,7 @@ export default function UserProfileCompleteness({ completionPercent }) {
             size={100}
             thickness={6}
             sx={{
-              color: "#ef4444",
+              color: "#0284c7",
               position: "absolute",
               left: 0,
               strokeLinecap: "round",
@@ -61,7 +61,7 @@ export default function UserProfileCompleteness({ completionPercent }) {
               justifyContent: "center",
             }}
           >
-            <Typography variant="h6" fontWeight={900} color="#ef4444" sx={{ fontSize: "1.15rem" }}>
+            <Typography variant="h6" fontWeight={900} color="#0284c7" sx={{ fontSize: "1.15rem" }}>
               {completionPercent}%
             </Typography>
             <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ fontSize: "0.55rem" }}>
@@ -94,15 +94,15 @@ export default function UserProfileCompleteness({ completionPercent }) {
           fullWidth
           variant="contained"
           sx={{
-            bgcolor: "#ef4444",
+            bgcolor: "#0284c7",
             color: "#fff",
             textTransform: "none",
             fontWeight: 800,
             py: 1.2,
             borderRadius: 2.5,
             fontSize: "0.85rem",
-            boxShadow: "0 4px 10px rgba(239,68,68,0.15)",
-            "&:hover": { bgcolor: "#dc2626" },
+            boxShadow: "0 4px 10px rgba(2,132,199,0.15)",
+            "&:hover": { bgcolor: "#0369a1" },
           }}
         >
           Xem và Tải CV
@@ -120,7 +120,7 @@ export default function UserProfileCompleteness({ completionPercent }) {
         }}
       >
         <Stack spacing={1.8} sx={{ alignItems: "center", textAlign: "center" }}>
-          <Avatar sx={{ bgcolor: "#fee2e2", color: "#ef4444", width: 40, height: 40 }}>
+          <Avatar sx={{ bgcolor: "#e0f2fe", color: "#0284c7", width: 40, height: 40 }}>
             <AutoAwesome sx={{ fontSize: 20 }} />
           </Avatar>
           <Box>
@@ -135,16 +135,16 @@ export default function UserProfileCompleteness({ completionPercent }) {
             fullWidth
             variant="outlined"
             sx={{
-              borderColor: "#ef4444",
-              color: "#ef4444",
+              borderColor: "#0284c7",
+              color: "#0284c7",
               textTransform: "none",
               fontWeight: 800,
               py: 1,
               borderRadius: 2.5,
               fontSize: "0.8rem",
-              "&:hover": { borderColor: "#dc2626", bgcolor: "#fff5f5" },
+              "&:hover": { borderColor: "#0369a1", bgcolor: "#f0f9ff" },
             }}
-          >
+              onClick={onAutoFill}          >
             Điền hồ sơ tự động
           </Button>
         </Stack>

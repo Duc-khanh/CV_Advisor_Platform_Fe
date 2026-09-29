@@ -65,8 +65,10 @@ import UserProfileItviecTab from "./profile-components/UserProfileItviecTab";
 import UserAttachedCvTab from "./profile-components/UserAttachedCvTab";
 import UserAppliedJobsTab from "./profile-components/UserAppliedJobsTab";
 import UserSavedJobsTab from "./profile-components/UserSavedJobsTab";
+import UserInterviewsTab from "./profile-components/UserInterviewsTab";
 import UserProfileCompleteness from "./profile-components/UserProfileCompleteness";
 import UnderDevelopment from "../../components/common/UnderDevelopment";
+import AutoFillProfileModal from "./profile-components/AutoFillProfileModal";
 
 export default function UserProfile() {
   const showToast = useToast();
@@ -100,6 +102,7 @@ export default function UserProfile() {
   const [activeTab, setActiveTab] = useState("overview");
   const [appliedJobsCount, setAppliedJobsCount] = useState(0);
   const [savedJobsCount, setSavedJobsCount] = useState(0);
+  const [interviewJobsCount, setInterviewJobsCount] = useState(0);
 
   // ===== DIALOG MODALS STATES =====
   const [openBasic, setOpenBasic] = useState(false);
@@ -117,6 +120,9 @@ export default function UserProfile() {
     confirmText: "Xác nhận",
     onConfirm: () => {},
   });
+
+    // ===== AUTO-FILL PROFILE STATE =====
+  const [openAutoFill, setOpenAutoFill] = useState(false);
 
   // ===== LOCAL FORMS STATE =====
   const [basicForm, setBasicForm] = useState({
@@ -178,7 +184,10 @@ export default function UserProfile() {
           const appliedRes = await api.get("/api/user/jobs/apply/my-applications", {
             headers: { Authorization: `Bearer ${token}` }
           });
-          setAppliedJobsCount(appliedRes.data.length);
+          const apps = Array.isArray(appliedRes.data) ? appliedRes.data : [];
+          setAppliedJobsCount(apps.length);
+          const ivs = apps.filter(a => a.status === "INTERVIEW" || a.interview);
+          setInterviewJobsCount(ivs.length);
         } catch (err) {
           console.error("Lỗi lấy số đơn ứng tuyển:", err);
         }
@@ -495,7 +504,12 @@ export default function UserProfile() {
           <UserAppliedJobsTab
             appliedCount={appliedJobsCount}
             savedCount={savedJobsCount}
+            setActiveTab={setActiveTab}
           />
+        );
+      case "interviews":
+        return (
+          <UserInterviewsTab setActiveTab={setActiveTab} />
         );
       case "saved_jobs":
         return <UserSavedJobsTab />;
@@ -546,7 +560,7 @@ export default function UserProfile() {
       <Box sx={{ py: 2, bgcolor: "#f8fafc", minHeight: "100vh", mx: -4, px: 4 }}>
           {loading ? (
             <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
-              <CircularProgress size={50} thickness={4.5} sx={{ color: "#ef4444" }} />
+              <CircularProgress size={50} thickness={4.5} sx={{ color: "#0284c7" }} />
             </Box>
           ) : (
           <Grid container spacing={3}>
@@ -560,6 +574,7 @@ export default function UserProfile() {
                 setSearchActive={setSearchActive}
                 appliedJobsCount={appliedJobsCount}
                 savedJobsCount={savedJobsCount}
+                interviewCount={interviewJobsCount}
               />
             </Grid>
 
@@ -571,7 +586,7 @@ export default function UserProfile() {
             {/* COLUMN 3: COMPLETENESS */}
             {isItviecProfile && (
               <Grid size={{ xs: 12, md: 2.8, lg: 2.8 }}>
-                <UserProfileCompleteness completionPercent={completionPercent} />
+                <UserProfileCompleteness completionPercent={completionPercent} onAutoFill={() => setOpenAutoFill(true)} />
               </Grid>
             )}
           </Grid>
@@ -668,7 +683,7 @@ export default function UserProfile() {
           <Button onClick={() => setOpenBasic(false)} color="inherit" sx={{ textTransform: "none", fontWeight: 700 }}>
             Hủy
           </Button>
-          <Button onClick={handleBasicSubmit} variant="contained" disabled={saving} sx={{ bgcolor: "#ef4444", "&:hover": { bgcolor: "#dc2626" }, textTransform: "none", fontWeight: 700 }}>
+          <Button onClick={handleBasicSubmit} variant="contained" disabled={saving} sx={{ bgcolor: "#0284c7", "&:hover": { bgcolor: "#0369a1" }, textTransform: "none", fontWeight: 700 }}>
             {saving ? "Đang lưu..." : "Lưu thay đổi"}
           </Button>
         </DialogActions>
@@ -694,7 +709,7 @@ export default function UserProfile() {
           <Button onClick={() => setOpenBio(false)} color="inherit" sx={{ textTransform: "none", fontWeight: 700 }}>
             Hủy
           </Button>
-          <Button onClick={handleBioSubmit} variant="contained" disabled={saving} sx={{ bgcolor: "#ef4444", "&:hover": { bgcolor: "#dc2626" }, textTransform: "none", fontWeight: 700 }}>
+          <Button onClick={handleBioSubmit} variant="contained" disabled={saving} sx={{ bgcolor: "#0284c7", "&:hover": { bgcolor: "#0369a1" }, textTransform: "none", fontWeight: 700 }}>
             {saving ? "Đang lưu..." : "Lưu thay đổi"}
           </Button>
         </DialogActions>
@@ -720,7 +735,7 @@ export default function UserProfile() {
           <Button onClick={() => setOpenSkill(false)} color="inherit" sx={{ textTransform: "none", fontWeight: 700 }}>
             Hủy
           </Button>
-          <Button onClick={handleSkillSubmit} variant="contained" disabled={saving} sx={{ bgcolor: "#ef4444", "&:hover": { bgcolor: "#dc2626" }, textTransform: "none", fontWeight: 700 }}>
+          <Button onClick={handleSkillSubmit} variant="contained" disabled={saving} sx={{ bgcolor: "#0284c7", "&:hover": { bgcolor: "#0369a1" }, textTransform: "none", fontWeight: 700 }}>
             {saving ? "Đang lưu..." : "Lưu thay đổi"}
           </Button>
         </DialogActions>
@@ -762,7 +777,7 @@ export default function UserProfile() {
           <Button onClick={() => setOpenEdu(false)} color="inherit" sx={{ textTransform: "none", fontWeight: 700 }}>
             Hủy
           </Button>
-          <Button onClick={handleEduSubmit} variant="contained" disabled={saving} sx={{ bgcolor: "#ef4444", "&:hover": { bgcolor: "#dc2626" }, textTransform: "none", fontWeight: 700 }}>
+          <Button onClick={handleEduSubmit} variant="contained" disabled={saving} sx={{ bgcolor: "#0284c7", "&:hover": { bgcolor: "#0369a1" }, textTransform: "none", fontWeight: 700 }}>
             Lưu mục học vấn
           </Button>
         </DialogActions>
@@ -823,7 +838,7 @@ export default function UserProfile() {
           <Button onClick={() => setOpenExp(false)} color="inherit" sx={{ textTransform: "none", fontWeight: 700 }}>
             Hủy
           </Button>
-          <Button onClick={handleExpSubmit} variant="contained" disabled={saving} sx={{ bgcolor: "#ef4444", "&:hover": { bgcolor: "#dc2626" }, textTransform: "none", fontWeight: 700 }}>
+          <Button onClick={handleExpSubmit} variant="contained" disabled={saving} sx={{ bgcolor: "#0284c7", "&:hover": { bgcolor: "#0369a1" }, textTransform: "none", fontWeight: 700 }}>
             Lưu mục kinh nghiệm
           </Button>
         </DialogActions>
@@ -881,12 +896,22 @@ export default function UserProfile() {
           <Button onClick={() => setOpenProject(false)} color="inherit" sx={{ textTransform: "none", fontWeight: 700 }}>
             Hủy
           </Button>
-          <Button onClick={handleProjectSubmit} variant="contained" disabled={saving} sx={{ bgcolor: "#ef4444", "&:hover": { bgcolor: "#dc2626" }, textTransform: "none", fontWeight: 700 }}>
+          <Button onClick={handleProjectSubmit} variant="contained" disabled={saving} sx={{ bgcolor: "#0284c7", "&:hover": { bgcolor: "#0369a1" }, textTransform: "none", fontWeight: 700 }}>
             Lưu mục dự án
           </Button>
         </DialogActions>
       </Dialog>
 
+      <AutoFillProfileModal
+        open={openAutoFill}
+        onClose={() => setOpenAutoFill(false)}
+        onApply={async (parsedData) => {
+          const ok = await handleUpdateProfile(parsedData, null);
+          if (ok) {
+            showToast("Đã tự động điền hồ sơ từ CV thành công!", "success");
+          }
+        }}
+      />
       <ConfirmDialog
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}

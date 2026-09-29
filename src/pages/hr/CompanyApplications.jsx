@@ -243,31 +243,40 @@ export default function HRApplications() {
   };
 
   const updateStatus = async (applicationId, newStatus) => {
+    if (!applicationId || !newStatus) return;
+    const targetStatus = newStatus.toUpperCase();
+
     try {
       setUpdatingId(applicationId);
 
+      // Cập nhật optimistic ngay lập tức để giao diện đổi màu và giá trị tức thì
+      setApplications((prev) =>
+        prev.map((app) => {
+          if (app.applicationId === applicationId || app.id === applicationId) {
+            return { ...app, status: targetStatus };
+          }
+          return app;
+        })
+      );
+
       await api.put(
         `/api/hr/applications/${applicationId}/status`,
-        null,
+        { status: targetStatus },
         {
-          params: { status: newStatus },
+          params: { status: targetStatus },
           ...getAuthHeader()
         }
       );
 
-      setApplications((prev) =>
-        prev.map((app) =>
-          app.applicationId === applicationId
-            ? { ...app, status: newStatus }
-            : app
-        )
-      );
-
       showToast("Cập nhật trạng thái thành công", "success");
     } catch (err) {
-      console.error(err);
+      console.error("Lỗi cập nhật trạng thái:", err);
+      // Nếu lỗi thì tải lại từ server để rollback
+      fetchApplications();
       const errMsg =
-        err?.response?.data?.message || "Cập nhật trạng thái thất bại";
+        err?.response?.data?.message ||
+        (typeof err?.response?.data === "string" ? err.response.data : null) ||
+        "Cập nhật trạng thái thất bại";
       showToast(errMsg, "error");
     } finally {
       setUpdatingId(null);
@@ -327,41 +336,15 @@ export default function HRApplications() {
     <HRLayout>
       <Box sx={{ width: "100%", margin: "0 auto", pt: 0, px: { xs: 1, md: 2 } }}>
         <Stack spacing={3}>
-          {/* HEADER (ĐỒNG BỘ VỚI ADMIN) */}
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            justifyContent="space-between"
-            alignItems={{ xs: "flex-start", sm: "center" }}
-            spacing={2}
-            sx={{ mt: 1 }}
-          >
-            <Box>
-              <Typography variant="h4" fontWeight={800} color="#1e293b">
-                Quản lý ứng viên
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                Theo dõi hồ sơ ứng tuyển, phân tích độ phù hợp và cập nhật trạng thái tuyển dụng
-              </Typography>
-            </Box>
-
-            <Tooltip title="Tải lại danh sách ứng viên mới nhất" arrow>
-              <Button
-                variant="outlined"
-                startIcon={<Refresh />}
-                onClick={fetchApplications}
-                sx={{
-                  borderRadius: 2,
-                  fontWeight: 700,
-                  textTransform: "none",
-                  borderColor: "#cbd5e1",
-                  color: "#475569",
-                  "&:hover": { borderColor: "#94a3b8", bgcolor: "#f8fafc" },
-                }}
-              >
-                Làm mới
-              </Button>
-            </Tooltip>
-          </Stack>
+          {/* HEADER GỌN GÀNG */}
+          <Box sx={{ mt: 1 }}>
+            <Typography variant="h4" fontWeight={800} color="#1e293b">
+              Quản lý ứng viên
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              Theo dõi hồ sơ ứng tuyển, phân tích độ phù hợp và cập nhật trạng thái tuyển dụng
+            </Typography>
+          </Box>
 
           {/* FILTER CARD (ĐỒNG BỘ VỚI ADMIN) */}
           <Paper sx={{ p: 2.5, borderRadius: 3, boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
@@ -371,7 +354,7 @@ export default function HRApplications() {
                 placeholder="Tìm theo tên ứng viên, vị trí, email..."
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
-                sx={{ flexGrow: 1, minWidth: "260px" }}
+                sx={{ width: { xs: "100%", sm: 280, md: 320 } }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -417,7 +400,7 @@ export default function HRApplications() {
           <Paper sx={{ borderRadius: 3, overflow: "hidden", boxShadow: "0 4px 15px rgba(0,0,0,0.05)" }}>
             {loading ? (
               <Box display="flex" justifyContent="center" py={10}>
-                <CircularProgress sx={{ color: "#2d6a4f" }} />
+                <CircularProgress sx={{ color: "#0ea5e9" }} />
               </Box>
             ) : (
               <>
@@ -502,7 +485,7 @@ export default function HRApplications() {
                                 <Stack direction="row" spacing={1.5} alignItems="center">
                                   <Avatar
                                     sx={{
-                                      bgcolor: "#2d6a4f",
+                                      bgcolor: "#0ea5e9",
                                       width: 40,
                                       height: 40,
                                       fontWeight: 700,
@@ -649,33 +632,34 @@ export default function HRApplications() {
 
                               {/* THAO TÁC (GỌN GÀNG, BỎ ĐANG XEM XÉT) */}
                               <TableCell align="center">
-                                <Tooltip title="Cập nhật trạng thái ứng viên" arrow>
-                                  <Select
-                                    size="small"
-                                    value={ACTION_STATUS_OPTIONS.includes(currentStatus) ? currentStatus : "PENDING"}
-                                    disabled={updatingId === app.applicationId}
-                                    onChange={(e) =>
-                                      updateStatus(app.applicationId, e.target.value)
+                                <Select
+                                  size="small"
+                                  value={ACTION_STATUS_OPTIONS.includes(currentStatus) ? currentStatus : "PENDING"}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val !== currentStatus) {
+                                      updateStatus(app.applicationId, val);
                                     }
-                                    sx={{
-                                      width: 118,
-                                      height: 34,
-                                      borderRadius: 2,
-                                      fontSize: "0.82rem",
-                                      bgcolor: "#ffffff",
-                                      "& .MuiSelect-select": {
-                                        py: 0.6,
-                                        px: 1.2,
-                                      },
-                                    }}
-                                  >
-                                    {ACTION_STATUS_OPTIONS.map((status) => (
-                                      <MenuItem key={status} value={status} sx={{ fontSize: "0.82rem" }}>
-                                        {STATUS_LABELS[status] || status}
-                                      </MenuItem>
-                                    ))}
-                                  </Select>
-                                </Tooltip>
+                                  }}
+                                  sx={{
+                                    width: 120,
+                                    height: 34,
+                                    borderRadius: 2,
+                                    fontSize: "0.82rem",
+                                    bgcolor: "#ffffff",
+                                    fontWeight: 600,
+                                    "& .MuiSelect-select": {
+                                      py: 0.6,
+                                      px: 1.2,
+                                    },
+                                  }}
+                                >
+                                  {ACTION_STATUS_OPTIONS.map((status) => (
+                                    <MenuItem key={status} value={status} sx={{ fontSize: "0.82rem", fontWeight: 500 }}>
+                                      {STATUS_LABELS[status] || status}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
                               </TableCell>
                             </TableRow>
                           );
@@ -748,7 +732,7 @@ export default function HRApplications() {
             <Box sx={{ flexGrow: 1, p: 0, bgcolor: "#f1f5f9" }}>
               {cvLoading ? (
                 <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" height="100%" gap={2}>
-                  <CircularProgress sx={{ color: "#2d6a4f" }} />
+                  <CircularProgress sx={{ color: "#0ea5e9" }} />
                   <Typography variant="body2" color="text.secondary">
                     Đang tải tài liệu CV...
                   </Typography>
@@ -795,8 +779,8 @@ export default function HRApplications() {
                   borderRadius: 2,
                   textTransform: "none",
                   fontWeight: 600,
-                  bgcolor: "#2d6a4f",
-                  "&:hover": { bgcolor: "#1b4332" },
+                  bgcolor: "#0ea5e9",
+                  "&:hover": { bgcolor: "#0284c7" },
                 }}
               >
                 Tải xuống

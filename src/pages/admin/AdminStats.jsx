@@ -531,7 +531,7 @@ export default function AdminStats() {
                         <Area
                           type="monotone"
                           dataKey="success"
-                          name="Thành công (Success)"
+                          name="Thành công"
                           stroke="#10b981"
                           strokeWidth={2.5}
                           fillOpacity={1}
@@ -540,7 +540,7 @@ export default function AdminStats() {
                         <Area
                           type="monotone"
                           dataKey="failed"
-                          name="Lỗi / Thất bại (Failed)"
+                          name="Thất bại"
                           stroke="#ef4444"
                           strokeWidth={2}
                           fillOpacity={1}

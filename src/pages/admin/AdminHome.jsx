@@ -198,11 +198,7 @@ export default function AdminHome() {
                 Số lượng tài khoản đăng ký mới theo thời gian
               </Typography>
             </Box>
-            <Chip
-              label="Biểu đồ miền"
-              size="small"
-              sx={{ bgcolor: "#eff6ff", color: "#2563eb", fontWeight: 700, fontSize: "0.75rem" }}
-            />
+            
           </Stack>
 
           <Box sx={{ height: 350, width: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>

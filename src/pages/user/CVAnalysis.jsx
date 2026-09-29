@@ -510,110 +510,114 @@ export default function CVAnalysis() {
 
         {/* ================= 4. KẾT QUẢ PHÂN TÍCH (NẾU CÓ) ================= */}
         {result && (
-          <Box sx={{ mt: 4 }}>
+          <Box sx={{ mt: 5 }}>
+            {/* Component Báo cáo Năng lực AI chuẩn Mini HUD Radar */}
             <AIAnalysisCard {...result} />
 
+            {/* AI Summary Terminal */}
             {summary && (
-              <Paper
-                elevation={0}
-                sx={{
-                  mt: 3,
-                  p: 3.5,
-                  borderRadius: "16px",
-                  border: "1px solid #e2e8f0",
-                  bgcolor: "#ffffff",
-                }}
-              >
-                <Typography variant="h6" fontWeight={800} mb={1.5} color="#0f172a">
-                  Tóm tắt phân tích
-                </Typography>
-                <Typography variant="body2" color="#475569" lineHeight={1.7}>
+              <div className="mt-5 p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-sky-50/80 via-white to-blue-50/60 border border-sky-200/80 shadow-md shadow-sky-900/5 relative overflow-hidden">
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-sky-100">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-500 to-blue-600 text-white flex items-center justify-center shadow-xs">
+                      <AutoAwesome className="w-4 h-4" />
+                    </div>
+                    <h4 className="text-base font-black text-slate-900 tracking-tight">
+                      Tóm Tắt Đánh Giá Chuyên Môn
+                    </h4>
+                  </div>
+                  <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 border border-sky-200">
+                    AI SUMMARY
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-700 font-medium leading-relaxed">
                   {summary}
-                </Typography>
-              </Paper>
+                </p>
+              </div>
             )}
 
-            <Paper
-              elevation={0}
-              sx={{
-                mt: 3,
-                p: 3.5,
-                borderRadius: "16px",
-                border: "1px solid #e2e8f0",
-                bgcolor: "#ffffff",
-              }}
-            >
-              <Typography variant="h6" fontWeight={800} mb={2} color="#0f172a">
-                Gợi ý việc làm phù hợp
-              </Typography>
+            {/* Recommended Jobs Grid */}
+            <div className="mt-5 p-5 sm:p-6 rounded-3xl bg-white border border-sky-200/80 shadow-lg shadow-sky-950/5">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center font-bold">
+                    <AutoAwesome className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-black text-slate-900 tracking-tight">
+                      Gợi Ý Việc Làm Tương Thích
+                    </h4>
+                    <p className="text-xs text-slate-500 font-medium">
+                      Các cơ hội nghề nghiệp tối ưu dựa trên hồ sơ đã tải lên
+                    </p>
+                  </div>
+                </div>
+                {recommendedJobs.length > 0 && (
+                  <span className="text-xs font-black text-sky-700 bg-sky-50 px-2.5 py-1 rounded-full border border-sky-200">
+                    {Math.min(recommendedJobs.length, 4)} vị trí hàng đầu
+                  </span>
+                )}
+              </div>
 
               {loadingJobs ? (
-                <Typography color="text.secondary">
-                  Đang tải gợi ý việc làm từ hệ thống...
-                </Typography>
+                <div className="py-8 text-center text-xs font-bold text-slate-400">
+                  Đang quét và tính toán độ tương thích việc làm từ hệ thống...
+                </div>
               ) : recommendedJobs.length > 0 ? (
-                <Box
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: {
-                      xs: "1fr",
-                      sm: "repeat(2, 1fr)",
-                      lg: "repeat(4, 1fr)",
-                    },
-                    gap: 2.5,
-                  }}
-                >
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {recommendedJobs.slice(0, 4).map((job, idx) => {
                     const jobId = job.jobId || job.id;
+                    const companyInitial =
+                      job.companyName?.charAt(0)?.toUpperCase() ||
+                      job.title?.charAt(0)?.toUpperCase() ||
+                      'J';
 
                     return (
-                      <Paper
+                      <div
                         key={jobId || idx}
-                        elevation={0}
                         onClick={() => jobId && navigate(`/job/${jobId}`)}
-                        sx={{
-                          p: 2.5,
-                          borderRadius: "12px",
-                          border: "1px solid #e2e8f0",
-                          bgcolor: "#ffffff",
-                          cursor: jobId ? "pointer" : "default",
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "space-between",
-                          minHeight: 130,
-                          transition: "all 0.2s ease",
-                          "&:hover": jobId
-                            ? {
-                                borderColor: "#1D61F2",
-                                transform: "translateY(-3px)",
-                                boxShadow: "0 10px 20px -5px rgba(29, 97, 242, 0.1)",
-                              }
-                            : {},
-                        }}
+                        className="group p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-sky-300 hover:shadow-xl hover:shadow-sky-500/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between"
                       >
-                        <Box>
-                          <Typography fontWeight={700} color="#0f172a" fontSize="0.95rem">
-                            {job.title || job.jobTitle || "Công việc đề xuất"}
-                          </Typography>
-                          <Typography variant="body2" color="#64748b" mt={0.5}>
-                            {job.companyName || job.company || "Công ty"}
-                          </Typography>
-                        </Box>
-                        {job.location && (
-                          <Typography variant="caption" color="#94a3b8" mt={1}>
-                            {job.location}
-                          </Typography>
-                        )}
-                      </Paper>
+                        <div>
+                          <div className="flex items-start gap-3 mb-3">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-50 to-blue-100 border border-sky-200/60 text-blue-700 flex items-center justify-center font-black text-sm shadow-2xs flex-shrink-0 group-hover:scale-105 transition-transform">
+                              {companyInitial}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h5 className="text-xs font-black text-slate-900 line-clamp-2 group-hover:text-blue-600 transition-colors leading-snug">
+                                {job.title || job.jobTitle || 'Công việc đề xuất'}
+                              </h5>
+                              <p className="text-[11px] text-slate-500 font-bold truncate mt-0.5">
+                                {job.companyName || job.company || 'Doanh nghiệp'}
+                              </p>
+                            </div>
+                          </div>
+
+                          {job.location && (
+                            <span className="inline-block px-2 py-0.5 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-bold mb-2">
+                              {job.location}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2 mt-auto">
+                          <span className="text-xs font-black text-emerald-600 truncate">
+                            {job.salaryRange || 'Thỏa thuận'}
+                          </span>
+                          <span className="text-[11px] font-extrabold text-blue-600 group-hover:text-blue-700">
+                            Chi tiết →
+                          </span>
+                        </div>
+                      </div>
                     );
                   })}
-                </Box>
+                </div>
               ) : (
-                <Typography color="text.secondary">
-                  Chưa có gợi ý việc làm từ dữ liệu hệ thống.
-                </Typography>
+                <div className="py-6 text-center text-xs text-slate-400 font-medium">
+                  Chưa tìm thấy gợi ý việc làm phù hợp trong cơ sở dữ liệu.
+                </div>
               )}
-            </Paper>
+            </div>
           </Box>
         )}
       </Container>

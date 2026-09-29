@@ -21,7 +21,7 @@ export default function HrDashboardStats({ jobsCount, applicationsCount, intervi
             boxShadow: "0 4px 15px rgba(15, 23, 42, 0.04)",
           }}
         >
-          <CircularProgress sx={{ color: "#2d6a4f" }} />
+          <CircularProgress sx={{ color: "#0ea5e9" }} />
         </Box>
       ) : (
         <Box sx={{ 
@@ -33,13 +33,13 @@ export default function HrDashboardStats({ jobsCount, applicationsCount, intervi
             title="Tin đang tuyển"
             value={jobsCount.toString()}
             icon={<AssignmentTurnedIn />}
-            color="#2d6a4f"
+            color="#0284c7"
           />
           <StatCard
             title="Ứng viên nộp hồ sơ"
             value={applicationsCount.toString()}
             icon={<People />}
-            color="#0077b6"
+            color="#2563eb"
           />
           <StatCard
             title="Lịch phỏng vấn"
@@ -51,7 +51,7 @@ export default function HrDashboardStats({ jobsCount, applicationsCount, intervi
             title="Tỷ lệ đạt tuyển dụng"
             value={acceptRate}
             icon={<TrendingUp />}
-            color="#7209b7"
+            color="#3b82f6"
           />
         </Box>
       )}

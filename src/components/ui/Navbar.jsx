@@ -15,30 +15,38 @@ function Navbar() {
   const items = useMemo(() => navItems, []);
 
   return (
-    <Box sx={{ display: { xs: "none", md: "flex" }, gap: 3, position: "relative" }}>
+    <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: { md: 1, lg: 1.8 }, position: "relative" }}>
       {items.map((item) => (
         <Box
           key={item.to}
           component={NavLink}
           to={item.to}
           style={{ textDecoration: "none" }}
-          sx={{ position: "relative", px: 0.5, '&:hover .hover-preview': { opacity: 0.3 } }}
+          sx={{ position: "relative" }}
         >
           {({ isActive }) => (
-            <Box sx={{ position: "relative", px: 0.5 }}>
+            <Box
+              sx={{
+                position: "relative",
+                px: 1.2,
+                py: 0.8,
+                borderRadius: "10px",
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  bgcolor: "rgba(37,99,235,0.06)",
+                },
+              }}
+            >
               <motion.span
                 initial={false}
                 animate={{
-                  color: isActive ? "#2563EB" : "#475569",
-                  opacity: isActive ? 1 : 0.95,
-                  scale: isActive ? 1.03 : 1,
+                  color: isActive ? "#2563EB" : "#334155",
+                  fontWeight: isActive ? 800 : 600,
                 }}
-                transition={{ type: "spring", stiffness: 400, damping: 30, duration: 0.35 }}
-                style={{ display: "inline-block", cursor: "pointer", fontSize: "0.9rem" }}
+                transition={{ duration: 0.2 }}
+                style={{ display: "inline-block", cursor: "pointer", fontSize: "0.88rem", whiteSpace: "nowrap" }}
               >
-                <Typography component="span" sx={{ fontWeight: isActive ? 600 : 700, px: 0.6 }}>
-                  {item.label}
-                </Typography>
+                {item.label}
               </motion.span>
 
               {isActive && (
@@ -46,32 +54,16 @@ function Navbar() {
                   layoutId="nav-underline"
                   style={{
                     position: "absolute",
-                    left: 0,
-                    right: 0,
-                    bottom: -8,
-                    height: 3,
+                    left: "12%",
+                    right: "12%",
+                    bottom: 0,
+                    height: 2.5,
                     borderRadius: 9999,
-                    background: "linear-gradient(90deg,#3b82f6,#2563eb)",
+                    background: "linear-gradient(90deg, #3b82f6, #2563eb)",
                   }}
-                  transition={{ type: "spring", stiffness: 500, damping: 35, duration: 0.38 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 35, duration: 0.35 }}
                 />
               )}
-
-              <Box
-                className="hover-preview"
-                sx={{
-                  position: "absolute",
-                  left: 0,
-                  right: 0,
-                  bottom: -8,
-                  height: 3,
-                  borderRadius: 9999,
-                  bgcolor: "#2563eb",
-                  opacity: 0,
-                  pointerEvents: "none",
-                  transition: "opacity 0.2s ease",
-                }}
-              />
             </Box>
           )}
         </Box>
