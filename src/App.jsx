@@ -24,6 +24,7 @@ import CVAnalysis from "./pages/user/CVAnalysis";
 import UserProfile from "./pages/user/UserProfile";
 import CVBuilder from "./pages/user/CVBuilder";
 import CareerRoadmap from "./pages/user/CareerRoadmap";
+import AiMockInterview from "./pages/user/AiMockInterview";
 import ForEmployers from "./pages/public/ForEmployers";
 import CareerGuide from "./pages/user/CareerGuide";
 import CareerGuideDetail from "./pages/user/CareerGuideDetail";
@@ -46,7 +47,12 @@ export default function App() {
         <Route path="ai-usage" element={<ProtectedRoute role="USER"><AiUsagePage /></ProtectedRoute>} />
         <Route path="profile" element={<ProtectedRoute role="USER"><UserProfile /></ProtectedRoute>} />
         <Route path="cv-builder" element={<ProtectedRoute role="USER"><CVBuilder /></ProtectedRoute>} />
-        <Route path="career-roadmap" element={<ProtectedRoute role="USER"><CareerRoadmap /></ProtectedRoute>} />
+                <Route path="career-roadmap" element={<ProtectedRoute role="USER"><CareerRoadmap /></ProtectedRoute>} />
+        <Route path="roadmap" element={<Navigate to="/career-roadmap" replace />} />
+        <Route path="interview-practice" element={<Navigate to="/ai-interview" replace />} />
+        <Route path="employer" element={<Navigate to="/for-employers" replace />} />
+        <Route path="employer/*" element={<Navigate to="/for-employers" replace />} />
+        <Route path="ai-interview" element={<ProtectedRoute role="USER"><AiMockInterview /></ProtectedRoute>} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
         <Route path="favorite-jobs" element={<ProtectedRoute role="USER"><FavoriteJobs /></ProtectedRoute>} />
         <Route path="applied-jobs" element={<ProtectedRoute role="USER"><AppliedJobs /></ProtectedRoute>} />
@@ -302,5 +308,6 @@ export default function App() {
     </Routes>
   );
 }
+
 
 

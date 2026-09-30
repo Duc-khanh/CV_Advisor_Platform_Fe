@@ -57,3 +57,66 @@ export const generateCareerRoadmap = async (cvFile, targetRole = '', desiredRoad
         throw error;
     }
 };
+
+/**
+ * Khởi tạo bộ câu hỏi phỏng vấn mô phỏng dựa trên CV và thông tin tuyển dụng.
+ * @param {File|null} cvFile - File CV (tùy chọn)
+ * @param {string} targetRole - Vị trí mục tiêu
+ * @param {string} jobDescription - Mô tả công việc (JD)
+ * @param {string} experienceLevel - Cấp bậc (Fresher, Junior, Mid, Senior, Lead)
+ * @param {string} interviewType - Loại hình phỏng vấn
+ * @param {number} questionCount - Số lượng câu hỏi (3 - 7)
+ * @returns {Promise} - Kịch bản phỏng vấn
+ */
+export const generateAiInterview = async (
+    cvFile,
+    targetRole = '',
+    jobDescription = '',
+    experienceLevel = 'Mid-Level',
+    interviewType = 'Chuyên môn kỹ thuật',
+    questionCount = 5
+) => {
+    try {
+        const formData = new FormData();
+        if (cvFile) {
+            formData.append('cv', cvFile);
+        }
+        formData.append('targetRole', targetRole);
+        formData.append('jobDescription', jobDescription);
+        formData.append('experienceLevel', experienceLevel);
+        formData.append('interviewType', interviewType);
+        formData.append('questionCount', String(questionCount));
+
+        const response = await axios.post('/api/v1/ai/interview/generate', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi khởi tạo buổi phỏng vấn AI:', error);
+        throw error;
+    }
+};
+
+/**
+ * Đánh giá và chấm điểm toàn bộ câu trả lời phỏng vấn theo chuẩn STAR.
+ * @param {string} targetRole - Vị trí phỏng vấn
+ * @param {string} experienceLevel - Cấp bậc
+ * @param {Array} answers - Danh sách câu hỏi và câu trả lời của ứng viên
+ * @returns {Promise} - Bảng điểm và nhận xét chi tiết
+ */
+export const evaluateAiInterview = async (targetRole, experienceLevel, answers) => {
+    try {
+        const payload = {
+            targetRole,
+            experienceLevel,
+            answers,
+        };
+        const response = await axios.post('/api/v1/ai/interview/evaluate', payload);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi chấm điểm phỏng vấn AI:', error);
+        throw error;
+    }
+};

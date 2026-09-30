@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { Box } from "@mui/material";
 import { useLocation } from "react-router-dom";
 import EmployerHero from "../../components/employer/EmployerHero";
+import EmployerAiDemo from "../../components/employer/EmployerAiDemo";
 import EmployerFeatures from "../../components/employer/EmployerFeatures";
 import EmployerProcess from "../../components/employer/EmployerProcess";
 import EmployerPricing from "../../components/employer/EmployerPricing";
 import EmployerFAQ from "../../components/employer/EmployerFAQ";
-import EmployerFooter from "../../components/employer/EmployerFooter";
 import EmployerRegisterModal from "../../components/employer/EmployerRegisterModal";
 
 const ForEmployers = () => {
@@ -34,24 +34,24 @@ const ForEmployers = () => {
   };
 
   return (
-    <Box sx={{ mx: { xs: -4, md: -10 }, mb: -4 }}>
-      {/* 1. Hero Section với nút mở modal */}
+    <Box sx={{ width: "100%", overflowX: "hidden", bgcolor: "#ffffff" }}>
+      {/* 1. Hero Section công nghệ cao với mô hình vệ tinh & live metrics */}
       <EmployerHero onOpenRegister={() => handleOpenRegister()} />
 
-      {/* 2. Features */}
+      {/* 2. Interactive AI Candidate Screening Simulator Demo */}
+      <EmployerAiDemo onOpenRegister={() => handleOpenRegister()} />
+
+      {/* 3. Features module với framer-motion hover */}
       <EmployerFeatures />
 
-      {/* 3. Process */}
+      {/* 4. Process quy trình tuyển dụng tinh gọn */}
       <EmployerProcess />
 
-      {/* 4. Pricing với các nút mở modal theo gói */}
+      {/* 5. Pricing với toggle Tháng / Năm tiết kiệm 20% */}
       <EmployerPricing onOpenRegister={handleOpenRegister} />
 
-      {/* 5. FAQ */}
+      {/* 6. FAQ Accordion & Hotline hỗ trợ 24/7 */}
       <EmployerFAQ />
-
-      {/* 6. Footer B2B chuẩn thay thế vị trí form cũ */}
-      <EmployerFooter onOpenRegister={() => handleOpenRegister()} />
 
       {/* 7. Modal Popup Đăng ký Doanh nghiệp */}
       <EmployerRegisterModal

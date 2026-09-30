@@ -12,22 +12,25 @@ import {
   Sparkles,
   FolderGit2,
   User,
+  PlusCircle,
 } from "lucide-react";
 
 const ModernTwoColumnTemplate = forwardRef(
   (
     {
       data,
+      cvData,
       primaryColor = "#1D61F2",
       fontFamily = "Inter, sans-serif",
       hiddenSections = [],
-      sectionOrder = ["summary", "experience", "education", "skills", "projects"],
+      sectionOrder = ["summary", "experience", "education", "skills", "projects", "customSections"],
       isEditable = true,
       onInlineUpdate,
     },
     ref
   ) => {
-    if (!data) return null;
+    const cv = data || cvData;
+    if (!cv) return null;
     const {
       personalInfo = {},
       summary = "",
@@ -36,9 +39,8 @@ const ModernTwoColumnTemplate = forwardRef(
       skills = [],
       projects = [],
       customSections = [],
-    } = data;
+    } = cv;
 
-    // Chuẩn in ấn tối ưu: line-height 1.5, margin giữa các section là 16px
     const spacingConfig = {
       lineHeight: 1.5,
       sectionGap: "16px",
@@ -46,16 +48,18 @@ const ModernTwoColumnTemplate = forwardRef(
       paddingY: "28px",
     };
 
-    const isHidden = (key) => hiddenSections.includes(key);
+    const isHidden = (key) => {
+      if (Array.isArray(hiddenSections)) {
+        return hiddenSections.includes(key);
+      }
+      return Boolean(hiddenSections?.[key]);
+    };
 
-    // Sidebar items vs Main content items ordered by sectionOrder
     const sidebarSectionKeys = ["education", "skills"].sort(
       (a, b) => sectionOrder.indexOf(a) - sectionOrder.indexOf(b)
     );
 
-    const mainSectionKeys = ["summary", "experience", "projects"].sort(
-      (a, b) => sectionOrder.indexOf(a) - sectionOrder.indexOf(b)
-    );
+    const mainSectionKeys = sectionOrder.filter((k) => !["education", "skills"].includes(k));
 
     const renderSidebarSection = (key) => {
       if (isHidden(key)) return null;
@@ -100,7 +104,7 @@ const ModernTwoColumnTemplate = forwardRef(
                   </p>
                   {(edu.startDate || edu.endDate) && (
                     <p style={{ margin: "3px 0 0 0", fontSize: "11px", color: "#94a3b8" }}>
-                      <InlineEditableText value={edu.startDate} path={`education.${idx}.startDate`} isEditable={isEditable} onInlineUpdate={onInlineUpdate} /> – <InlineEditableText value={edu.endDate} path={`education.${idx}.endDate`} isEditable={isEditable} onInlineUpdate={onInlineUpdate} />
+                      <InlineEditableText value={edu.startDate} path={`education.${idx}.startDate`} isEditable={isEditable} onInlineUpdate={onInlineUpdate} /> — <InlineEditableText value={edu.endDate} path={`education.${idx}.endDate`} isEditable={isEditable} onInlineUpdate={onInlineUpdate} />
                     </p>
                   )}
                 </div>
@@ -125,7 +129,7 @@ const ModernTwoColumnTemplate = forwardRef(
                 paddingBottom: "6px",
               }}
             >
-              Kỹ năng chuyên môn
+              Kỹ năng
             </h3>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
               {skills.map((skill, idx) => (
@@ -133,12 +137,13 @@ const ModernTwoColumnTemplate = forwardRef(
                   key={idx}
                   style={{
                     backgroundColor: "#ffffff",
-                    color: "#334155",
                     border: "1px solid #cbd5e1",
-                    borderRadius: "6px",
-                    padding: "3px 8px",
+                    color: "#334155",
                     fontSize: "11px",
                     fontWeight: 600,
+                    padding: "4px 8px",
+                    borderRadius: "6px",
+                    outline: "none",
                   }}
                 >
                   <InlineEditableText value={skill} path={`skills.${idx}`} isEditable={isEditable} onInlineUpdate={onInlineUpdate} />
@@ -270,7 +275,7 @@ const ModernTwoColumnTemplate = forwardRef(
                           borderRadius: "4px",
                         }}
                       >
-                        <InlineEditableText value={exp.startDate} path={`experience.${idx}.startDate`} isEditable={isEditable} onInlineUpdate={onInlineUpdate} /> – <InlineEditableText value={exp.endDate} path={`experience.${idx}.endDate`} isEditable={isEditable} onInlineUpdate={onInlineUpdate} />
+                        <InlineEditableText value={exp.startDate} path={`experience.${idx}.startDate`} isEditable={isEditable} onInlineUpdate={onInlineUpdate} /> — <InlineEditableText value={exp.endDate} path={`experience.${idx}.endDate`} isEditable={isEditable} onInlineUpdate={onInlineUpdate} />
                       </span>
                     )}
                   </div>
@@ -375,198 +380,12 @@ const ModernTwoColumnTemplate = forwardRef(
         );
       }
 
-      return null;
-    };
-
-    return (
-      <div
-        ref={ref}
-        style={{
-          width: "794px",
-          minHeight: "1123px",
-          backgroundColor: "#ffffff",
-          color: "#1e293b",
-          fontFamily: fontFamily,
-          boxSizing: "border-box",
-          display: "flex",
-          flexDirection: "column",
-          position: "relative",
-          margin: "0 auto",
-        }}
-      >
-        {/* Top Header Banner */}
-        <div
-          style={{
-            backgroundColor: primaryColor,
-            color: "#ffffff",
-            padding: "36px 40px",
-            display: "flex",
-            alignItems: "center",
-            gap: "28px",
-          }}
-        >
-          {personalInfo.avatarUrl ? (
-            <img
-              src={personalInfo.avatarUrl}
-              alt={personalInfo.fullName || "Avatar"}
-              style={{
-                width: "92px",
-                height: "92px",
-                borderRadius: "50%",
-                objectFit: "cover",
-                border: "3px solid rgba(255,255,255,0.85)",
-                flexShrink: 0,
-                backgroundColor: "#ffffff",
-              }}
-            />
-          ) : (
-            <div
-              style={{
-                width: "92px",
-                height: "92px",
-                borderRadius: "50%",
-                backgroundColor: "rgba(255,255,255,0.2)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                border: "3px solid rgba(255,255,255,0.6)",
-                flexShrink: 0,
-              }}
-            >
-              <User size={46} color="#ffffff" />
-            </div>
-          )}
-
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <h1
-              contentEditable={isEditable}
-              suppressContentEditableWarning
-              onInput={(e) => onInlineUpdate?.("personalInfo.fullName", e.currentTarget.innerText)}
-              style={{
-                fontSize: "28px",
-                fontWeight: 800,
-                letterSpacing: "-0.5px",
-                margin: 0,
-                lineHeight: 1.2,
-                color: "#ffffff",
-                textTransform: "uppercase",
-                outline: "none",
-                borderRadius: "4px",
-                padding: "2px 4px",
-              }}
-              className="hover:bg-white/10 focus:bg-white/20 transition-colors"
-            >
-              {personalInfo.fullName || "Họ và Tên"}
-            </h1>
-            <p
-              contentEditable={isEditable}
-              suppressContentEditableWarning
-              onInput={(e) => onInlineUpdate?.("personalInfo.title", e.currentTarget.innerText)}
-              style={{
-                fontSize: "16px",
-                fontWeight: 500,
-                color: "rgba(255,255,255,0.9)",
-                margin: "6px 0 0 0",
-                outline: "none",
-                borderRadius: "4px",
-                padding: "2px 4px",
-              }}
-              className="hover:bg-white/10 focus:bg-white/20 transition-colors"
-            >
-              {personalInfo.title || "Vị trí ứng tuyển / Chức danh"}
-            </p>
-          </div>
-        </div>
-
-        {/* 2-Column Body Layout */}
-        <div style={{ display: "flex", flex: 1, width: "100%" }}>
-          {/* LEFT SIDEBAR (Width: 270px) */}
-          <div
-            style={{
-              width: "270px",
-              backgroundColor: "#f8fafc",
-              borderRight: "1px solid #e2e8f0",
-              padding: `${spacingConfig.paddingY} 24px`,
-              display: "flex",
-              flexDirection: "column",
-              gap: spacingConfig.sectionGap,
-              boxSizing: "border-box",
-            }}
-          >
-            {/* Contact Info (Always fixed in sidebar) */}
-            <div>
-              <h3
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 800,
-                  textTransform: "uppercase",
-                  letterSpacing: "1px",
-                  color: primaryColor,
-                  margin: "0 0 14px 0",
-                  borderBottom: `2px solid ${primaryColor}25`,
-                  paddingBottom: "6px",
-                }}
-              >
-                Thông tin liên hệ
-              </h3>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "12px", color: "#475569" }}>
-                {personalInfo.email && (
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", wordBreak: "break-all" }}>
-                    <Mail size={14} color={primaryColor} style={{ flexShrink: 0 }} />
-                    <span contentEditable={isEditable} suppressContentEditableWarning onInput={(e) => onInlineUpdate?.("personalInfo.email", e.currentTarget.innerText)} style={{ outline: "none" }}>{personalInfo.email}</span>
-                  </div>
-                )}
-                {personalInfo.phone && (
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <Phone size={14} color={primaryColor} style={{ flexShrink: 0 }} />
-                    <span contentEditable={isEditable} suppressContentEditableWarning onInput={(e) => onInlineUpdate?.("personalInfo.phone", e.currentTarget.innerText)} style={{ outline: "none" }}>{personalInfo.phone}</span>
-                  </div>
-                )}
-                {personalInfo.github && (
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", wordBreak: "break-all" }}>
-                    <Github size={14} color={primaryColor} style={{ flexShrink: 0 }} />
-                    <span contentEditable={isEditable} suppressContentEditableWarning onInput={(e) => onInlineUpdate?.("personalInfo.github", e.currentTarget.innerText)} style={{ outline: "none" }}>{personalInfo.github}</span>
-                  </div>
-                )}
-                {personalInfo.address && !personalInfo.github && (
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <MapPin size={14} color={primaryColor} style={{ flexShrink: 0 }} />
-                    <span contentEditable={isEditable} suppressContentEditableWarning onInput={(e) => onInlineUpdate?.("personalInfo.address", e.currentTarget.innerText)} style={{ outline: "none" }}>{personalInfo.address}</span>
-                  </div>
-                )}
-                {personalInfo.linkedin && (
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", wordBreak: "break-all" }}>
-                    <Linkedin size={14} color={primaryColor} style={{ flexShrink: 0 }} />
-                    <span contentEditable={isEditable} suppressContentEditableWarning onInput={(e) => onInlineUpdate?.("personalInfo.linkedin", e.currentTarget.innerText)} style={{ outline: "none" }}>{personalInfo.linkedin}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Dynamic Sidebar Sections ordered by sectionOrder */}
-            {sidebarSectionKeys.map((key) => renderSidebarSection(key))}
-          </div>
-
-          {/* RIGHT CONTENT (Width: flex-1) */}
-          <div
-            style={{
-              flex: 1,
-              padding: `${spacingConfig.paddingY} 32px`,
-              display: "flex",
-              flexDirection: "column",
-              gap: spacingConfig.sectionGap,
-              boxSizing: "border-box",
-            }}
-          >
-            {/* Dynamic Main Sections ordered by sectionOrder */}
-            {mainSectionKeys.map((key) => renderMainSection(key))}
-            {customSections.map((section, idx) => (
-              <div key={section.id || idx}>
+      if (key === "customSections" && customSections.length > 0) {
+        return (
+          <div key="customSections" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            {customSections.map((sec, idx) => (
+              <div key={idx}>
                 <h2
-                  contentEditable={isEditable}
-                  suppressContentEditableWarning
-                  onInput={(e) => onInlineUpdate?.(`customSections.${idx}.title`, e.currentTarget.innerText)}
                   style={{
                     fontSize: "14px",
                     fontWeight: 800,
@@ -574,26 +393,235 @@ const ModernTwoColumnTemplate = forwardRef(
                     letterSpacing: "1px",
                     color: primaryColor,
                     margin: "0 0 10px 0",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
                     borderBottom: `1.5px solid ${primaryColor}30`,
                     paddingBottom: "6px",
-                    outline: "none",
                   }}
-                  className="hover:bg-slate-50 focus:bg-blue-50/50"
                 >
-                  {section.title || "Tiêu đề mới"}
+                  <PlusCircle size={16} />
+                  <InlineEditableText
+                    value={sec.title || "Mục bổ sung"}
+                    path={`customSections.${idx}.title`}
+                    isEditable={isEditable}
+                    onInlineUpdate={onInlineUpdate}
+                  />
                 </h2>
                 <p
                   contentEditable={isEditable}
                   suppressContentEditableWarning
                   onInput={(e) => onInlineUpdate?.(`customSections.${idx}.content`, e.currentTarget.innerText)}
-                  style={{ margin: 0, fontSize: "12.5px", lineHeight: spacingConfig.lineHeight, color: "#334155", whiteSpace: "pre-line", outline: "none" }}
-                  className="hover:bg-slate-50 focus:bg-blue-50/50"
+                  style={{
+                    margin: 0,
+                    fontSize: "12.5px",
+                    lineHeight: spacingConfig.lineHeight,
+                    color: "#475569",
+                    whiteSpace: "pre-line",
+                    outline: "none",
+                  }}
+                  className="hover:bg-slate-50 focus:bg-blue-50/50 rounded px-1"
                 >
-                  <FormattedText text={section.content || "Nhập nội dung cho mục này..."} />
+                  <FormattedText text={sec.content} />
                 </p>
               </div>
             ))}
           </div>
+        );
+      }
+
+      return null;
+    };
+
+    return (
+      <div
+        ref={ref}
+        style={{
+          fontFamily,
+          minHeight: "297mm",
+          backgroundColor: "#ffffff",
+          display: "grid",
+          gridTemplateColumns: "68mm 1fr",
+          color: "#0f172a",
+        }}
+      >
+        {/* SIDEBAR CỘT TRÁI (68mm) */}
+        <div
+          style={{
+            backgroundColor: "#f8fafc",
+            borderRight: "1px solid #e2e8f0",
+            padding: `${spacingConfig.paddingY} 20px`,
+            display: "flex",
+            flexDirection: "column",
+            gap: spacingConfig.sectionGap,
+          }}
+        >
+          {/* Avatar & Tên trong Sidebar */}
+          <div style={{ textAlign: "center", marginBottom: "8px" }}>
+            {personalInfo.avatarUrl ? (
+              <img
+                src={personalInfo.avatarUrl}
+                alt="Avatar"
+                style={{
+                  width: "80px",
+                  height: "80px",
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  margin: "0 auto 12px auto",
+                  border: `3px solid ${primaryColor}`,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                  display: "block",
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: "80px",
+                  height: "80px",
+                  borderRadius: "50%",
+                  backgroundColor: "#e2e8f0",
+                  margin: "0 auto 12px auto",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#94a3b8",
+                }}
+              >
+                <User size={36} />
+              </div>
+            )}
+          </div>
+
+          {/* Thông tin liên hệ */}
+          <div>
+            <h3
+              style={{
+                fontSize: "12px",
+                fontWeight: 800,
+                textTransform: "uppercase",
+                letterSpacing: "1px",
+                color: primaryColor,
+                margin: "0 0 14px 0",
+                borderBottom: `2px solid ${primaryColor}25`,
+                paddingBottom: "6px",
+              }}
+            >
+              Liên hệ
+            </h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "11.5px" }}>
+              {personalInfo.email && (
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", color: "#475569" }}>
+                  <Mail size={14} color={primaryColor} style={{ marginTop: "2px", flexShrink: 0 }} />
+                  <span
+                    contentEditable={isEditable}
+                    suppressContentEditableWarning
+                    onInput={(e) => onInlineUpdate?.("personalInfo.email", e.currentTarget.innerText)}
+                    style={{ wordBreak: "break-all", outline: "none" }}
+                    className="hover:bg-slate-100 focus:bg-blue-50/50 rounded px-0.5"
+                  >
+                    {personalInfo.email}
+                  </span>
+                </div>
+              )}
+
+              {personalInfo.phone && (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#475569" }}>
+                  <Phone size={14} color={primaryColor} style={{ flexShrink: 0 }} />
+                  <span
+                    contentEditable={isEditable}
+                    suppressContentEditableWarning
+                    onInput={(e) => onInlineUpdate?.("personalInfo.phone", e.currentTarget.innerText)}
+                    style={{ outline: "none" }}
+                    className="hover:bg-slate-100 focus:bg-blue-50/50 rounded px-0.5"
+                  >
+                    {personalInfo.phone}
+                  </span>
+                </div>
+              )}
+
+              {personalInfo.github && (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#475569" }}>
+                  <Github size={14} color={primaryColor} style={{ flexShrink: 0 }} />
+                  <span
+                    contentEditable={isEditable}
+                    suppressContentEditableWarning
+                    onInput={(e) => onInlineUpdate?.("personalInfo.github", e.currentTarget.innerText)}
+                    style={{ wordBreak: "break-all", outline: "none" }}
+                    className="hover:bg-slate-100 focus:bg-blue-50/50 rounded px-0.5"
+                  >
+                    {personalInfo.github}
+                  </span>
+                </div>
+              )}
+
+              {personalInfo.linkedin && (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#475569" }}>
+                  <Linkedin size={14} color={primaryColor} style={{ flexShrink: 0 }} />
+                  <span
+                    contentEditable={isEditable}
+                    suppressContentEditableWarning
+                    onInput={(e) => onInlineUpdate?.("personalInfo.linkedin", e.currentTarget.innerText)}
+                    style={{ wordBreak: "break-all", outline: "none" }}
+                    className="hover:bg-slate-100 focus:bg-blue-50/50 rounded px-0.5"
+                  >
+                    {personalInfo.linkedin}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Các section còn lại trong sidebar (Học vấn, Kỹ năng) sắp xếp theo sectionOrder */}
+          {sidebarSectionKeys.map((key) => renderSidebarSection(key))}
+        </div>
+
+        {/* MAIN CỘT PHẢI (Nội dung chính) */}
+        <div
+          style={{
+            padding: `${spacingConfig.paddingY} 28px`,
+            display: "flex",
+            flexDirection: "column",
+            gap: spacingConfig.sectionGap,
+          }}
+        >
+          {/* Header Họ tên & Chức danh */}
+          <div style={{ borderBottom: `2px solid ${primaryColor}20`, paddingBottom: "16px" }}>
+            <h1
+              contentEditable={isEditable}
+              suppressContentEditableWarning
+              onInput={(e) => onInlineUpdate?.("personalInfo.fullName", e.currentTarget.innerText)}
+              style={{
+                fontSize: "24px",
+                fontWeight: 900,
+                color: "#0f172a",
+                margin: 0,
+                letterSpacing: "-0.5px",
+                lineHeight: 1.2,
+                outline: "none",
+              }}
+              className="hover:bg-slate-50 focus:bg-blue-50/50 rounded px-1"
+            >
+              {personalInfo.fullName || "HỌ VÀ TÊN"}
+            </h1>
+            <p
+              contentEditable={isEditable}
+              suppressContentEditableWarning
+              onInput={(e) => onInlineUpdate?.("personalInfo.title", e.currentTarget.innerText)}
+              style={{
+                fontSize: "14px",
+                fontWeight: 700,
+                color: primaryColor,
+                margin: "4px 0 0 0",
+                outline: "none",
+              }}
+              className="hover:bg-slate-50 focus:bg-blue-50/50 rounded px-1"
+            >
+              {personalInfo.title || "Vị trí ứng tuyển / Chức danh"}
+            </p>
+          </div>
+
+          {/* Main Sections sắp xếp theo sectionOrder */}
+          {mainSectionKeys.map((key) => renderMainSection(key))}
         </div>
       </div>
     );

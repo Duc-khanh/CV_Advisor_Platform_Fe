@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const navItems = [
-  { label: "Phân tích CV", to: "/cv-analysis" },
   { label: "Tạo CV", to: "/cv-builder" },
+  { label: "Phân tích CV", to: "/cv-analysis" },
   { label: "Lộ trình học tập", to: "/career-roadmap" },
   { label: "Cẩm nang", to: "/career-guide" },
   { label: "Nhà tuyển dụng", to: "/for-employers" },
@@ -15,7 +15,7 @@ function Navbar() {
   const items = useMemo(() => navItems, []);
 
   return (
-    <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: { md: 1, lg: 1.8 }, position: "relative" }}>
+    <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: { md: 0.8, lg: 1.5 }, position: "relative" }}>
       {items.map((item) => (
         <Box
           key={item.to}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -53,21 +53,32 @@ const inputStyle = {
   },
 };
 
-const EmployerRegisterModal = ({ open, onClose, selectedPlan }) => {
+const EmployerRegisterModal = ({ open, onClose, selectedPlan = "" }) => {
+  const navigate = useNavigate();
+  const showToast = useToast();
+
   const [form, setForm] = useState({
     fullName: "",
     email: "",
     companyName: "",
     password: "",
   });
-
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate();
-  const showToast = useToast();
+  useEffect(() => {
+    if (!open) {
+      setForm({
+        fullName: "",
+        email: "",
+        companyName: "",
+        password: "",
+      });
+      setShowPassword(false);
+      setLoading(false);
+    }
+  }, [open]);
 
-  // Đóng modal khi nhấn phím ESC
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape" && open) {
@@ -77,18 +88,6 @@ const EmployerRegisterModal = ({ open, onClose, selectedPlan }) => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, onClose]);
-
-  // Khóa cuộn trang khi modal mở
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [open]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -104,32 +103,31 @@ const EmployerRegisterModal = ({ open, onClose, selectedPlan }) => {
     }
 
     setLoading(true);
-
     try {
       await registerHr({
         fullName: form.fullName.trim(),
         email: form.email.trim(),
         companyName: form.companyName.trim(),
         password: form.password,
-        industryName: "",
+        industryName: "Công nghệ thông tin",
         address: "",
         description: "",
       });
-
       showToast(
-        "Đăng ký tài khoản Doanh nghiệp thành công! Vui lòng đăng nhập để bắt đầu.",
+        "Đăng ký tài khoản Doanh nghiệp thành công! Đang chuyển hướng...",
         "success"
       );
       onClose();
-      navigate("/login");
+      setTimeout(() => {
+        navigate("/login", {
+          state: {
+            registeredEmail: form.email,
+            isEmployer: true,
+          },
+        });
+      }, 1000);
     } catch (err) {
-      showToast(
-        getAuthErrorMessage(
-          err,
-          "Đăng ký tài khoản doanh nghiệp thất bại. Vui lòng thử lại!"
-        ),
-        "error"
-      );
+      showToast(getAuthErrorMessage(err, "Đăng ký tài khoản doanh nghiệp thất bại. Vui lòng thử lại!"), "error");
     } finally {
       setLoading(false);
     }
@@ -139,49 +137,51 @@ const EmployerRegisterModal = ({ open, onClose, selectedPlan }) => {
     <AnimatePresence>
       {open && (
         <Box
-          onClick={(e) => {
-            if (e.target === e.currentTarget) onClose();
-          }}
           sx={{
             position: "fixed",
             inset: 0,
-            zIndex: 1300,
+            zIndex: 1400,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             p: 2,
-            bgcolor: "rgba(15, 23, 42, 0.6)", // bg-slate-900/60
-            backdropFilter: "blur(4px)",
           }}
-          component={motion.div}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
         >
+          {/* Backdrop tối mờ */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={onClose}
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundColor: "rgba(15, 23, 42, 0.6)",
+              backdropFilter: "blur(4px)",
+            }}
+          />
+
+          {/* Modal Card */}
           <Box
             component={motion.div}
-            initial={{ opacity: 0, scale: 0.95, y: 12 }}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 12 }}
-            transition={{ duration: 0.22, ease: "easeOut" }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             sx={{
               position: "relative",
               width: "100%",
               maxWidth: "460px",
-              bgcolor: "#ffffff", // bg-white
-              borderRadius: "16px", // rounded-2xl
-              border: "1px solid #f1f5f9", // border-slate-100
-              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)", // shadow-2xl
-              p: { xs: 3, sm: 4 }, // p-6 sm:p-8
-              maxHeight: "90vh",
-              overflowY: "auto",
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-              "&::-webkit-scrollbar": { display: "none" },
+              bgcolor: "#ffffff",
+              borderRadius: "16px",
+              boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25)",
+              border: "1px solid #f1f5f9",
+              p: { xs: 2.5, sm: 3.5 },
+              zIndex: 1,
             }}
           >
-            {/* Nút đóng (X) */}
+            {/* Nút Close góc phải */}
             <IconButton
               onClick={onClose}
               size="small"
@@ -189,10 +189,9 @@ const EmployerRegisterModal = ({ open, onClose, selectedPlan }) => {
                 position: "absolute",
                 top: 14,
                 right: 14,
-                color: "#94a3b8", // text-slate-400
-                transition: "all 0.15s ease",
+                color: "#94a3b8",
                 "&:hover": {
-                  color: "#475569", // hover:text-slate-600
+                  color: "#0f172a",
                   bgcolor: "#f1f5f9",
                 },
               }}
@@ -201,17 +200,16 @@ const EmployerRegisterModal = ({ open, onClose, selectedPlan }) => {
             </IconButton>
 
             {/* Header Modal */}
-            <Box sx={{ mb: 2.5 }}>
+            <Box sx={{ textAlign: "center", mb: 2.5 }}>
               {selectedPlan && (
                 <Chip
                   label={`Gói: ${selectedPlan}`}
                   size="small"
                   sx={{
-                    mb: 1.25,
+                    mb: 1.5,
+                    fontWeight: 700,
                     bgcolor: "#eff6ff",
                     color: "#2563eb",
-                    fontWeight: 700,
-                    fontSize: "0.75rem",
                     border: "1px solid #dbeafe",
                   }}
                 />
@@ -240,11 +238,11 @@ const EmployerRegisterModal = ({ open, onClose, selectedPlan }) => {
               </Typography>
             </Box>
 
-            {/* Form Inputs (khoảng cách space-y-3.5 = 14px) */}
+            {/* Form Inputs */}
             <Stack
               component="form"
               onSubmit={handleSubmit}
-              spacing={1.75} // space-y-3.5
+              spacing={1.75}
               noValidate
             >
               {/* 1. Họ và tên người liên hệ / HR */}
@@ -259,7 +257,7 @@ const EmployerRegisterModal = ({ open, onClose, selectedPlan }) => {
                     mb: 0.5,
                   }}
                 >
-                  Họ và tên người liên hệ / HR
+                  Họ và tên người đại diện / HR
                 </Typography>
                 <TextField
                   fullWidth
@@ -323,7 +321,7 @@ const EmployerRegisterModal = ({ open, onClose, selectedPlan }) => {
                 />
               </Box>
 
-              {/* 4. Mật khẩu (kèm icon ẩn/hiện ở góc phải) */}
+              {/* 4. Mật khẩu */}
               <Box>
                 <Typography
                   component="label"
@@ -376,17 +374,17 @@ const EmployerRegisterModal = ({ open, onClose, selectedPlan }) => {
                   disabled={loading}
                   fullWidth
                   sx={{
-                    py: 1.4, // py-3
-                    borderRadius: "8px", // rounded-lg
-                    bgcolor: "#2563eb", // bg-blue-600
+                    py: 1.4,
+                    borderRadius: "8px",
+                    bgcolor: "#2563eb",
                     color: "#ffffff",
                     fontSize: "0.9375rem",
                     fontWeight: 600,
                     textTransform: "none",
-                    boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)", // shadow-sm
+                    boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
                     transition: "all 0.15s ease",
                     "&:hover": {
-                      bgcolor: "#1d4ed8", // hover:bg-blue-700
+                      bgcolor: "#1d4ed8",
                       boxShadow: "0 4px 12px rgba(37, 99, 235, 0.25)",
                     },
                   }}
@@ -432,8 +430,7 @@ const EmployerRegisterModal = ({ open, onClose, selectedPlan }) => {
                     lineHeight: 1.4,
                   }}
                 >
-                  Bằng việc đăng ký, bạn đồng ý với Điều khoản dịch vụ & Chính
-                  sách bảo mật của chúng tôi.
+                  Bằng việc đăng ký, bạn đồng ý với Điều khoản dịch vụ & Chính sách bảo mật của chúng tôi.
                 </Typography>
               </Box>
             </Stack>

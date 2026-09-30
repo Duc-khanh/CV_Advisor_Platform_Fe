@@ -1,156 +1,25 @@
-.career-guide-page {
-  min-height: 100vh;
-  background: #f7f9fc;
-  color: #14213d;
+﻿/* CareerGuide Modern Cyber & Tech Aesthetic */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-.career-guide-page > .MuiBox-root:first-of-type {
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(247, 249, 252, 0) 0%,
-      rgba(247, 249, 252, 0) 68%,
-      rgba(225, 235, 252, 0.2) 80%,
-      rgba(232, 240, 252, 0.72) 93%,
-      #f7f9fc 100%
-    ),
-    linear-gradient(125deg, #315f9f 0%, #4f7fd3 58%, #75a2ea 100%) !important;
-  padding-top: 64px !important;
-  padding-bottom: 82px !important;
-  border-radius: 18px 18px 0 0;
-  overflow: hidden;
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.02); }
 }
 
-.career-guide-page .MuiContainer-maxWidthXl {
-  max-width: 1240px;
+.animate-pulse-subtle {
+  animation: pulse-subtle 4s ease-in-out infinite;
 }
 
-.career-guide-page > .MuiBox-root:first-of-type h1 {
-  max-width: 650px;
-  font-size: clamp(2.15rem, 4vw, 3rem) !important;
-  line-height: 1.12;
-  letter-spacing: -0.035em;
+.career-guide-card-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.career-guide-page > .MuiBox-root:first-of-type h1 + p {
-  max-width: 620px !important;
-  font-size: 16px !important;
-  line-height: 1.75 !important;
-}
-
-.career-guide-page > .MuiBox-root:first-of-type form {
-  max-width: 620px !important;
-}
-
-.career-guide-page > .MuiBox-root:first-of-type form .MuiOutlinedInput-root {
-  min-height: 58px;
-  border-radius: 15px !important;
-  box-shadow: 0 16px 34px rgba(2, 17, 50, 0.22);
-}
-
-.career-guide-page > .MuiBox-root:first-of-type form .MuiButton-root {
-  min-height: 44px;
-  border-radius: 10px !important;
-  padding-inline: 26px !important;
-}
-
-.career-guide-page > .MuiBox-root:first-of-type img {
-  max-width: 440px !important;
-  border-radius: 24px !important;
-  border: 6px solid rgba(255,255,255,.12);
-  box-shadow: 0 26px 60px rgba(2,17,50,.3) !important;
-  transform: none !important;
-}
-
-.career-guide-page > .MuiBox-root:nth-of-type(2) {
-  position: sticky;
-  top: 72px;
-  z-index: 10;
-  padding-block: 14px !important;
-  border-bottom: 0 !important;
-  background: rgba(247, 249, 252, 0.9) !important;
-  backdrop-filter: blur(14px);
-}
-
-.career-guide-page > .MuiBox-root:nth-of-type(2) > .MuiContainer-root {
-  padding: 12px 16px !important;
-  border: 1px solid #e4eaf2;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 8px 28px rgba(15, 23, 42, .06);
-}
-
-.career-guide-page .MuiChip-root {
-  border-radius: 10px;
-}
-
-.career-guide-page .MuiCard-root,
-.career-guide-page .MuiPaper-root {
-  border-color: #e5eaf1 !important;
-}
-
-.career-guide-page .MuiCard-root {
-  box-shadow: 0 8px 26px rgba(15, 23, 42, .055) !important;
-}
-
-.career-guide-page .MuiCard-root:hover {
-  box-shadow: 0 18px 40px rgba(15, 23, 42, .11) !important;
-}
-
-.career-guide-page .MuiCardMedia-root {
-  transition: transform .4s ease;
-}
-
-.career-guide-page .MuiCard-root:hover .MuiCardMedia-root {
-  transform: scale(1.035);
-}
-
-.career-guide-page .MuiIconButton-root {
-  transition: background-color .2s ease, color .2s ease, transform .2s ease;
-}
-
-.career-guide-page .MuiIconButton-root:hover {
-  transform: translateY(-1px);
-  background: #eff6ff;
-}
-
-.career-guide-page .MuiPaginationItem-root {
-  border-radius: 9px;
-}
-
-@media (min-width: 900px) {
-  .career-guide-page > .MuiContainer-root:last-child > .MuiBox-root > .MuiGrid-root:last-child > .MuiGrid-root:last-child > .MuiStack-root {
-    position: sticky;
-    top: 150px;
-  }
-}
-
-@media (max-width: 899px) {
-  .career-guide-page > .MuiBox-root:first-of-type {
-    padding-top: 46px !important;
-    padding-bottom: 46px !important;
-  }
-
-  .career-guide-page > .MuiBox-root:nth-of-type(2) {
-    top: 64px;
-  }
-}
-
-@media (max-width: 599px) {
-  .career-guide-page > .MuiBox-root:first-of-type h1 {
-    font-size: 2rem !important;
-  }
-
-  .career-guide-page > .MuiBox-root:first-of-type form .MuiButton-root {
-    padding-inline: 15px !important;
-  }
-
-  .career-guide-page > .MuiBox-root:nth-of-type(2) .MuiStack-root {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .career-guide-page > .MuiBox-root:nth-of-type(2) .MuiFormControl-root {
-    width: 100%;
-  }
+.career-guide-card-hover:hover {
+  transform: translateY(-4px);
 }

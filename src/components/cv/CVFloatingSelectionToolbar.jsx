@@ -48,7 +48,7 @@ export default function CVFloatingSelectionToolbar({ containerRef, cvId, onApply
     if (aiModalOpen) return;
 
     try {
-      // ── TRƯỜNG HỢP 1: BÔI ĐEN TRONG FORM NHẬP LIỆU (INPUT / TEXTAREA BÊN CỘT TRÁI "NỘI DUNG") ──
+      // TRƯỜNG HỢP 1: BÔI ĐEN TRONG FORM NHẬP LIỆU (INPUT / TEXTAREA BẢN CỘT TRÁI "NỘI DUNG")
       const activeEl = document.activeElement;
       const isFormInput =
         activeEl && (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA");
@@ -93,7 +93,7 @@ export default function CVFloatingSelectionToolbar({ containerRef, cvId, onApply
         }
       }
 
-      // ── TRƯỜNG HỢP 2: BÔI ĐEN TRÊN BẢN XEM TRƯỚC CV (CANVAS BÊN PHẢI) ──
+      // TRƯỜNG HỢP 2: BÔI ĐEN TRÊN BẢN XEM TRƯỚC CV (CANVAS BẢN PHẢI)
       activeInputRef.current = null;
       const selection = window.getSelection();
       if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
@@ -205,14 +205,12 @@ export default function CVFloatingSelectionToolbar({ containerRef, cvId, onApply
     };
   }, [containerRef, aiModalOpen]);
 
-  // ── Helpers kiểm tra trạng thái format hiện tại ──
+  // Helpers kiểm tra trạng thái format hiện tại
   const isItalicActive = () => {
     try {
-      // Cách 1: execCommand queryCommandState (hoạt động trên contentEditable)
       const state = document.queryCommandState("italic");
       if (state) return true;
     } catch {}
-    // Cách 2: kiểm tra computed style của node anchor
     try {
       const selection = window.getSelection();
       if (selection && selection.anchorNode) {
@@ -222,7 +220,6 @@ export default function CVFloatingSelectionToolbar({ containerRef, cvId, onApply
           const style = window.getComputedStyle(el);
           if (style.fontStyle === "italic" || style.fontStyle === "oblique") return true;
         }
-        // Cách 3: duyệt cây DOM tổ tiên xem có <em> hay font-style:italic không
         let ancestor = el;
         while (ancestor && ancestor !== document.body) {
           if (ancestor.tagName === "EM" || ancestor.tagName === "I") return true;
@@ -248,7 +245,6 @@ export default function CVFloatingSelectionToolbar({ containerRef, cvId, onApply
           const style = window.getComputedStyle(el);
           const fw = parseInt(style.fontWeight, 10);
           if (fw >= 700 || style.fontWeight === "bold" || style.fontWeight === "bolder") {
-            // Phân biệt: nếu bold đến từ inline style/thẻ strong thì mới tính là đang bold
             let ancestor = el;
             while (ancestor && ancestor !== document.body) {
               if (ancestor.tagName === "STRONG" || ancestor.tagName === "B") return true;
@@ -262,18 +258,15 @@ export default function CVFloatingSelectionToolbar({ containerRef, cvId, onApply
     return false;
   };
 
-  // ── Tháo bỏ thẻ inline wrapper (em/strong/i/b) bao quanh toàn bộ vùng chọn ──
   const unwrapInlineTag = (tags) => {
     try {
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
       const range = selection.getRangeAt(0);
-      // Tìm ancestor gần nhất là thẻ cần gỡ
       let node = range.commonAncestorContainer;
       if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
       while (node && node !== document.body) {
         if (tags.includes(node.tagName.toLowerCase())) {
-          // Giải phóng nội dung bên trong ra ngoài thẻ wrapper
           const parent = node.parentNode;
           while (node.firstChild) {
             parent.insertBefore(node.firstChild, node);
@@ -290,7 +283,7 @@ export default function CVFloatingSelectionToolbar({ containerRef, cvId, onApply
 
   // Các lệnh định dạng văn bản trực tiếp
   const executeCommand = (command, value = null) => {
-    // ── XỬ LÝ CHO INPUT / TEXTAREA BÊN PHẦN NỘI DUNG ──
+    // XỬ LÝ CHO INPUT / TEXTAREA BẢN PHẦN NỘI DUNG
     if (activeInputRef.current) {
       const el = activeInputRef.current;
       const { start, end } = inputSelectionRef.current;
@@ -321,8 +314,6 @@ export default function CVFloatingSelectionToolbar({ containerRef, cvId, onApply
       const newValue = before + newPiece + after;
       const appliedToState = onApplyText?.(rawText, newPiece) === true;
 
-      // Fallback for standalone use. In CVBuilder, update through cvData so React
-      // does not restore the old controlled value on its next render.
       if (!appliedToState) {
         const setter =
           el.tagName === "TEXTAREA"
@@ -362,9 +353,9 @@ export default function CVFloatingSelectionToolbar({ containerRef, cvId, onApply
 
     // 2. Kiểm tra trạng thái toggle hiện tại
     const currentlyItalic = command === "italic" ? isItalicActive() : false;
-    const currentlyBold   = command === "bold"   ? isBoldActive()   : false;
+    const currentlyBold = command === "bold" ? isBoldActive() : false;
 
-    // 3. Thử execCommand trước (hoạt động tốt trên các element có contentEditable)
+    // 3. Thử execCommand trước
     let success = false;
     try {
       success = document.execCommand(command, false, value);
@@ -377,10 +368,8 @@ export default function CVFloatingSelectionToolbar({ containerRef, cvId, onApply
       try {
         if (command === "italic") {
           if (currentlyItalic) {
-            // ĐÃ nghiêng → tháo bỏ
             unwrapInlineTag(["em", "i"]);
           } else {
-            // CHƯA nghiêng → bọc thêm
             const em = document.createElement("em");
             em.style.fontStyle = "italic";
             try {
@@ -393,10 +382,8 @@ export default function CVFloatingSelectionToolbar({ containerRef, cvId, onApply
           }
         } else if (command === "bold") {
           if (currentlyBold) {
-            // ĐÃ đậm → tháo bỏ
             unwrapInlineTag(["strong", "b"]);
           } else {
-            // CHƯA đậm → bọc thêm
             const strong = document.createElement("strong");
             strong.style.fontWeight = "bold";
             try {
@@ -415,7 +402,6 @@ export default function CVFloatingSelectionToolbar({ containerRef, cvId, onApply
 
     setTimeout(updateToolbarPosition, 10);
   };
-
 
   const handleBold = (e) => {
     e.preventDefault();
@@ -490,7 +476,6 @@ export default function CVFloatingSelectionToolbar({ containerRef, cvId, onApply
   const handleApplyAiResult = () => {
     if (!aiResult) return;
 
-    // Update React state first; direct DOM edits are overwritten by controlled fields.
     const appliedToState = onApplyText?.(selectedText, aiResult) === true;
 
     if (!appliedToState && activeInputRef.current) {
@@ -704,19 +689,16 @@ export default function CVFloatingSelectionToolbar({ containerRef, cvId, onApply
     </Dialog>
   );
 
-  // Nếu không hiển thị toolbar và dialog AI không mở
   if (!isVisible || !position) {
     return aiModalOpen ? renderAiModal() : null;
   }
 
-  // Dùng createPortal trực tiếp ra document.body để position: fixed luôn chuẩn xác theo viewport
   return createPortal(
     <>
-      {/* Floating Bubble Toolbar (Dark Pill, 1 hàng ngang duy nhất) */}
+      {/* Floating Bubble Toolbar (Dark Pill) */}
       <div
         ref={toolbarRef}
         onMouseDown={(e) => {
-          // Ngăn không cho toolbar làm mất selection của user
           e.preventDefault();
         }}
         style={{
@@ -841,7 +823,6 @@ export default function CVFloatingSelectionToolbar({ containerRef, cvId, onApply
   );
 }
 
-// Nút bấm trên Floating Toolbar với style thuần inline & hover state
 function ToolbarButton({ onClick, title, active, children, isAi }) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -911,4 +892,3 @@ function ToolbarButton({ onClick, title, active, children, isAi }) {
     </button>
   );
 }
-

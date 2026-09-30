@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Tiện ích kiểm tra và chuẩn hóa dữ liệu xác thực & đăng ký
  */
 
@@ -9,7 +9,7 @@ export const isValidEmail = (email) => {
 };
 
 /**
- * Kiểm tra dữ liệu đăng ký Ứng viên
+ * Kiểm tra dữ liệu đăng ký ứng viên
  */
 export const validateCandidateRegister = ({ fullName, email, password, confirmPassword }) => {
   if (!fullName || !fullName.trim()) {
@@ -24,7 +24,7 @@ export const validateCandidateRegister = ({ fullName, email, password, confirmPa
     return { isValid: false, error: "Mật khẩu phải có ít nhất 6 ký tự" };
   }
 
-  if (password !== confirmPassword) {
+  if (confirmPassword !== undefined && password !== confirmPassword) {
     return { isValid: false, error: "Mật khẩu nhập lại không khớp" };
   }
 
@@ -32,7 +32,7 @@ export const validateCandidateRegister = ({ fullName, email, password, confirmPa
 };
 
 /**
- * Kiểm tra dữ liệu đăng ký Nhà tuyển dụng (HR/Doanh nghiệp) - Form tối giản 4 trường
+ * Kiểm tra dữ liệu đăng ký Nhà tuyển dụng (HR/Doanh nghiệp)
  */
 export const validateEmployerRegister = ({
   fullName,
@@ -57,7 +57,7 @@ export const validateEmployerRegister = ({
     return { isValid: false, error: "Mật khẩu phải có ít nhất 6 ký tự" };
   }
 
-  if (password !== confirmPassword) {
+  if (confirmPassword !== undefined && password !== confirmPassword) {
     return { isValid: false, error: "Mật khẩu xác nhận không khớp" };
   }
 
@@ -65,7 +65,7 @@ export const validateEmployerRegister = ({
 };
 
 /**
- * Trích xuất thông báo lỗi chuẩn xác từ phản hồi server
+ * Trích xuất thông báo lỗi chính xác từ phản hồi server
  */
 export const getAuthErrorMessage = (err, defaultMessage = "Thao tác thất bại. Vui lòng thử lại!") => {
   if (!err) return defaultMessage;

@@ -17,6 +17,12 @@ import HomeCTASection from "./HomeCTASection";
 import TopCompaniesSection from "./TopCompaniesSection";
 import CompanyDetailModal from "./CompanyDetailModal";
 import CareerGuideSection from "./CareerGuideSection";
+import AIToolsShowcaseSection from "./AIToolsShowcaseSection";
+import PlatformStatsSection from "./PlatformStatsSection";
+import JobMarketInsightsSection from "./JobMarketInsightsSection";
+import TestimonialsSection from "./TestimonialsSection";
+import FAQSection from "./FAQSection";
+
 import { migrateLegacyStorage } from "../../services/cv/cvAnalysisStorage";
 import { useToast } from "../../contexts/ToastContext";
 
@@ -200,6 +206,7 @@ export default function UserHome() {
     >
       <HeroSection searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={handleSearch} />
       <LastCvAnalysisSection />
+      
       <JobCategoriesSection jobCategories={jobCategories} />
       
       {/* Job list with filter tabs */}
@@ -215,13 +222,31 @@ export default function UserHome() {
         isHomePage={true}
       />
 
+      {/* Platform Real-Time Stats & Live Activity Ticker */}
+      <PlatformStatsSection />
+
+      {/* Real-Time Job Market Analytics & Insights */}
+      <JobMarketInsightsSection jobs={jobs} />
+
+      {/* Interactive AI Tools Showcase (ATS Scanner, Skill Gap, Mock Interview, Salary) */}
+      <AIToolsShowcaseSection />
+
       {/* Top Recruiting Companies from database */}
       <TopCompaniesSection onCompanyClick={handleCompanyClick} />
 
       {/* Career handbook guide articles */}
       <CareerGuideSection />
 
+      {/* Candidate Success Stories & Testimonials */}
+      <TestimonialsSection />
+
+      {/* Why Choose CareerGo Core Values */}
       <HowItWorksSection />
+
+      {/* Frequently Asked Questions (Interactive Accordion) */}
+      <FAQSection />
+
+      {/* High-Tech Master CTA Banner */}
       <HomeCTASection onCreateCv={() => navigate("/cv-builder")} />
 
       {/* Company Detail popup modal */}

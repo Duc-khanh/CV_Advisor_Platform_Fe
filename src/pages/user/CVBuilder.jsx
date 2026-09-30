@@ -18,7 +18,6 @@ import {
 import {
   ExpandMore as ExpandMoreIcon,
   DeleteOutline as DeleteIcon,
-  Add as AddIcon,
   CameraAlt as CameraIcon,
   Person as PersonIcon,
   WorkOutline as WorkIcon,
@@ -40,7 +39,7 @@ import ClassicTemplate from "../../components/cv/templates/ClassicTemplate";
 
 const getAutoSaveKey = () => `cv-builder-autosave-${getCurrentUserId() || "guest"}`;
 
-// Dữ liệu khởi tạo mẫu để người dùng dễ hình dung
+// Dữ liệu khởi tạo mẫu chuẩn tiếng Việt để người dùng dễ hình dung
 const INITIAL_CV_DATA = {
   personalInfo: {
     fullName: "Nguyễn Văn An",
@@ -60,7 +59,7 @@ const INITIAL_CV_DATA = {
       startDate: "06/2023",
       endDate: "Hiện tại",
       description:
-        "• Chịu trách nhiệm kiến trúc Frontend hệ thống Enterprise Dashboard phục vụ 100,000+ người dùng.\n• Tối ưu thời gian tải trang ban đầu (FCP) giảm 40% bằng code-splitting và server-side caching.\n• Dẫn dắt và đào tạo 4 junior developers theo chuẩn Clean Code & TypeScript.",
+        "• Chịu trách nhiệm kiến trúc Frontend hệ thống Enterprise Dashboard phục vụ 100,000+ người dùng.\n• Tối ưu thời gian tải trang ban đầu (FCP) giảm 40% bằng code-splitting và caching.\n• Dẫn dắt và đào tạo 4 junior developers theo chuẩn Clean Code & TypeScript.",
     },
     {
       role: "Fullstack Web Developer",
@@ -101,38 +100,119 @@ const INITIAL_CV_DATA = {
   ],
 };
 
+// Hàm đọc cấu hình và dữ liệu đã lưu trong localStorage một cách đồng bộ ngay lập tức
+const getInitialStoredState = () => {
+  try {
+    const raw = localStorage.getItem(getAutoSaveKey());
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        cvData: parsed.cvData ? { ...INITIAL_CV_DATA, ...parsed.cvData } : INITIAL_CV_DATA,
+        settings: parsed.settings || {},
+      };
+    }
+  } catch {}
+  return { cvData: INITIAL_CV_DATA, settings: {} };
+};
+
 export default function CVBuilder() {
-  const [activeTab, setActiveTab] = useState("content"); // 'content' | 'reorder'
-  const [selectedTemplate, setSelectedTemplate] = useState("modern"); // 'modern' | 'classic'
-  const [primaryColor, setPrimaryColor] = useState("#1D61F2");
-  const [fontFamily, setFontFamily] = useState("Inter, sans-serif");
+  const initialStored = getInitialStoredState();
+
+  // Dữ liệu nội dung CV
+  const [cvData, setCvData] = useState(initialStored.cvData);
+
+  // Cấu hình giao diện và mẫu CV ("modern" | "classic")
+  const [selectedTemplate, setSelectedTemplate] = useState(
+    initialStored.settings?.selectedTemplate || "modern"
+  );
+  const [primaryColor, setPrimaryColor] = useState(
+    initialStored.settings?.primaryColor || "#1D61F2"
+  );
+  const [fontFamily, setFontFamily] = useState(
+    initialStored.settings?.fontFamily || "Inter, sans-serif"
+  );
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [activeLeftTab, setActiveLeftTab] = useState("content"); // 'content' | 'reorder'
+  const [autoSaveStatus, setAutoSaveStatus] = useState("saved"); // 'saving' | 'saved' | 'error'
   const [savedCvId, setSavedCvId] = useState(null);
-  const [autoSaveStatus, setAutoSaveStatus] = useState("saved");
+
+  // Thứ tự và mảng các khối bị ẩn
+  const [sectionOrder, setSectionOrder] = useState(
+    initialStored.settings?.sectionOrder || [
+      "summary",
+      "experience",
+      "education",
+      "skills",
+      "projects",
+      "customSections",
+    ]
+  );
+  const [hiddenSections, setHiddenSections] = useState(
+    Array.isArray(initialStored.settings?.hiddenSections)
+      ? initialStored.settings.hiddenSections
+      : []
+  );
+
+  // Trạng thái nhập kỹ năng
+  const [skillInput, setSkillInput] = useState("");
+  const avatarInputRef = useRef(null);
+  const printRef = useRef(null);
+  const autoSaveTimerRef = useRef(null);
+  const lastSavedSnapshotRef = useRef("");
+  const hasLoadedRef = useRef(false);
   const showToast = useToast();
 
-  const printRef = useRef(null);
-  const canvasRef = useRef(null);
-  const splitViewRef = useRef(null);
-  const avatarInputRef = useRef(null);
-  const autoSaveTimerRef = useRef(null);
-  const hasLoadedRef = useRef(false);
-  const lastSavedSnapshotRef = useRef("");
+  const [avatarPreview, setAvatarPreview] = useState(
+    initialStored.cvData?.personalInfo?.avatarUrl || null
+  );
 
-  const [cvData, setCvData] = useState(INITIAL_CV_DATA);
-  const [avatarPreview, setAvatarPreview] = useState(null);
-  const [skillInput, setSkillInput] = useState("");
+  // Phím tắt Undo / Redo lịch sử
+  const historyRef = useRef([initialStored.cvData]);
+  const historyIndexRef = useRef(0);
+  const isHistoryActionRef = useRef(false);
 
-  // Sắp xếp và ẩn/hiện khối
-  const [sectionOrder, setSectionOrder] = useState([
-    "summary",
-    "experience",
-    "education",
-    "skills",
-    "projects",
-  ]);
-  const [hiddenSections, setHiddenSections] = useState([]);
+  // Xử lý chọn Template: Cập nhật state và lưu ngay vào localStorage
+  const handleSelectTemplate = (templateId) => {
+    setSelectedTemplate(templateId);
+    try {
+      const key = getAutoSaveKey();
+      const existing = JSON.parse(localStorage.getItem(key) || "{}");
+      const updated = {
+        ...existing,
+        settings: {
+          ...(existing.settings || {}),
+          selectedTemplate: templateId,
+          primaryColor,
+          fontFamily,
+          sectionOrder,
+          hiddenSections,
+        },
+      };
+      localStorage.setItem(key, JSON.stringify(updated));
+    } catch {}
+  };
 
-  // Kích hoạt In / Xuất PDF qua useReactToPrint
+  const handleSelectColor = (color) => {
+    setPrimaryColor(color);
+    try {
+      const key = getAutoSaveKey();
+      const existing = JSON.parse(localStorage.getItem(key) || "{}");
+      existing.settings = { ...(existing.settings || {}), primaryColor: color };
+      localStorage.setItem(key, JSON.stringify(existing));
+    } catch {}
+  };
+
+  const handleSelectFont = (font) => {
+    setFontFamily(font);
+    try {
+      const key = getAutoSaveKey();
+      const existing = JSON.parse(localStorage.getItem(key) || "{}");
+      existing.settings = { ...(existing.settings || {}), fontFamily: font };
+      localStorage.setItem(key, JSON.stringify(existing));
+    } catch {}
+  };
+
+  // Tải bản CV mới nhất của User từ Backend API
   useEffect(() => {
     let active = true;
 
@@ -147,64 +227,95 @@ export default function CVBuilder() {
             const draft = JSON.parse(localDraft);
             const settings = draft.settings || {};
             setCvData((prev) => ({ ...prev, ...(draft.cvData || {}) }));
+            if (draft.cvData?.personalInfo?.avatarUrl) {
+              setAvatarPreview(draft.cvData.personalInfo.avatarUrl);
+            }
             if (settings.selectedTemplate) setSelectedTemplate(settings.selectedTemplate);
             if (settings.primaryColor) setPrimaryColor(settings.primaryColor);
             if (settings.fontFamily) setFontFamily(settings.fontFamily);
             if (settings.sectionOrder) setSectionOrder(settings.sectionOrder);
-            if (settings.hiddenSections) setHiddenSections(settings.hiddenSections);
+            if (settings.hiddenSections) {
+              setHiddenSections(Array.isArray(settings.hiddenSections) ? settings.hiddenSections : []);
+            }
           }
           return;
         }
 
         const parsed = JSON.parse(latestCv.cvText);
         const settings = parsed.settings || {};
-        const content = { ...parsed };
-        delete content.settings;
-
-        setCvData((prev) => ({ ...prev, ...content }));
         setSavedCvId(latestCv.cvId);
+        const loadedCvData = parsed.cvData || parsed;
+        setCvData((prev) => ({ ...prev, ...loadedCvData }));
+        if (loadedCvData?.personalInfo?.avatarUrl) {
+          setAvatarPreview(loadedCvData.personalInfo.avatarUrl);
+        }
         if (settings.selectedTemplate) setSelectedTemplate(settings.selectedTemplate);
         if (settings.primaryColor) setPrimaryColor(settings.primaryColor);
         if (settings.fontFamily) setFontFamily(settings.fontFamily);
         if (settings.sectionOrder) setSectionOrder(settings.sectionOrder);
-        if (settings.hiddenSections) setHiddenSections(settings.hiddenSections);
+        if (settings.hiddenSections) {
+          setHiddenSections(Array.isArray(settings.hiddenSections) ? settings.hiddenSections : []);
+        }
 
+        lastSavedSnapshotRef.current = JSON.stringify({
+          ...loadedCvData,
+          settings,
+        });
+      } catch {
         const localDraft = localStorage.getItem(getAutoSaveKey());
         if (localDraft) {
-          const draft = JSON.parse(localDraft);
-          const localSettings = draft.settings || {};
-          setCvData((prev) => ({ ...prev, ...(draft.cvData || {}) }));
-          if (localSettings.selectedTemplate) setSelectedTemplate(localSettings.selectedTemplate);
-          if (localSettings.primaryColor) setPrimaryColor(localSettings.primaryColor);
-          if (localSettings.fontFamily) setFontFamily(localSettings.fontFamily);
-          if (localSettings.sectionOrder) setSectionOrder(localSettings.sectionOrder);
-          if (localSettings.hiddenSections) setHiddenSections(localSettings.hiddenSections);
-        }
-      } catch (error) {
-        if (error?.response?.status !== 404) {
-          console.error("Không thể tải CV đã lưu:", error);
+          try {
+            const draft = JSON.parse(localDraft);
+            const settings = draft.settings || {};
+            setCvData((prev) => ({ ...prev, ...(draft.cvData || {}) }));
+            if (draft.cvData?.personalInfo?.avatarUrl) {
+              setAvatarPreview(draft.cvData.personalInfo.avatarUrl);
+            }
+            if (settings.selectedTemplate) setSelectedTemplate(settings.selectedTemplate);
+            if (settings.primaryColor) setPrimaryColor(settings.primaryColor);
+            if (settings.fontFamily) setFontFamily(settings.fontFamily);
+            if (settings.sectionOrder) setSectionOrder(settings.sectionOrder);
+            if (settings.hiddenSections) {
+              setHiddenSections(Array.isArray(settings.hiddenSections) ? settings.hiddenSections : []);
+            }
+          } catch {}
         }
       } finally {
-        if (active) hasLoadedRef.current = true;
+        if (active) {
+          hasLoadedRef.current = true;
+        }
       }
     };
 
     loadLatestSavedCv();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
+
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: `${cvData.personalInfo.fullName || "CV"}_Resume`,
   });
 
-  // Toggle ẩn / hiện khối
-  const handleToggleHide = (key) => {
-    setHiddenSections((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
-    );
+  // Toggle ẩn / hiện khối (lưu dưới dạng mảng các sectionKey bị ẩn)
+  const handleToggleHide = (sectionKey) => {
+    setHiddenSections((prev) => {
+      const arr = Array.isArray(prev) ? prev : [];
+      if (arr.includes(sectionKey)) {
+        return arr.filter((k) => k !== sectionKey);
+      } else {
+        return [...arr, sectionKey];
+      }
+    });
   };
 
-  /* ── Form Event Handlers ── */
+  // Cập nhật thứ tự các khối
+  const handleReorder = (newOrder) => {
+    setSectionOrder(newOrder);
+  };
+
+  // Cập nhật thông tin cá nhân
   const handlePersonalInfoChange = (e) => {
     const { name, value } = e.target;
     setCvData((prev) => ({
@@ -213,51 +324,36 @@ export default function CVBuilder() {
     }));
   };
 
-  const handleSummaryChange = (e) =>
+  // Cập nhật tóm tắt
+  const handleSummaryChange = (e) => {
     setCvData((prev) => ({ ...prev, summary: e.target.value }));
-  const handleApplyAiText = (originalText, rewrittenText) => {
-    const source = originalText?.trim();
-    if (!source || !rewrittenText) return false;
-
-    let replaced = false;
-    const replaceFirstMatch = (value) => {
-      if (replaced) return value;
-      if (typeof value === "string") {
-        const index = value.indexOf(source);
-        if (index === -1) return value;
-        replaced = true;
-        return value.slice(0, index) + rewrittenText + value.slice(index + source.length);
-      }
-      if (Array.isArray(value)) return value.map(replaceFirstMatch);
-      if (value && typeof value === "object") {
-        return Object.fromEntries(
-          Object.entries(value).map(([key, nestedValue]) => [key, replaceFirstMatch(nestedValue)])
-        );
-      }
-      return value;
-    };
-
-    setCvData((prev) => replaceFirstMatch(prev));
-    return true;
   };
 
-  const addArrayItem = (key, item) =>
-    setCvData((prev) => ({ ...prev, [key]: [...prev[key], item] }));
+  // Quản lý mảng (Experience, Education, Projects, CustomSections)
+  const addArrayItem = (key, defaultObj) => {
+    setCvData((prev) => ({
+      ...prev,
+      [key]: [...(prev[key] || []), defaultObj],
+    }));
+  };
 
-  const updateArrayItem = (key, idx, field, value) =>
+  const removeArrayItem = (key, index) => {
     setCvData((prev) => {
-      const arr = [...prev[key]];
-      arr[idx] = { ...arr[idx], [field]: value };
+      const arr = [...(prev[key] || [])];
+      arr.splice(index, 1);
       return { ...prev, [key]: arr };
     });
+  };
 
-  const removeArrayItem = (key, idx) =>
+  const updateArrayItem = (key, index, field, value) => {
     setCvData((prev) => {
-      const arr = [...prev[key]];
-      arr.splice(idx, 1);
+      const arr = [...(prev[key] || [])];
+      arr[index] = { ...arr[index], [field]: value };
       return { ...prev, [key]: arr };
     });
+  };
 
+  // Quản lý Kỹ năng (Chips)
   const addSkill = () => {
     if (!skillInput.trim()) return;
     setCvData((prev) => ({
@@ -274,23 +370,86 @@ export default function CVBuilder() {
       return { ...prev, skills: s };
     });
 
-  /* ── Upload Avatar ── */
+  /* Upload Avatar: Chuyển đổi thành Base64 Data URL chuẩn và nén nhẹ với Canvas để lưu vĩnh viễn */
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      showToast("Vui lòng chọn file ảnh (JPG, PNG...)", "warning");
+      if (showToast && typeof showToast.warning === "function") {
+        showToast.warning("Vui lòng chọn file ảnh (JPG, PNG...)");
+      }
       return;
     }
-    const previewUrl = URL.createObjectURL(file);
-    setAvatarPreview(previewUrl);
-    setCvData((prev) => ({
-      ...prev,
-      personalInfo: { ...prev.personalInfo, avatarUrl: previewUrl },
-    }));
+
+    if (file.size > 5 * 1024 * 1024) {
+      if (showToast && typeof showToast.warning === "function") {
+        showToast.warning("Dung lượng ảnh tối đa là 5MB");
+      }
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64Str = event.target?.result;
+      if (!base64Str) return;
+
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const maxDim = 400;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          }
+        } else {
+          if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const optimizedDataUrl = canvas.toDataURL("image/jpeg", 0.85);
+
+        setAvatarPreview(optimizedDataUrl);
+        setCvData((prev) => ({
+          ...prev,
+          personalInfo: { ...prev.personalInfo, avatarUrl: optimizedDataUrl },
+        }));
+
+        if (showToast && typeof showToast.success === "function") {
+          showToast.success("Đã tải ảnh lên và lưu vào bản nháp!");
+        }
+      };
+      img.src = base64Str;
+    };
+    reader.readAsDataURL(file);
   };
 
-  /* ── Lưu CV ── */
+  /* Xóa ảnh đại diện */
+  const handleRemoveAvatar = () => {
+    setAvatarPreview(null);
+    setCvData((prev) => ({
+      ...prev,
+      personalInfo: { ...prev.personalInfo, avatarUrl: "" },
+    }));
+    if (avatarInputRef.current) {
+      avatarInputRef.current.value = "";
+    }
+    if (showToast && typeof showToast.info === "function") {
+      showToast.info("Đã gỡ ảnh đại diện");
+    }
+  };
+
+  /* Chỉnh sửa nội dung trực tiếp trên bản xem trước (Inline Editing) */
   const handleInlineUpdate = (path, newText) => {
     if (!path) return;
     setCvData((prev) => {
@@ -320,6 +479,7 @@ export default function CVBuilder() {
     });
   };
 
+  /* Tự động lưu (Auto-save) vào LocalStorage & Backend API */
   useEffect(() => {
     if (!hasLoadedRef.current) return;
 
@@ -338,125 +498,161 @@ export default function CVBuilder() {
       try {
         const payload = {
           fileName: `${cvData.personalInfo.fullName || "Untitled"}_CV`,
-          cvText: snapshot,
+          cvText: JSON.stringify({ cvData, settings }),
         };
-        const response = savedCvId
-          ? await axios.put(`/api/user/cvs/${savedCvId}`, payload)
-          : await axios.post("/api/user/cvs", payload);
 
-        setSavedCvId(response.data.cvId);
+        if (savedCvId) {
+          await axios.put(`/api/user/cvs/${savedCvId}`, payload);
+        } else {
+          const createRes = await axios.post("/api/user/cvs", payload);
+          if (createRes.data?.cvId) {
+            setSavedCvId(createRes.data.cvId);
+          }
+        }
         lastSavedSnapshotRef.current = snapshot;
         setAutoSaveStatus("saved");
-      } catch (error) {
-        console.error("Không thể tự động lưu CV:", error);
+      } catch {
         setAutoSaveStatus("local");
       }
     }, 1500);
 
     return () => clearTimeout(autoSaveTimerRef.current);
   }, [cvData, selectedTemplate, primaryColor, fontFamily, sectionOrder, hiddenSections, savedCvId]);
-  const { personalInfo, summary, experience, education, skills, projects = [], customSections = [] } = cvData;
+
+  // Ghi nhận lịch sử phục vụ Undo / Redo
+  useEffect(() => {
+    if (isHistoryActionRef.current) {
+      isHistoryActionRef.current = false;
+      return;
+    }
+    const currentHist = historyRef.current.slice(0, historyIndexRef.current + 1);
+    currentHist.push(cvData);
+    if (currentHist.length > 25) currentHist.shift();
+    historyRef.current = currentHist;
+    historyIndexRef.current = currentHist.length - 1;
+  }, [cvData]);
+
+  const handleUndo = () => {
+    if (historyIndexRef.current > 0) {
+      historyIndexRef.current -= 1;
+      isHistoryActionRef.current = true;
+      const target = historyRef.current[historyIndexRef.current];
+      setCvData(target);
+      if (target?.personalInfo?.avatarUrl) {
+        setAvatarPreview(target.personalInfo.avatarUrl);
+      }
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyIndexRef.current < historyRef.current.length - 1) {
+      historyIndexRef.current += 1;
+      isHistoryActionRef.current = true;
+      const target = historyRef.current[historyIndexRef.current];
+      setCvData(target);
+      if (target?.personalInfo?.avatarUrl) {
+        setAvatarPreview(target.personalInfo.avatarUrl);
+      }
+    }
+  };
+
+  // Thuộc tính tiện ích
+  const personalInfo = cvData.personalInfo || {};
+  const experience = cvData.experience || [];
+  const education = cvData.education || [];
+  const skills = cvData.skills || [];
+  const projects = cvData.projects || [];
+  const customSections = cvData.customSections || [];
+
+  const isModern = selectedTemplate === "modern" || selectedTemplate === "template-modern";
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "calc(100vh - 65px)", bgcolor: "#ffffff", overflow: "hidden" }}>
-      {/* 1. TOP ACTION BAR (Global Settings Only) */}
+    <Box sx={{ bgcolor: "#F4F6F8", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      {/* 1. TOP BAR ĐIỀU KHIỂN & CÔNG CỤ */}
       <CVStudioTopBar
         selectedTemplate={selectedTemplate}
-        onSelectTemplate={setSelectedTemplate}
+        onSelectTemplate={handleSelectTemplate}
         primaryColor={primaryColor}
-        onSelectColor={setPrimaryColor}
+        onSelectColor={handleSelectColor}
         fontFamily={fontFamily}
-        onSelectFont={setFontFamily}
-        autoSaveStatus={autoSaveStatus}
+        onSelectFont={handleSelectFont}
+        zoomLevel={zoomLevel}
+        setZoomLevel={setZoomLevel}
+        onPrint={handlePrint}
         onDownload={handlePrint}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        canUndo={historyIndexRef.current > 0}
+        canRedo={historyIndexRef.current < historyRef.current.length - 1}
+        autoSaveStatus={autoSaveStatus}
+        activeTab={activeLeftTab}
+        setActiveTab={setActiveLeftTab}
       />
 
-      {/* 2. SPLIT VIEW BODY */}
-      <Box ref={splitViewRef} sx={{ display: "flex", flex: 1, overflow: "hidden" }}>
-        {/* ================= CỘT TRÁI: CONTROLLER (380px) ================= */}
-        <Box
+      {/* 2. BODY CHÍNH: CỘT NHẬP DỮ LIỆU & BẢN XEM TRƯỚC */}
+      <Box sx={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
+        {/* CỘT TRÁI: FORM ĐIỀN THÔNG TIN & SẮP XẾP KHỐI (410px) */}
+        <Paper
+          elevation={0}
           sx={{
-            width: "380px",
-            minWidth: "380px",
+            width: { xs: "100%", md: 410 },
+            borderRight: "1px solid #E2E8F0",
             bgcolor: "#ffffff",
-            borderRight: "1px solid #e2e8f0",
             display: "flex",
             flexDirection: "column",
-            height: "100%",
-            boxSizing: "border-box",
+            height: "calc(100vh - 64px)",
+            zIndex: 10,
           }}
         >
-          {/* TABS CHUYỂN ĐỔI: NỘI DUNG vs SẮP XẾP KHỐI */}
-          <Box
-            sx={{
-              p: 1.5,
-              borderBottom: "1px solid #e2e8f0",
-              bgcolor: "#f8fafc",
-              display: "flex",
-              gap: 1,
-            }}
-          >
-            <Button
-              fullWidth
-              size="small"
-              onClick={() => setActiveTab("content")}
-              startIcon={<FileText size={16} />}
-              sx={{
-                textTransform: "none",
-                fontWeight: 700,
-                fontSize: "0.85rem",
-                borderRadius: "8px",
-                py: 0.9,
-                bgcolor: activeTab === "content" ? "#ffffff" : "transparent",
-                color: activeTab === "content" ? "#1D61F2" : "#64748b",
-                boxShadow: activeTab === "content" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
-                border: activeTab === "content" ? "1px solid #cbd5e1" : "1px solid transparent",
-                "&:hover": {
-                  bgcolor: activeTab === "content" ? "#ffffff" : "#f1f5f9",
-                },
-              }}
-            >
-              Nội dung
-            </Button>
-
-            <Button
-              fullWidth
-              size="small"
-              onClick={() => setActiveTab("reorder")}
-              startIcon={<Layers size={16} />}
-              sx={{
-                textTransform: "none",
-                fontWeight: 700,
-                fontSize: "0.85rem",
-                borderRadius: "8px",
-                py: 0.9,
-                bgcolor: activeTab === "reorder" ? "#ffffff" : "transparent",
-                color: activeTab === "reorder" ? "#1D61F2" : "#64748b",
-                boxShadow: activeTab === "reorder" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
-                border: activeTab === "reorder" ? "1px solid #cbd5e1" : "1px solid transparent",
-                "&:hover": {
-                  bgcolor: activeTab === "reorder" ? "#ffffff" : "#f1f5f9",
-                },
-              }}
-            >
-              Sắp xếp khối
-            </Button>
+          {/* Header Chuyển Tab Bên Trái */}
+          <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0" }}>
+            <Stack direction="row" spacing={1} sx={{ bgcolor: "#f1f5f9", p: 0.5, borderRadius: "10px" }}>
+              <Button
+                fullWidth
+                size="small"
+                startIcon={<FileText size={16} />}
+                onClick={() => setActiveLeftTab("content")}
+                sx={{
+                  borderRadius: "8px",
+                  fontWeight: 800,
+                  fontSize: "0.82rem",
+                  textTransform: "none",
+                  bgcolor: activeLeftTab === "content" ? "#ffffff" : "transparent",
+                  color: activeLeftTab === "content" ? "#1D61F2" : "#64748b",
+                  boxShadow: activeLeftTab === "content" ? "0 2px 6px rgba(0,0,0,0.06)" : "none",
+                  "&:hover": { bgcolor: activeLeftTab === "content" ? "#ffffff" : "rgba(0,0,0,0.03)" },
+                }}
+              >
+                Nội dung CV
+              </Button>
+              <Button
+                fullWidth
+                size="small"
+                startIcon={<Layers size={16} />}
+                onClick={() => setActiveLeftTab("reorder")}
+                sx={{
+                  borderRadius: "8px",
+                  fontWeight: 800,
+                  fontSize: "0.82rem",
+                  textTransform: "none",
+                  bgcolor: activeLeftTab === "reorder" ? "#ffffff" : "transparent",
+                  color: activeLeftTab === "reorder" ? "#1D61F2" : "#64748b",
+                  boxShadow: activeLeftTab === "reorder" ? "0 2px 6px rgba(0,0,0,0.06)" : "none",
+                  "&:hover": { bgcolor: activeLeftTab === "reorder" ? "#ffffff" : "rgba(0,0,0,0.03)" },
+                }}
+              >
+                Bố cục & Ẩn/Hiện
+              </Button>
+            </Stack>
           </Box>
 
-          {/* NỘI DUNG CUỘN ĐỘC LẬP */}
-          <Box
-            sx={{
-              flex: 1,
-              overflowY: "auto",
-              p: 2,
-              "&::-webkit-scrollbar": { width: 6 },
-              "&::-webkit-scrollbar-thumb": { bgcolor: "#cbd5e1", borderRadius: 3 },
-            }}
-          >
-            {activeTab === "reorder" ? (
+          {/* Nội dung danh mục hoặc Kéo thả sắp xếp */}
+          <Box sx={{ flex: 1, overflowY: "auto", p: 2 }}>
+            {activeLeftTab === "reorder" ? (
               <CVSectionReorder
                 sectionOrder={sectionOrder}
-                onReorder={setSectionOrder}
+                onReorder={handleReorder}
+                setSectionOrder={handleReorder}
                 hiddenSections={hiddenSections}
                 onToggleHide={handleToggleHide}
               />
@@ -513,29 +709,49 @@ export default function CVBuilder() {
                           <Typography variant="body2" fontWeight={700} color="#334155">
                             Ảnh đại diện
                           </Typography>
-                          <Typography variant="caption" color="#94a3b8">
-                            Hỗ trợ JPG, PNG (tối đa 5MB)
+                          <Typography variant="caption" color="#94a3b8" sx={{ display: "block", mb: 0.5 }}>
+                            Hỗ trợ JPG, PNG (tự động lưu vĩnh viễn)
                           </Typography>
+                          <Stack direction="row" spacing={1}>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() => avatarInputRef.current?.click()}
+                              sx={{ textTransform: "none", fontSize: "0.72rem", py: 0.2, px: 1, borderRadius: "6px" }}
+                            >
+                              Tải ảnh lên
+                            </Button>
+                            {(avatarPreview || personalInfo.avatarUrl) && (
+                              <Button
+                                size="small"
+                                color="error"
+                                onClick={handleRemoveAvatar}
+                                sx={{ textTransform: "none", fontSize: "0.72rem", py: 0.2, px: 1 }}
+                              >
+                                Xóa ảnh
+                              </Button>
+                            )}
+                          </Stack>
                         </Box>
                       </Stack>
 
-                      <TextField fullWidth size="small" label="Họ và tên" name="fullName" value={personalInfo.fullName} onChange={handlePersonalInfoChange} />
-                      <TextField fullWidth size="small" label="Vị trí ứng tuyển" name="title" value={personalInfo.title} onChange={handlePersonalInfoChange} />
-                      <TextField fullWidth size="small" label="Email" type="email" name="email" value={personalInfo.email} onChange={handlePersonalInfoChange} />
-                      <TextField fullWidth size="small" label="Số điện thoại" name="phone" value={personalInfo.phone} onChange={handlePersonalInfoChange} />
-                      <TextField fullWidth size="small" label="GitHub (link / username)" name="github" placeholder="github.com/username" value={personalInfo.github || ""} onChange={handlePersonalInfoChange} />
-                      <TextField fullWidth size="small" label="LinkedIn / Portfolio" name="linkedin" value={personalInfo.linkedin} onChange={handlePersonalInfoChange} />
+                      <TextField fullWidth size="small" label="Họ và tên" name="fullName" value={personalInfo.fullName || ""} onChange={handlePersonalInfoChange} />
+                      <TextField fullWidth size="small" label="Chức danh mong muốn" name="title" value={personalInfo.title || ""} onChange={handlePersonalInfoChange} />
+                      <TextField fullWidth size="small" label="Email" name="email" value={personalInfo.email || ""} onChange={handlePersonalInfoChange} />
+                      <TextField fullWidth size="small" label="Số điện thoại" name="phone" value={personalInfo.phone || ""} onChange={handlePersonalInfoChange} />
+                      <TextField fullWidth size="small" label="GitHub Profile" name="github" value={personalInfo.github || ""} onChange={handlePersonalInfoChange} />
+                      <TextField fullWidth size="small" label="LinkedIn Profile" name="linkedin" value={personalInfo.linkedin || ""} onChange={handlePersonalInfoChange} />
                     </Stack>
                   </AccordionDetails>
                 </Accordion>
 
-                {/* 2. Mục tiêu nghề nghiệp */}
-                <Accordion elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: "10px !important", "&:before": { display: "none" } }}>
+                {/* 2. Mục tiêu nghề nghiệp / Giới thiệu */}
+                <Accordion defaultExpanded elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: "10px !important", "&:before": { display: "none" } }}>
                   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Stack direction="row" spacing={1} alignItems="center">
                       <SummaryIcon sx={{ color: "#1D61F2", fontSize: 20 }} />
                       <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
-                        Mục tiêu nghề nghiệp
+                        Tóm tắt / Mục tiêu nghề nghiệp
                       </Typography>
                     </Stack>
                   </AccordionSummary>
@@ -543,16 +759,17 @@ export default function CVBuilder() {
                     <TextField
                       fullWidth
                       multiline
-                      rows={4}
-                      placeholder="Mô tả tóm tắt kỹ năng nổi bật, kinh nghiệm cốt lõi và định hướng phát triển sự nghiệp..."
-                      value={summary}
+                      minRows={3}
+                      size="small"
+                      placeholder="Viết đoạn văn ngắn 2-4 câu nổi bật kinh nghiệm và mục tiêu làm việc..."
+                      value={cvData.summary || ""}
                       onChange={handleSummaryChange}
                     />
                   </AccordionDetails>
                 </Accordion>
 
                 {/* 3. Kinh nghiệm làm việc */}
-                <Accordion elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: "10px !important", "&:before": { display: "none" } }}>
+                <Accordion defaultExpanded elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: "10px !important", "&:before": { display: "none" } }}>
                   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Stack direction="row" spacing={1} alignItems="center">
                       <WorkIcon sx={{ color: "#1D61F2", fontSize: 20 }} />
@@ -574,13 +791,22 @@ export default function CVBuilder() {
                             </IconButton>
                           </Stack>
                           <Stack spacing={1.2}>
-                            <TextField fullWidth size="small" label="Vị trí / Chức danh" value={exp.role} onChange={(e) => updateArrayItem("experience", idx, "role", e.target.value)} />
-                            <TextField fullWidth size="small" label="Tên công ty" value={exp.company} onChange={(e) => updateArrayItem("experience", idx, "company", e.target.value)} />
+                            <TextField fullWidth size="small" label="Chức danh / Vị trí" value={exp.role || ""} onChange={(e) => updateArrayItem("experience", idx, "role", e.target.value)} />
+                            <TextField fullWidth size="small" label="Tên công ty" value={exp.company || ""} onChange={(e) => updateArrayItem("experience", idx, "company", e.target.value)} />
                             <Stack direction="row" spacing={1}>
-                              <TextField fullWidth size="small" label="Bắt đầu" placeholder="MM/YYYY" value={exp.startDate} onChange={(e) => updateArrayItem("experience", idx, "startDate", e.target.value)} />
-                              <TextField fullWidth size="small" label="Kết thúc" placeholder="MM/YYYY hoặc Hiện tại" value={exp.endDate} onChange={(e) => updateArrayItem("experience", idx, "endDate", e.target.value)} />
+                              <TextField fullWidth size="small" label="Bắt đầu" placeholder="MM/YYYY" value={exp.startDate || ""} onChange={(e) => updateArrayItem("experience", idx, "startDate", e.target.value)} />
+                              <TextField fullWidth size="small" label="Kết thúc" placeholder="MM/YYYY hoặc Hiện tại" value={exp.endDate || ""} onChange={(e) => updateArrayItem("experience", idx, "endDate", e.target.value)} />
                             </Stack>
-                            <TextField fullWidth size="small" multiline rows={3} label="Mô tả công việc & kết quả" value={exp.description} onChange={(e) => updateArrayItem("experience", idx, "description", e.target.value)} />
+                            <TextField
+                              fullWidth
+                              size="small"
+                              multiline
+                              minRows={3}
+                              label="Mô tả công việc & Thành tích nổi bật"
+                              placeholder="• Sử dụng dấu gạch đầu dòng để làm nổi bật thành tích..."
+                              value={exp.description || ""}
+                              onChange={(e) => updateArrayItem("experience", idx, "description", e.target.value)}
+                            />
                           </Stack>
                         </Box>
                       ))}
@@ -622,11 +848,11 @@ export default function CVBuilder() {
                             </IconButton>
                           </Stack>
                           <Stack spacing={1.2}>
-                            <TextField fullWidth size="small" label="Bằng cấp / Chuyên ngành" value={edu.degree} onChange={(e) => updateArrayItem("education", idx, "degree", e.target.value)} />
-                            <TextField fullWidth size="small" label="Trường đào tạo" value={edu.school} onChange={(e) => updateArrayItem("education", idx, "school", e.target.value)} />
+                            <TextField fullWidth size="small" label="Bằng cấp / Chuyên ngành" value={edu.degree || ""} onChange={(e) => updateArrayItem("education", idx, "degree", e.target.value)} />
+                            <TextField fullWidth size="small" label="Trường đào tạo" value={edu.school || ""} onChange={(e) => updateArrayItem("education", idx, "school", e.target.value)} />
                             <Stack direction="row" spacing={1}>
-                              <TextField fullWidth size="small" label="Bắt đầu" placeholder="YYYY" value={edu.startDate} onChange={(e) => updateArrayItem("education", idx, "startDate", e.target.value)} />
-                              <TextField fullWidth size="small" label="Kết thúc" placeholder="YYYY" value={edu.endDate} onChange={(e) => updateArrayItem("education", idx, "endDate", e.target.value)} />
+                              <TextField fullWidth size="small" label="Bắt đầu" placeholder="YYYY" value={edu.startDate || ""} onChange={(e) => updateArrayItem("education", idx, "startDate", e.target.value)} />
+                              <TextField fullWidth size="small" label="Kết thúc" placeholder="YYYY" value={edu.endDate || ""} onChange={(e) => updateArrayItem("education", idx, "endDate", e.target.value)} />
                             </Stack>
                           </Stack>
                         </Box>
@@ -662,34 +888,34 @@ export default function CVBuilder() {
                         <TextField
                           fullWidth
                           size="small"
-                          placeholder="VD: React.js, Docker, Java..."
+                          placeholder="Ví dụ: React.js, Docker, Scrum..."
                           value={skillInput}
                           onChange={(e) => setSkillInput(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && addSkill()}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              addSkill();
+                            }
+                          }}
                         />
                         <Button
                           variant="contained"
                           size="small"
                           onClick={addSkill}
-                          sx={{ textTransform: "none", fontWeight: 700, bgcolor: "#1D61F2", "&:hover": { bgcolor: "#1752cd" } }}
+                          sx={{ textTransform: "none", fontWeight: 700, bgcolor: "#1D61F2" }}
                         >
                           Thêm
                         </Button>
                       </Stack>
 
-                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8 }}>
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8, pt: 0.5 }}>
                         {skills.map((skill, idx) => (
                           <Chip
                             key={idx}
                             label={skill}
                             onDelete={() => removeSkill(idx)}
                             size="small"
-                            sx={{
-                              bgcolor: "#eff6ff",
-                              border: "1px solid #bfdbfe",
-                              color: "#1e40af",
-                              fontWeight: 600,
-                            }}
+                            sx={{ fontWeight: 600, bgcolor: "#eff6ff", color: "#1D61F2", borderColor: "#bfdbfe" }}
                           />
                         ))}
                       </Box>
@@ -697,13 +923,13 @@ export default function CVBuilder() {
                   </AccordionDetails>
                 </Accordion>
 
-                {/* 6. Dự án tiêu biểu */}
+                {/* 6. Dự án nổi bật */}
                 <Accordion elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: "10px !important", "&:before": { display: "none" } }}>
                   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Stack direction="row" spacing={1} alignItems="center">
                       <ProjectIcon sx={{ color: "#1D61F2", fontSize: 20 }} />
                       <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
-                        Dự án tiêu biểu ({projects.length})
+                        Dự án nổi bật ({projects.length})
                       </Typography>
                     </Stack>
                   </AccordionSummary>
@@ -720,10 +946,18 @@ export default function CVBuilder() {
                             </IconButton>
                           </Stack>
                           <Stack spacing={1.2}>
-                            <TextField fullWidth size="small" label="Tên dự án" value={proj.name} onChange={(e) => updateArrayItem("projects", idx, "name", e.target.value)} />
-                            <TextField fullWidth size="small" label="Vai trò" value={proj.role} onChange={(e) => updateArrayItem("projects", idx, "role", e.target.value)} />
-                            <TextField fullWidth size="small" label="Link / Github" value={proj.link} onChange={(e) => updateArrayItem("projects", idx, "link", e.target.value)} />
-                            <TextField fullWidth size="small" multiline rows={2} label="Mô tả dự án & công nghệ" value={proj.description} onChange={(e) => updateArrayItem("projects", idx, "description", e.target.value)} />
+                            <TextField fullWidth size="small" label="Tên dự án" value={proj.name || ""} onChange={(e) => updateArrayItem("projects", idx, "name", e.target.value)} />
+                            <TextField fullWidth size="small" label="Vai trò trong dự án" value={proj.role || ""} onChange={(e) => updateArrayItem("projects", idx, "role", e.target.value)} />
+                            <TextField fullWidth size="small" label="Link dự án / Demo / GitHub" value={proj.link || ""} onChange={(e) => updateArrayItem("projects", idx, "link", e.target.value)} />
+                            <TextField
+                              fullWidth
+                              size="small"
+                              multiline
+                              minRows={2}
+                              label="Mô tả công nghệ & Kết quả đạt được"
+                              value={proj.description || ""}
+                              onChange={(e) => updateArrayItem("projects", idx, "description", e.target.value)}
+                            />
                           </Stack>
                         </Box>
                       ))}
@@ -742,58 +976,52 @@ export default function CVBuilder() {
                   </AccordionDetails>
                 </Accordion>
 
-                {/* Khối nội dung tùy chỉnh */}
+                {/* 7. Khối tùy chỉnh thêm */}
                 <Accordion elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: "10px !important", "&:before": { display: "none" } }}>
                   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Stack direction="row" spacing={1} alignItems="center">
                       <CustomSectionIcon sx={{ color: "#1D61F2", fontSize: 20 }} />
                       <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
-                        Nội dung tùy chỉnh ({customSections.length})
+                        Mục bổ sung ({customSections.length})
                       </Typography>
                     </Stack>
                   </AccordionSummary>
                   <AccordionDetails sx={{ pt: 0 }}>
                     <Stack spacing={2}>
-                      {customSections.map((section, idx) => (
-                        <Box key={section.id || idx} sx={{ p: 1.5, border: "1px solid #e2e8f0", borderRadius: "8px", bgcolor: "#f8fafc" }}>
+                      {customSections.map((sec, idx) => (
+                        <Box key={idx} sx={{ p: 1.5, border: "1px solid #e2e8f0", borderRadius: "8px", bgcolor: "#f8fafc" }}>
                           <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
                             <Typography variant="caption" fontWeight={800} color="#1D61F2">
-                              Mục tùy chỉnh #{idx + 1}
+                              Mục #{idx + 1}
                             </Typography>
                             <IconButton size="small" color="error" onClick={() => removeArrayItem("customSections", idx)}>
                               <DeleteIcon fontSize="small" />
                             </IconButton>
                           </Stack>
                           <Stack spacing={1.2}>
-                            <TextField
-                              fullWidth
-                              size="small"
-                              label="Tiêu đề"
-                              placeholder="VD: Chứng chỉ, Giải thưởng, Ngoại ngữ..."
-                              value={section.title}
-                              onChange={(e) => updateArrayItem("customSections", idx, "title", e.target.value)}
-                            />
+                            <TextField fullWidth size="small" label="Tiêu đề mục (VD: Chứng chỉ, Giải thưởng)" value={sec.title || ""} onChange={(e) => updateArrayItem("customSections", idx, "title", e.target.value)} />
                             <TextField
                               fullWidth
                               size="small"
                               multiline
-                              minRows={3}
-                              label="Nội dung"
-                              value={section.content}
+                              minRows={2}
+                              label="Nội dung chi tiết"
+                              value={sec.content || ""}
                               onChange={(e) => updateArrayItem("customSections", idx, "content", e.target.value)}
                             />
                           </Stack>
                         </Box>
                       ))}
+
                       <Button
                         fullWidth
                         variant="outlined"
                         size="small"
                         startIcon={<Plus size={16} />}
-                        onClick={() => addArrayItem("customSections", { id: `${Date.now()}-${Math.random()}`, title: "", content: "" })}
+                        onClick={() => addArrayItem("customSections", { title: "", content: "" })}
                         sx={{ textTransform: "none", fontWeight: 700, borderRadius: "8px", borderColor: "#cbd5e1", color: "#1D61F2" }}
                       >
-                        Thêm mục nội dung
+                        Thêm mục tùy chỉnh
                       </Button>
                     </Stack>
                   </AccordionDetails>
@@ -801,73 +1029,72 @@ export default function CVBuilder() {
               </Stack>
             )}
           </Box>
-        </Box>
+        </Paper>
 
-        {/* ================= CỘT PHẢI: INTERACTIVE CANVAS PREVIEW ================= */}
+        {/* CỘT PHẢI: KHÔNG GIAN XEM TRƯỚC VÀ IN ẤN CANVAS A4 */}
         <Box
-          ref={canvasRef}
           sx={{
             flex: 1,
-            bgcolor: "#f1f5f9",
-            overflowY: "auto",
+            height: "calc(100vh - 64px)",
+            overflow: "auto",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            p: { xs: 2, sm: 3, md: 4 },
-            position: "relative",
-            "&::-webkit-scrollbar": { width: 8 },
-            "&::-webkit-scrollbar-thumb": { bgcolor: "#cbd5e1", borderRadius: 4 },
+            p: { xs: 2, md: 4 },
+            bgcolor: "#f1f5f9",
           }}
         >
-          {/* Floating Bubble Toolbar khi bôi đen văn bản trong phạm vi tờ CV hoặc Form nhập liệu */}
-          <CVFloatingSelectionToolbar
-            containerRef={splitViewRef}
-            cvId={savedCvId}
-            onApplyText={handleApplyAiText}
-          />
-
-          {/* Khung Trang Giấy A4 Tỷ Lệ Chuẩn (width: 794px, min-height: 1123px) */}
-          <Paper
-            elevation={4}
+          {/* Vùng Canvas A4 với Zoom Level */}
+          <Box
             sx={{
-              width: "794px",
-              minHeight: "1123px",
-              bgcolor: "#ffffff",
-              borderRadius: "4px",
-              boxShadow: "0 12px 48px rgba(15, 23, 42, 0.12)",
-              overflow: "hidden",
-              boxSizing: "border-box",
-              mb: 6,
+              transform: `scale(${zoomLevel})`,
+              transformOrigin: "top center",
+              transition: "transform 0.15s ease-out",
+              mb: 8,
             }}
           >
-            {selectedTemplate === "modern" ? (
-              <ModernTwoColumnTemplate
-                ref={printRef}
-                data={cvData}
-                primaryColor={primaryColor}
-                fontFamily={fontFamily}
-                hiddenSections={hiddenSections}
-                sectionOrder={sectionOrder}
-                isEditable={true}
-                onInlineUpdate={handleInlineUpdate}
-              />
-            ) : (
-              <ClassicTemplate
-                ref={printRef}
-                data={cvData}
-                primaryColor={primaryColor}
-                fontFamily={fontFamily}
-                hiddenSections={hiddenSections}
-                sectionOrder={sectionOrder}
-                isEditable={true}
-                onInlineUpdate={handleInlineUpdate}
-              />
-            )}
-          </Paper>
+            <Paper
+              ref={printRef}
+              elevation={4}
+              sx={{
+                width: "210mm",
+                minHeight: "297mm",
+                bgcolor: "#ffffff",
+                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+                borderRadius: "2px",
+                overflow: "hidden",
+                boxSizing: "border-box",
+                fontFamily: fontFamily,
+              }}
+            >
+              {isModern ? (
+                <ModernTwoColumnTemplate
+                  data={cvData}
+                  cvData={cvData}
+                  primaryColor={primaryColor}
+                  fontFamily={fontFamily}
+                  sectionOrder={sectionOrder}
+                  hiddenSections={hiddenSections}
+                  onInlineUpdate={handleInlineUpdate}
+                />
+              ) : (
+                <ClassicTemplate
+                  data={cvData}
+                  cvData={cvData}
+                  primaryColor={primaryColor}
+                  fontFamily={fontFamily}
+                  sectionOrder={sectionOrder}
+                  hiddenSections={hiddenSections}
+                  onInlineUpdate={handleInlineUpdate}
+                />
+              )}
+            </Paper>
+          </Box>
+
+          {/* Thanh công cụ định dạng nổi khi bôi đen văn bản (Floating Selection Toolbar) */}
+          <CVFloatingSelectionToolbar />
         </Box>
       </Box>
-
-
     </Box>
   );
 }

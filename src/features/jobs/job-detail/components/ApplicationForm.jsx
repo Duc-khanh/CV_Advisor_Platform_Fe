@@ -1,4 +1,4 @@
-import {
+﻿import {
   Box,
   Button,
   Checkbox,
@@ -27,7 +27,7 @@ export default function ApplicationForm({
       <CvSourceSelector {...cv} />
 
       <TextField
-        label="Họ và tên *"
+        label="Họ và tên"
         fullWidth
         size="small"
         value={formData.fullName}
@@ -38,7 +38,7 @@ export default function ApplicationForm({
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
-            label="Email *"
+            label="Email"
             type="email"
             fullWidth
             size="small"
@@ -49,7 +49,7 @@ export default function ApplicationForm({
         </Grid>
         <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
-            label="Số điện thoại *"
+            label="Số điện thoại"
             fullWidth
             size="small"
             value={formData.phone}
@@ -64,25 +64,88 @@ export default function ApplicationForm({
         multiline
         rows={3}
         fullWidth
-        placeholder="Viết ngắn gọn..."
+        placeholder="Viết ngắn gọn lý do bạn phù hợp với vị trí này..."
         value={formData.coverLetter}
         onChange={updateField("coverLetter")}
       />
 
-      <Box>
+      <Stack spacing={0.5}>
         <FormControlLabel
-          control={<Checkbox size="small" checked={formData.agreeTerms} onChange={updateField("agreeTerms")} color="success" />}
-          label={<Typography variant="caption">Tôi đồng ý với điều khoản sử dụng</Typography>}
+          control={
+            <Checkbox
+              size="small"
+              checked={formData.agreeTerms}
+              onChange={updateField("agreeTerms")}
+              color="primary"
+            />
+          }
+          label={
+            <Typography variant="body2" sx={{ fontSize: "0.85rem", color: "#334155" }}>
+              Tôi đồng ý với{" "}
+              <Box
+                component="a"
+                href="/privacy-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                sx={{
+                  color: "#2563eb",
+                  fontWeight: 700,
+                  textDecoration: "underline",
+                  cursor: "pointer",
+                  "&:hover": {
+                    color: "#1d4ed8",
+                  },
+                }}
+              >
+                Điều khoản dịch vụ & Chính sách bảo mật
+              </Box>
+            </Typography>
+          }
         />
         <FormControlLabel
-          control={<Checkbox size="small" checked={formData.allowAiAnalysis} onChange={updateField("allowAiAnalysis")} color="primary" />}
-          label={<Typography variant="caption">Cho phép AI phân tích CV</Typography>}
+          control={
+            <Checkbox
+              size="small"
+              checked={formData.allowAiAnalysis}
+              onChange={updateField("allowAiAnalysis")}
+              color="primary"
+            />
+          }
+          label={
+            <Typography variant="body2" sx={{ fontSize: "0.85rem", color: "#334155" }}>
+              Cho phép AI phân tích mức độ phù hợp của CV
+            </Typography>
+          }
         />
-      </Box>
+      </Stack>
 
-      <Stack direction="row" spacing={2} justifyContent="flex-end">
-        <Button variant="outlined" onClick={onCancel}>Hủy</Button>
-        <Button type="submit" variant="contained" disabled={applying}>
+      <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ pt: 1 }}>
+        <Button
+          variant="outlined"
+          onClick={onCancel}
+          sx={{
+            textTransform: "none",
+            fontWeight: 700,
+            borderRadius: 2,
+            px: 2.5,
+          }}
+        >
+          Hủy
+        </Button>
+        <Button
+          type="submit"
+          variant="contained"
+          disabled={applying || !formData.agreeTerms}
+          sx={{
+            textTransform: "none",
+            fontWeight: 800,
+            borderRadius: 2,
+            px: 3,
+            bgcolor: "#2563eb",
+            "&:hover": { bgcolor: "#1d4ed8" },
+          }}
+        >
           {applying ? "Đang xử lý..." : "Nộp hồ sơ"}
         </Button>
       </Stack>

@@ -4,24 +4,19 @@ import {
   Eye,
   EyeOff,
   User,
-  Sparkles,
   Briefcase,
   GraduationCap,
-  Wrench,
+  Sparkles,
   FolderGit2,
+  PlusCircle,
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import { Box, Typography, Stack, Tooltip, IconButton } from "@mui/material";
+import { Box, Typography, Stack, IconButton, Tooltip } from "@mui/material";
 
 export const SECTION_METADATA = {
-  personalInfo: {
-    title: "Thông tin cá nhân",
-    icon: <User size={16} />,
-    canHide: false,
-  },
   summary: {
-    title: "Mục tiêu nghề nghiệp",
+    title: "Tóm tắt / Giới thiệu",
     icon: <Sparkles size={16} />,
     canHide: true,
   },
@@ -37,24 +32,38 @@ export const SECTION_METADATA = {
   },
   skills: {
     title: "Kỹ năng chuyên môn",
-    icon: <Wrench size={16} />,
+    icon: <Sparkles size={16} />,
     canHide: true,
   },
   projects: {
-    title: "Dự án tiêu biểu",
+    title: "Dự án nổi bật",
     icon: <FolderGit2 size={16} />,
+    canHide: true,
+  },
+  customSections: {
+    title: "Mục bổ sung",
+    icon: <PlusCircle size={16} />,
     canHide: true,
   },
 };
 
 export default function CVSectionReorder({
-  sectionOrder,
+  sectionOrder = ["summary", "experience", "education", "skills", "projects", "customSections"],
   onReorder,
-  hiddenSections,
+  setSectionOrder,
+  hiddenSections = [],
   onToggleHide,
 }) {
   const [draggedIdx, setDraggedIdx] = useState(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
+
+  const handleReorderCallback = (newOrder) => {
+    if (typeof onReorder === "function") {
+      onReorder(newOrder);
+    } else if (typeof setSectionOrder === "function") {
+      setSectionOrder(newOrder);
+    }
+  };
 
   const handleDragStart = (e, index) => {
     setDraggedIdx(index);
@@ -80,7 +89,7 @@ export default function CVSectionReorder({
     const newOrder = [...sectionOrder];
     const [removed] = newOrder.splice(draggedIdx, 1);
     newOrder.splice(targetIdx, 0, removed);
-    onReorder(newOrder);
+    handleReorderCallback(newOrder);
     setDraggedIdx(null);
     setDragOverIdx(null);
   };
@@ -96,7 +105,14 @@ export default function CVSectionReorder({
     const newOrder = [...sectionOrder];
     const [removed] = newOrder.splice(index, 1);
     newOrder.splice(targetIdx, 0, removed);
-    onReorder(newOrder);
+    handleReorderCallback(newOrder);
+  };
+
+  const checkIsHidden = (key) => {
+    if (Array.isArray(hiddenSections)) {
+      return hiddenSections.includes(key);
+    }
+    return Boolean(hiddenSections?.[key]);
   };
 
   return (
@@ -144,7 +160,7 @@ export default function CVSectionReorder({
             icon: null,
             canHide: true,
           };
-          const isHidden = hiddenSections.includes(sectionKey);
+          const isHidden = checkIsHidden(sectionKey);
           const isBeingDragged = draggedIdx === index;
           const isDragTarget = dragOverIdx === index && draggedIdx !== index;
 
@@ -257,7 +273,7 @@ export default function CVSectionReorder({
                   <Tooltip title={isHidden ? "Hiện khối này trên CV" : "Ẩn khối này trên CV"}>
                     <IconButton
                       size="small"
-                      onClick={() => onToggleHide(sectionKey)}
+                      onClick={() => onToggleHide && onToggleHide(sectionKey)}
                       sx={{
                         p: 0.6,
                         color: isHidden ? "#94a3b8" : "#64748b",

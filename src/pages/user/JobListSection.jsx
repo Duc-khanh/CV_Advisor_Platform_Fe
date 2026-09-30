@@ -1,31 +1,30 @@
-import React, { useState, useEffect } from "react";
-import { Container, Pagination } from "@mui/material";
-import { motion } from "framer-motion";
+﻿import React, { useState, useEffect } from "react";
 import {
-  Sparkles,
+  Search,
   MapPin,
   Building2,
-  Heart,
-  ArrowRight,
-  Flame,
   Clock,
-  Briefcase,
-  Layers,
+  Flame,
+  ArrowRight,
+  Heart,
+  Sparkles,
+  RefreshCw,
 } from "lucide-react";
+import { motion } from "framer-motion";
+import { Container, Pagination } from "@mui/material";
 import { getMediaUrl } from "../../utils/urlHelpers";
 
-const getTimeAgo = (createdAt) => {
-  if (!createdAt) return "Gần đây";
+const getTimeAgo = (dateString) => {
+  if (!dateString) return "Vừa đăng";
   try {
-    const createdDate = new Date(createdAt);
+    const created = new Date(dateString);
     const now = new Date();
-    const diffMs = now - createdDate;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
+    const diffMs = now - created;
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffMins < 60) {
-      return `${Math.max(1, diffMins)} phút trước`;
+    if (diffHours < 1) {
+      return "Vừa đăng";
     } else if (diffHours < 24) {
       return `${diffHours} giờ trước`;
     } else {
@@ -55,7 +54,7 @@ export default function JobListSection({
   jobsPerPage = 12,
   loading,
   onShowAllJobs,
-  handleToggleFavorite,
+  handleToggleFavorite = () => {},
   handlePageChange,
   navigate,
   isHomePage = false,
@@ -120,9 +119,7 @@ export default function JobListSection({
       id="job-list-section"
       className="relative w-full py-8 bg-transparent border-0 outline-none"
     >
-
       <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, md: 5 }, position: "relative", zIndex: 10 }}>
-        
         {/* ===== SECTION HEADER & MINIMALIST SEGMENTED TABS ===== */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5 mb-8">
           <div>
@@ -140,7 +137,7 @@ export default function JobListSection({
             </p>
           </div>
 
-          {/* Minimalist Segmented Tabs Bar (Chuẩn phong cách Linear / macOS) */}
+          {/* Minimalist Segmented Tabs Bar */}
           <div className="inline-flex items-center p-1 bg-slate-200/50 rounded-xl self-start lg:self-auto">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id;
@@ -163,20 +160,33 @@ export default function JobListSection({
           </div>
         </div>
 
-        {/* ===== JOB CARDS GRID (TỐI GIẢN, TINH TẾ, ĐẬM CHẤT CÔNG NGHỆ) ===== */}
+        {/* ===== JOB CARDS GRID ===== */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-10 h-10 rounded-full border-2 border-slate-200 border-t-blue-600 animate-spin mb-3" />
-            <p className="text-xs font-bold text-slate-400">Đang đồng bộ dữ liệu việc làm...</p>
+            <p className="text-xs font-bold text-slate-400">Đang tải danh sách việc làm...</p>
           </div>
         ) : currentJobs.length === 0 ? (
-          <div className="text-center py-16 p-8 rounded-2xl bg-white border border-slate-200 max-w-md mx-auto">
-            <p className="text-sm font-bold text-slate-600">Không tìm thấy công việc phù hợp trong mục này.</p>
+          <div className="text-center py-16 p-8 rounded-2xl bg-white border border-slate-200 max-w-lg mx-auto shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mx-auto mb-3">
+              <Search className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-black text-slate-900 mb-1">
+              Không tìm thấy công việc phù hợp
+            </h3>
+            <p className="text-xs text-slate-500 font-medium mb-4">
+              Không có việc làm nào khớp với tiêu chí tìm kiếm hiện tại. Bạn hãy thử tìm với từ khóa khác hoặc quay lại danh sách tất cả việc làm.
+            </p>
             <button
-              onClick={() => setActiveTab("all")}
-              className="mt-3 px-4 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200 transition-all cursor-pointer"
+              type="button"
+              onClick={() => {
+                setActiveTab("all");
+                if (navigate) navigate("/search");
+              }}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold shadow-md shadow-blue-500/20 transition-all cursor-pointer"
             >
-              Xem tất cả việc làm
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Xem tất cả việc làm</span>
             </button>
           </div>
         ) : (
@@ -195,8 +205,8 @@ export default function JobListSection({
                   viewport={{ once: true }}
                   transition={{ duration: 0.3, delay: (index % 4) * 0.04 }}
                   whileHover={{ y: -4 }}
-                  onClick={() => navigate(`/job/${job.jobId}`)}
-                  className="group relative p-5 rounded-2xl bg-white shadow-xs hover:shadow-xl hover:shadow-slate-300/40 transition-all duration-300 cursor-pointer flex flex-col justify-between"
+                  onClick={() => navigate && navigate(`/job/${job.jobId}`)}
+                  className="group relative p-5 rounded-2xl bg-white shadow-xs hover:shadow-xl hover:shadow-slate-300/40 transition-all duration-300 cursor-pointer flex flex-col justify-between border border-slate-100/80"
                 >
                   <div>
                     {/* Top Row: Micro Tech Badge + Favorite Button */}
@@ -216,7 +226,7 @@ export default function JobListSection({
                         )}
                       </div>
 
-                      {/* Subtle Heart icon */}
+                      {/* Favorite Button */}
                       <button
                         type="button"
                         onClick={(e) => {
@@ -330,7 +340,6 @@ export default function JobListSection({
             )}
           </div>
         )}
-
       </Container>
     </div>
   );

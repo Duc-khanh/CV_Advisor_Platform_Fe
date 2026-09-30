@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Box, Paper, Typography, Button, Stack, Chip } from "@mui/material";
 import {
   Construction,
@@ -49,7 +49,7 @@ export default function UnderDevelopment({
           overflow: "hidden",
         }}
       >
-        {/* Subtle decorative top bar gradient */}
+        {/* Top bar gradient */}
         <Box
           sx={{
             position: "absolute",

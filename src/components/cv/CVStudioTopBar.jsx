@@ -25,7 +25,7 @@ import {
 import { Close as CloseIcon } from "@mui/icons-material";
 
 export const COLOR_PRESETS = [
-  { name: "Xanh dương thương hiệu", value: "#1D61F2" },
+  { name: "Xanh thương hiệu", value: "#1D61F2" },
   { name: "Xanh Navy đậm", value: "#1e3a8a" },
   { name: "Đen tối giản (Charcoal)", value: "#111827" },
   { name: "Xám thanh lịch (Slate)", value: "#475569" },
@@ -71,6 +71,7 @@ export default function CVStudioTopBar({
   onSelectFont,
   autoSaveStatus = "saved",
   onDownload,
+  onPrint,
 }) {
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [colorAnchor, setColorAnchor] = useState(null);
@@ -78,6 +79,11 @@ export default function CVStudioTopBar({
 
   const activeFontName =
     FONT_PRESETS.find((f) => f.value === fontFamily)?.name.split(" ")[0] || "Inter";
+
+  const isModernSelected =
+    selectedTemplate === "modern" || selectedTemplate === "template-modern";
+
+  const handleDownload = onDownload || onPrint;
 
   return (
     <Box
@@ -95,7 +101,7 @@ export default function CVStudioTopBar({
         zIndex: 10,
       }}
     >
-      {/* Cụm bên trái: Template, Bảng màu, Phông chữ, Giãn dòng */}
+      {/* Cụm bên trái: Template, Bảng màu, Phông chữ */}
       <Stack direction="row" spacing={1.2} alignItems="center" flexWrap="wrap">
         {/* Nút Đổi Template */}
         <Button
@@ -103,6 +109,7 @@ export default function CVStudioTopBar({
           size="small"
           onClick={() => setTemplateDialogOpen(true)}
           startIcon={<LayoutTemplate size={16} color="#1D61F2" />}
+          endIcon={<ChevronDown size={14} />}
           sx={{
             textTransform: "none",
             fontWeight: 600,
@@ -119,7 +126,7 @@ export default function CVStudioTopBar({
             },
           }}
         >
-          Đổi Template
+          {isModernSelected ? "Mẫu Modern (2 Cột)" : "Mẫu Classic (1 Cột)"}
         </Button>
 
         {/* Nút Bảng màu */}
@@ -174,15 +181,15 @@ export default function CVStudioTopBar({
           }}
         >
           <Typography variant="caption" sx={{ px: 1, pb: 1, display: "block", fontWeight: 700, color: "#64748b" }}>
-            CHỌN MÀU CHỦ ĐẠO
+            CHỦ ĐỀ MÀU SẮC
           </Typography>
-          {COLOR_PRESETS.map((color) => {
-            const isSelected = primaryColor.toLowerCase() === color.value.toLowerCase();
+          {COLOR_PRESETS.map((c) => {
+            const isSelected = primaryColor.toLowerCase() === c.value.toLowerCase();
             return (
               <MenuItem
-                key={color.value}
+                key={c.value}
                 onClick={() => {
-                  onSelectColor(color.value);
+                  onSelectColor(c.value);
                   setColorAnchor(null);
                 }}
                 sx={{
@@ -190,27 +197,26 @@ export default function CVStudioTopBar({
                   alignItems: "center",
                   justifyContent: "space-between",
                   borderRadius: "8px",
-                  py: 1,
-                  px: 1.5,
-                  mb: 0.5,
+                  py: 0.8,
+                  px: 1,
+                  mb: 0.3,
                   "&:hover": { bgcolor: "#f1f5f9" },
                 }}
               >
-                <Stack direction="row" spacing={1.5} alignItems="center">
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
                   <Box
                     sx={{
-                      width: 20,
-                      height: 20,
+                      width: 18,
+                      height: 18,
                       borderRadius: "50%",
-                      bgcolor: color.value,
-                      border: "2px solid #ffffff",
-                      boxShadow: "0 0 0 1px #cbd5e1",
+                      bgcolor: c.value,
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
                     }}
                   />
-                  <Typography variant="body2" sx={{ fontWeight: isSelected ? 700 : 500, color: "#1e293b" }}>
-                    {color.name}
+                  <Typography variant="body2" sx={{ fontWeight: isSelected ? 700 : 500 }}>
+                    {c.name}
                   </Typography>
-                </Stack>
+                </Box>
                 {isSelected && <Check size={16} color="#1D61F2" />}
               </MenuItem>
             );
@@ -222,7 +228,7 @@ export default function CVStudioTopBar({
           variant="outlined"
           size="small"
           onClick={(e) => setFontAnchor(e.currentTarget)}
-          startIcon={<Type size={16} color="#64748b" />}
+          startIcon={<Type size={16} color="#1D61F2" />}
           endIcon={<ChevronDown size={14} />}
           sx={{
             textTransform: "none",
@@ -253,7 +259,7 @@ export default function CVStudioTopBar({
               p: 1.5,
               borderRadius: "12px",
               boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-              minWidth: 200,
+              minWidth: 220,
             },
           }}
         >
@@ -291,18 +297,20 @@ export default function CVStudioTopBar({
         </Menu>
       </Stack>
 
-      {/* Cụm bên phải: Lưu bản nháp & Tải file PDF */}
+      {/* Cụm bên phải: Trạng thái lưu & Nút tải PDF */}
       <Stack direction="row" spacing={1.5} alignItems="center">
         <Stack
           direction="row"
           spacing={0.7}
           alignItems="center"
           sx={{
-            color: autoSaveStatus === "local" ? "#b45309" : autoSaveStatus === "saving" ? "#2563eb" : "#64748b",
-            bgcolor: autoSaveStatus === "local" ? "#fffbeb" : "#f8fafc",
+            color: autoSaveStatus === "local" ? "#b45309" : autoSaveStatus === "saving" ? "#2563eb" : "#15803d",
+            bgcolor: autoSaveStatus === "local" ? "#fffbeb" : autoSaveStatus === "saving" ? "#eff6ff" : "#f0fdf4",
             borderRadius: "999px",
             px: 1.2,
             py: 0.65,
+            border: "1px solid",
+            borderColor: autoSaveStatus === "local" ? "#fef3c7" : autoSaveStatus === "saving" ? "#dbeafe" : "#dcfce7",
           }}
         >
           {autoSaveStatus === "saving" ? (
@@ -312,18 +320,20 @@ export default function CVStudioTopBar({
           ) : (
             <Cloud size={14} />
           )}
-          <Typography variant="caption" sx={{ color: "inherit", fontWeight: 600, whiteSpace: "nowrap" }}>
-            {autoSaveStatus === "saving" ? "Đang lưu..." : autoSaveStatus === "local" ? "Đã lưu trên thiết bị" : "Đã lưu"}
+          <Typography variant="caption" sx={{ color: "inherit", fontWeight: 700, whiteSpace: "nowrap" }}>
+            {autoSaveStatus === "saving"
+              ? "Đang lưu..."
+              : autoSaveStatus === "local"
+              ? "Đã lưu bản nháp"
+              : "Đã lưu"}
           </Typography>
         </Stack>
-        {/* Nút Lưu bản nháp (Ghost button: border-slate-200 text-slate-700 hover:bg-slate-50) */}
 
-
-        {/* Nút Tải file PDF (Primary Blue #1D61F2, text-white, icon download) */}
+        {/* Nút Tải file PDF */}
         <Button
           variant="contained"
           size="small"
-          onClick={onDownload}
+          onClick={handleDownload}
           startIcon={<Download size={16} />}
           sx={{
             textTransform: "none",
@@ -381,7 +391,10 @@ export default function CVStudioTopBar({
             }}
           >
             {TEMPLATE_PRESETS.map((tmpl) => {
-              const isSelected = selectedTemplate === tmpl.id;
+              const isSelected =
+                (tmpl.id === "modern" && isModernSelected) ||
+                (tmpl.id === "classic" && !isModernSelected);
+
               return (
                 <Box
                   key={tmpl.id}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import {
   Box,
   Paper,
@@ -66,9 +66,13 @@ import UserAttachedCvTab from "./profile-components/UserAttachedCvTab";
 import UserAppliedJobsTab from "./profile-components/UserAppliedJobsTab";
 import UserSavedJobsTab from "./profile-components/UserSavedJobsTab";
 import UserInterviewsTab from "./profile-components/UserInterviewsTab";
+import UserNotificationsTab from "./profile-components/UserNotificationsTab";
+import UserSettingsTab from "./profile-components/UserSettingsTab";
+import { getUnreadNotificationCount, NOTIFICATIONS_CHANGED_EVENT } from "../../services/notificationService";
 import UserProfileCompleteness from "./profile-components/UserProfileCompleteness";
 import UnderDevelopment from "../../components/common/UnderDevelopment";
 import AutoFillProfileModal from "./profile-components/AutoFillProfileModal";
+import { AiUsagePage } from "../../features/ai-usage";
 
 export default function UserProfile() {
   const showToast = useToast();
@@ -103,6 +107,7 @@ export default function UserProfile() {
   const [appliedJobsCount, setAppliedJobsCount] = useState(0);
   const [savedJobsCount, setSavedJobsCount] = useState(0);
   const [interviewJobsCount, setInterviewJobsCount] = useState(0);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
 
   // ===== DIALOG MODALS STATES =====
   const [openBasic, setOpenBasic] = useState(false);
@@ -116,22 +121,20 @@ export default function UserProfile() {
   const [confirmConfig, setConfirmConfig] = useState({
     title: "",
     message: "",
-    type: "info",
-    confirmText: "Xác nhận",
+    type: "danger",
+    confirmText: "XÃ³a",
     onConfirm: () => {},
   });
 
-    // ===== AUTO-FILL PROFILE STATE =====
   const [openAutoFill, setOpenAutoFill] = useState(false);
 
-  // ===== LOCAL FORMS STATE =====
+  // Forms temporary states
   const [basicForm, setBasicForm] = useState({
     fullName: "",
     headline: "",
     phone: "",
-    email: "",
     birthday: "",
-    gender: "",
+    gender: "MALE",
     location: "",
     personalLink: "",
   });
@@ -141,103 +144,50 @@ export default function UserProfile() {
   const [bioText, setBioText] = useState("");
   const [skillsText, setSkillsText] = useState("");
 
-  // Common structure for dynamic arrays
   const [eduForm, setEduForm] = useState({ id: "", school: "", degree: "", graduationDate: "" });
   const [expForm, setExpForm] = useState({ id: "", title: "", company: "", startDate: "", endDate: "", description: "" });
   const [projectForm, setProjectForm] = useState({ id: "", name: "", role: "", technologies: "", description: "", link: "" });
 
-  // ===== LOAD USER DATA & COUNTS =====
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await getCurrentUser();
-        const data = res.data.data || res.data;
-        setUser({
-          fullName: data.fullName || "",
-          email: data.email || "",
-          phone: data.phone || "",
-          headline: data.headline || "",
-          location: data.location || "",
-          bio: data.bio || "",
-          birthday: data.birthday || "",
-          gender: data.gender || "",
-          personalLink: data.personalLink || "",
-          skills: Array.isArray(data.skills) ? data.skills : [],
-          education: Array.isArray(data.education) ? data.education : [],
-          experience: Array.isArray(data.experience) ? data.experience : [],
-          projects: Array.isArray(data.projects) ? data.projects : [],
-          avatarUrl: data.avatarUrl || data.avatar || "",
-          avatar: data.avatar || "",
-        });
-      } catch (err) {
-        console.error("Không lấy được thông tin người dùng:", err);
-        showToast("Không thể tải dữ liệu hồ sơ. Vui lòng thử lại sau.", "error");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const fetchCounts = async () => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        try {
-          const appliedRes = await api.get("/api/user/jobs/apply/my-applications", {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          const apps = Array.isArray(appliedRes.data) ? appliedRes.data : [];
-          setAppliedJobsCount(apps.length);
-          const ivs = apps.filter(a => a.status === "INTERVIEW" || a.interview);
-          setInterviewJobsCount(ivs.length);
-        } catch (err) {
-          console.error("Lỗi lấy số đơn ứng tuyển:", err);
-        }
-
-        try {
-          const savedRes = await api.get("/api/user/jobs/favorite/all", {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          setSavedJobsCount(savedRes.data.length);
-        } catch (err) {
-          console.error("Lỗi lấy số việc làm đã lưu:", err);
-        }
-      }
-    };
-
-    fetchUser();
-    fetchCounts();
-  }, []);
-
-  // Check URL query parameters on load to set the initial tab
+  // ===== READ TAB QUERY PARAM FROM URL =====
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const tab = params.get("tab");
-    if (tab) {
-      setActiveTab(tab);
+    const tabParam = params.get("tab");
+    if (tabParam) {
+      setActiveTab(tabParam);
     }
   }, [location.search]);
 
-  // ===== PROFILE SAVE CONTROLLER =====
-  const handleUpdateProfile = async (updatedFields, file = null) => {
-    setSaving(true);
-    const payload = {
-      fullName: updatedFields.fullName !== undefined ? updatedFields.fullName : user.fullName,
-      email: updatedFields.email !== undefined ? updatedFields.email : user.email,
-      phone: updatedFields.phone !== undefined ? updatedFields.phone : user.phone,
-      headline: updatedFields.headline !== undefined ? updatedFields.headline : user.headline,
-      location: updatedFields.location !== undefined ? updatedFields.location : user.location,
-      bio: updatedFields.bio !== undefined ? updatedFields.bio : user.bio,
-      birthday: updatedFields.birthday !== undefined ? updatedFields.birthday : user.birthday,
-      gender: updatedFields.gender !== undefined ? updatedFields.gender : user.gender,
-      personalLink: updatedFields.personalLink !== undefined ? updatedFields.personalLink : user.personalLink,
-      skills: updatedFields.skills !== undefined ? updatedFields.skills : user.skills,
-      education: updatedFields.education !== undefined ? updatedFields.education : user.education,
-      experience: updatedFields.experience !== undefined ? updatedFields.experience : user.experience,
-      projects: updatedFields.projects !== undefined ? updatedFields.projects : user.projects,
-    };
-
+  // ===== FETCH INITIAL PROFILE & COUNTS =====
+  const fetchProfile = async () => {
     try {
-      const res = await updateCurrentUser(payload, file);
+      setLoading(true);
+      const res = await getCurrentUser();
       const data = res.data.data || res.data;
+
+      // Ensure array types
+      let parsedEducation = [];
+      let parsedExperience = [];
+      let parsedProjects = [];
+      let parsedSkills = [];
+
+      try {
+        parsedEducation = typeof data.education === "string" ? JSON.parse(data.education) : (data.education || []);
+      } catch (e) { parsedEducation = []; }
+
+      try {
+        parsedExperience = typeof data.experience === "string" ? JSON.parse(data.experience) : (data.experience || []);
+      } catch (e) { parsedExperience = []; }
+
+      try {
+        parsedProjects = typeof data.projects === "string" ? JSON.parse(data.projects) : (data.projects || []);
+      } catch (e) { parsedProjects = []; }
+
+      if (Array.isArray(data.skills)) {
+        parsedSkills = data.skills;
+      } else if (typeof data.skills === "string") {
+        parsedSkills = data.skills.split(",").map((s) => s.trim()).filter(Boolean);
+      }
+
       setUser({
         fullName: data.fullName || "",
         email: data.email || "",
@@ -245,25 +195,120 @@ export default function UserProfile() {
         headline: data.headline || "",
         location: data.location || "",
         bio: data.bio || "",
-        birthday: data.birthday || "",
-        gender: data.gender || "",
+        birthday: data.birthday ? data.birthday.split("T")[0] : "",
+        gender: data.gender || "MALE",
         personalLink: data.personalLink || "",
-        skills: Array.isArray(data.skills) ? data.skills : [],
-        education: Array.isArray(data.education) ? data.education : [],
-        experience: Array.isArray(data.experience) ? data.experience : [],
-        projects: Array.isArray(data.projects) ? data.projects : [],
+        skills: parsedSkills,
+        education: Array.isArray(parsedEducation) ? parsedEducation : [],
+        experience: Array.isArray(parsedExperience) ? parsedExperience : [],
+        projects: Array.isArray(parsedProjects) ? parsedProjects : [],
         avatarUrl: data.avatarUrl || data.avatar || "",
         avatar: data.avatar || "",
       });
-      showToast("Cập nhật hồ sơ thành công.", "success");
-      setAvatarFile(null);
+
+      // Fetch Applied Jobs Count
+      try {
+        const appRes = await api.get("/applications/my-applications");
+        const appList = appRes.data?.data || appRes.data || [];
+        setAppliedJobsCount(Array.isArray(appList) ? appList.length : 0);
+      } catch (err) {
+        console.error("Lá»—i láº¥y viá»‡c lÃ m Ä‘Ã£ á»©ng tuyá»ƒn:", err);
+      }
+
+      // Fetch Saved Jobs Count
+      try {
+        const favRes = await api.get("/favorite-jobs/my-favorites");
+        const favList = favRes.data?.data || favRes.data || [];
+        setSavedJobsCount(Array.isArray(favList) ? favList.length : 0);
+      } catch (err) {
+        console.error("Lá»—i láº¥y danh sÃ¡ch viá»‡c lÃ m Ä‘Ã£ lÆ°u:", err);
+      }
+
+      // Fetch Interview Count
+      try {
+        const intRes = await api.get("/interviews/my-interviews");
+        const intList = intRes.data?.data || intRes.data || [];
+        setInterviewJobsCount(Array.isArray(intList) ? intList.length : 0);
+      } catch (err) {
+        console.error("Lá»—i láº¥y danh sÃ¡ch phá»ng váº¥n:", err);
+      }
+
+      // Fetch unread notification count
+      try {
+        const count = await getUnreadNotificationCount();
+        setUnreadNotificationCount(count);
+      } catch (err) {
+        console.error("Lá»—i láº¥y sá»‘ thÃ´ng bÃ¡o chÆ°a Ä‘á»c:", err);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("KhÃ´ng thá»ƒ táº£i thÃ´ng tin ngÆ°á»i dÃ¹ng!", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+
+    const handleNotifUpdate = () => {
+      getUnreadNotificationCount()
+        .then(count => setUnreadNotificationCount(count))
+        .catch(console.error);
+    };
+    window.addEventListener(NOTIFICATIONS_CHANGED_EVENT, handleNotifUpdate);
+    return () => {
+      window.removeEventListener(NOTIFICATIONS_CHANGED_EVENT, handleNotifUpdate);
+    };
+  }, []);
+
+  // ===== UPDATE PROFILE DISPATCHER =====
+  const handleUpdateProfile = async (updatedFields, fileToUpload = null) => {
+    try {
+      setSaving(true);
+      const formData = new FormData();
+      const currentMerged = { ...user, ...updatedFields };
+
+      if (updatedFields.fullName !== undefined) formData.append("fullName", currentMerged.fullName);
+      if (updatedFields.phone !== undefined) formData.append("phone", currentMerged.phone);
+      if (updatedFields.headline !== undefined) formData.append("headline", currentMerged.headline);
+      if (updatedFields.location !== undefined) formData.append("location", currentMerged.location);
+      if (updatedFields.bio !== undefined) formData.append("bio", currentMerged.bio);
+      if (updatedFields.birthday !== undefined) formData.append("birthday", currentMerged.birthday);
+      if (updatedFields.gender !== undefined) formData.append("gender", currentMerged.gender);
+      if (updatedFields.personalLink !== undefined) formData.append("personalLink", currentMerged.personalLink);
+
+      if (updatedFields.skills !== undefined) {
+        currentMerged.skills.forEach((s) => formData.append("skills", s));
+      }
+      if (updatedFields.education !== undefined) {
+        formData.append("education", JSON.stringify(currentMerged.education));
+      }
+      if (updatedFields.experience !== undefined) {
+        formData.append("experience", JSON.stringify(currentMerged.experience));
+      }
+      if (updatedFields.projects !== undefined) {
+        formData.append("projects", JSON.stringify(currentMerged.projects));
+      }
+
+      if (fileToUpload) {
+        formData.append("avatar", fileToUpload);
+      }
+
+      const res = await updateCurrentUser(formData);
+      const data = res.data.data || res.data;
+
+      setUser((prev) => ({
+        ...prev,
+        ...currentMerged,
+        avatarUrl: data.avatarUrl || data.avatar || prev.avatarUrl,
+      }));
+
+      showToast("Cáº­p nháº­t há»“ sÆ¡ thÃ nh cÃ´ng!", "success");
       return true;
     } catch (err) {
-      console.error("Cập nhật hồ sơ thất bại:", err);
-      showToast(
-        err.response?.data?.message || "Không thể cập nhật hồ sơ, vui lòng thử lại.",
-        "error"
-      );
+      console.error(err);
+      showToast("Cáº­p nháº­t tháº¥t báº¡i. Vui lÃ²ng thá»­ láº¡i!", "error");
       return false;
     } finally {
       setSaving(false);
@@ -276,9 +321,8 @@ export default function UserProfile() {
       fullName: user.fullName,
       headline: user.headline,
       phone: user.phone,
-      email: user.email,
       birthday: user.birthday,
-      gender: user.gender,
+      gender: user.gender || "MALE",
       location: user.location,
       personalLink: user.personalLink,
     });
@@ -351,10 +395,10 @@ export default function UserProfile() {
 
   const handleEduDelete = (id) => {
     setConfirmConfig({
-      title: "Xác nhận xóa học vấn",
-      message: "Bạn có chắc chắn muốn xóa mục học vấn này không?",
+      title: "XÃ¡c nháº­n xÃ³a há»c váº¥n",
+      message: "Báº¡n cÃ³ cháº¯c cháº¯n muá»‘n xÃ³a má»¥c há»c váº¥n nÃ y khÃ´ng?",
       type: "danger",
-      confirmText: "Xóa học vấn",
+      confirmText: "XÃ³a há»c váº¥n",
       onConfirm: async () => {
         const list = user.education.filter((item) => item.id !== id);
         await handleUpdateProfile({ education: list });
@@ -388,10 +432,10 @@ export default function UserProfile() {
 
   const handleExpDelete = (id) => {
     setConfirmConfig({
-      title: "Xác nhận xóa kinh nghiệm",
-      message: "Bạn có chắc chắn muốn xóa mục kinh nghiệm làm việc này không?",
+      title: "XÃ¡c nháº­n xÃ³a kinh nghiá»‡m",
+      message: "Báº¡n cÃ³ cháº¯c cháº¯n muá»‘n xÃ³a má»¥c kinh nghiá»‡m lÃ m viá»‡c nÃ y khÃ´ng?",
       type: "danger",
-      confirmText: "Xóa kinh nghiệm",
+      confirmText: "XÃ³a kinh nghiá»‡m",
       onConfirm: async () => {
         const list = user.experience.filter((item) => item.id !== id);
         await handleUpdateProfile({ experience: list });
@@ -425,10 +469,10 @@ export default function UserProfile() {
 
   const handleProjectDelete = (id) => {
     setConfirmConfig({
-      title: "Xác nhận xóa dự án",
-      message: "Bạn có chắc chắn muốn xóa dự án này không?",
+      title: "XÃ¡c nháº­n xÃ³a dá»± Ã¡n",
+      message: "Báº¡n cÃ³ cháº¯c cháº¯n muá»‘n xÃ³a dá»± Ã¡n nÃ y khÃ´ng?",
       type: "danger",
-      confirmText: "Xóa dự án",
+      confirmText: "XÃ³a dá»± Ã¡n",
       onConfirm: async () => {
         const list = user.projects.filter((item) => item.id !== id);
         await handleUpdateProfile({ projects: list });
@@ -507,6 +551,8 @@ export default function UserProfile() {
             setActiveTab={setActiveTab}
           />
         );
+      case "ai_usage":
+        return <AiUsagePage />;
       case "interviews":
         return (
           <UserInterviewsTab setActiveTab={setActiveTab} />
@@ -516,38 +562,25 @@ export default function UserProfile() {
       case "invites":
         return (
           <UnderDevelopment
-            featureName="Lời mời công việc"
-            description="Tính năng nhận và quản lý lời mời phỏng vấn trực tiếp từ các nhà tuyển dụng đang được phát triển."
-            minHeight="55vh"
-            showHomeButton={false}
-          />
-        );
-      case "email_subscribe":
-        return (
-          <UnderDevelopment
-            featureName="Đăng ký nhận email việc làm"
-            description="Tính năng gửi gợi ý việc làm phù hợp với hồ sơ qua email định kỳ đang được hoàn thiện."
+            featureName="Lá»i má»i cÃ´ng viá»‡c"
+            description="TÃ­nh nÄƒng nháº­n vÃ  quáº£n lÃ½ lá»i má»i phá»ng váº¥n trá»±c tiáº¿p tá»« cÃ¡c nhÃ  tuyá»ƒn dá»¥ng Ä‘ang Ä‘Æ°á»£c hoÃ n thiá»‡n."
             minHeight="55vh"
             showHomeButton={false}
           />
         );
       case "notifications":
         return (
-          <UnderDevelopment
-            featureName="Thông báo hệ thống"
-            description="Trung tâm cập nhật trạng thái hồ sơ ứng tuyển và tin tuyển dụng mới đang được xây dựng."
-            minHeight="55vh"
-            showHomeButton={false}
+          <UserNotificationsTab
+            setActiveTab={setActiveTab}
           />
         );
       case "settings":
       default:
         return (
-          <UnderDevelopment
-            featureName="Cài đặt tài khoản"
-            description="Khu vực cấu hình bảo mật, đổi mật khẩu và tùy chọn quyền riêng tư đang được phát triển."
-            minHeight="55vh"
-            showHomeButton={false}
+          <UserSettingsTab
+            user={user}
+            searchActive={searchActive}
+            setSearchActive={setSearchActive}
           />
         );
     }
@@ -557,7 +590,7 @@ export default function UserProfile() {
 
   return (
     <>
-      <Box sx={{ py: 2, bgcolor: "#f8fafc", minHeight: "100vh", mx: -4, px: 4 }}>
+      <Box sx={{ py: 2, bgcolor: "#ffffff", minHeight: "100vh", mx: -4, px: 4 }}>
           {loading ? (
             <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
               <CircularProgress size={50} thickness={4.5} sx={{ color: "#0284c7" }} />
@@ -575,6 +608,7 @@ export default function UserProfile() {
                 appliedJobsCount={appliedJobsCount}
                 savedJobsCount={savedJobsCount}
                 interviewCount={interviewJobsCount}
+                notificationCount={unreadNotificationCount}
               />
             </Grid>
 
@@ -597,146 +631,154 @@ export default function UserProfile() {
       {/* DIALOG MODAL: EDIT BASIC INFO                            */}
       {/* ======================================================== */}
       <Dialog open={openBasic} onClose={() => setOpenBasic(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800 }}>Chỉnh sửa thông tin cơ bản</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800 }}>Chá»‰nh sá»­a thÃ´ng tin cÆ¡ báº£n</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={3} sx={{ pt: 1 }}>
             {/* Avatar upload */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
-              <Avatar src={getMediaUrl(avatarPreview)} sx={{ width: 80, height: 80 }} />
+              <Avatar
+                src={avatarPreview || getMediaUrl(user.avatarUrl || user.avatar)}
+                sx={{ width: 80, height: 80, bgcolor: "#0284c7", fontSize: "2rem" }}
+              >
+                {basicForm.fullName ? basicForm.fullName.charAt(0).toUpperCase() : "U"}
+              </Avatar>
               <Box>
-                <Typography variant="subtitle2" fontWeight={700}>
-                  Ảnh đại diện
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
-                  Chọn ảnh vuông, kích thước khuyên dùng là 200x200px.
-                </Typography>
-                <Button variant="outlined" component="label" size="small" startIcon={<CloudUpload />} sx={{ textTransform: "none" }}>
-                  Tải ảnh lên
-                  <input type="file" accept="image/*" hidden onChange={handleAvatarChange} />
+                <Button
+                  component="label"
+                  variant="outlined"
+                  startIcon={<CloudUpload />}
+                  sx={{ textTransform: "none", fontWeight: 700, borderRadius: 2 }}
+                >
+                  Táº£i áº£nh má»›i
+                  <input type="file" hidden accept="image/*" onChange={handleAvatarChange} />
                 </Button>
+                <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                  Äá»‹nh dáº¡ng JPG, PNG dung lÆ°á»£ng dÆ°á»›i 5MB
+                </Typography>
               </Box>
             </Box>
 
             <TextField
               fullWidth
-              label="Họ và tên"
+              label="Há» vÃ  tÃªn"
               value={basicForm.fullName}
               onChange={(e) => setBasicForm({ ...basicForm, fullName: e.target.value })}
               required
             />
             <TextField
               fullWidth
-              label="Chức danh hồ sơ"
+              label="TiÃªu Ä‘á» chuyÃªn nghiá»‡p / Vá»‹ trÃ­ hiá»‡n táº¡i"
               value={basicForm.headline}
-              placeholder="Ví dụ: Senior Java Developer"
+              placeholder="VÃ­ dá»¥: Senior Java Developer"
               onChange={(e) => setBasicForm({ ...basicForm, headline: e.target.value })}
             />
             <TextField
               fullWidth
-              label="Email liên hệ"
-              value={basicForm.email}
-              onChange={(e) => setBasicForm({ ...basicForm, email: e.target.value })}
-              required
-            />
-            <TextField
-              fullWidth
-              label="Số điện thoại"
+              label="Sá»‘ Ä‘iá»‡n thoáº¡i"
               value={basicForm.phone}
               onChange={(e) => setBasicForm({ ...basicForm, phone: e.target.value })}
             />
             <TextField
               fullWidth
-              label="Ngày sinh"
+              type="date"
+              label="NgÃ y sinh"
+              InputLabelProps={{ shrink: true }}
               value={basicForm.birthday}
-              placeholder="Ví dụ: 25/11/1990"
               onChange={(e) => setBasicForm({ ...basicForm, birthday: e.target.value })}
             />
             <FormControl>
-              <FormLabel sx={{ fontWeight: 700 }}>Giới tính</FormLabel>
+              <FormLabel sx={{ fontSize: "0.9rem", fontWeight: 600 }}>Giá»›i tÃ­nh</FormLabel>
               <RadioGroup
                 row
                 value={basicForm.gender}
                 onChange={(e) => setBasicForm({ ...basicForm, gender: e.target.value })}
               >
-                <FormControlLabel value="Nam" control={<Radio />} label="Nam" />
-                <FormControlLabel value="Nữ" control={<Radio />} label="Nữ" />
-                <FormControlLabel value="Khác" control={<Radio />} label="Khác" />
+                <FormControlLabel value="MALE" control={<Radio />} label="Nam" />
+                <FormControlLabel value="FEMALE" control={<Radio />} label="Ná»¯" />
+                <FormControlLabel value="OTHER" control={<Radio />} label="KhÃ¡c" />
               </RadioGroup>
             </FormControl>
             <TextField
               fullWidth
-              label="Địa chỉ hiện tại / Nơi làm việc mong muốn"
+              label="Äá»‹a Ä‘iá»ƒm / ThÃ nh phá»‘"
               value={basicForm.location}
-              placeholder="Ví dụ: Quận 1, TP. Hồ Chí Minh"
+              placeholder="VÃ­ dá»¥: HÃ  Ná»™i, Viá»‡t Nam"
               onChange={(e) => setBasicForm({ ...basicForm, location: e.target.value })}
             />
             <TextField
               fullWidth
-              label="Link cá nhân (Github, LinkedIn...)"
+              label="LiÃªn káº¿t cÃ¡ nhÃ¢n (LinkedIn, Portfolio, GitHub)"
               value={basicForm.personalLink}
-              placeholder="Ví dụ: https://github.com/my-profile"
+              placeholder="VÃ­ dá»¥: https://linkedin.com/in/my-profile"
               onChange={(e) => setBasicForm({ ...basicForm, personalLink: e.target.value })}
             />
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={() => setOpenBasic(false)} color="inherit" sx={{ textTransform: "none", fontWeight: 700 }}>
-            Hủy
+            Há»§y
           </Button>
-          <Button onClick={handleBasicSubmit} variant="contained" disabled={saving} sx={{ bgcolor: "#0284c7", "&:hover": { bgcolor: "#0369a1" }, textTransform: "none", fontWeight: 700 }}>
-            {saving ? "Đang lưu..." : "Lưu thay đổi"}
+          <Button
+            onClick={handleBasicSubmit}
+            variant="contained"
+            disabled={saving}
+            sx={{ bgcolor: "#0284c7", "&:hover": { bgcolor: "#0369a1" }, textTransform: "none", fontWeight: 700 }}
+          >
+            LÆ°u thay Ä‘á»•i
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* ======================================================== */}
-      {/* DIALOG MODAL: EDIT BIO                                   */}
+      {/* DIALOG MODAL: EDIT BIO / GIá»šI THIá»†U                      */}
       {/* ======================================================== */}
       <Dialog open={openBio} onClose={() => setOpenBio(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800 }}>Chỉnh sửa giới thiệu bản thân</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800 }}>Chá»‰nh sá»­a pháº§n giá»›i thiá»‡u</DialogTitle>
         <DialogContent dividers>
           <TextField
             fullWidth
             multiline
-            rows={6}
+            rows={5}
+            placeholder="Chia sáº» ngáº¯n gá»n vá» kinh nghiá»‡m, tháº¿ máº¡nh chuyÃªn mÃ´n vÃ  Ä‘á»‹nh hÆ°á»›ng nghá» nghiá»‡p cá»§a báº¡n..."
             value={bioText}
-            placeholder="Viết đoạn giới thiệu ngắn về điểm mạnh, số năm kinh nghiệm, các sản phẩm tự hào nhất và định hướng nghề nghiệp..."
             onChange={(e) => setBioText(e.target.value)}
-            sx={{ pt: 1 }}
+            sx={{ mt: 1 }}
           />
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={() => setOpenBio(false)} color="inherit" sx={{ textTransform: "none", fontWeight: 700 }}>
-            Hủy
+            Há»§y
           </Button>
           <Button onClick={handleBioSubmit} variant="contained" disabled={saving} sx={{ bgcolor: "#0284c7", "&:hover": { bgcolor: "#0369a1" }, textTransform: "none", fontWeight: 700 }}>
-            {saving ? "Đang lưu..." : "Lưu thay đổi"}
+            LÆ°u giá»›i thiá»‡u
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* ======================================================== */}
-      {/* DIALOG MODAL: EDIT SKILLS                                */}
+      {/* DIALOG MODAL: EDIT SKILLS / Ká»¸ NÄ‚NG                      */}
       {/* ======================================================== */}
       <Dialog open={openSkill} onClose={() => setOpenSkill(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800 }}>Quản lý kỹ năng</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800 }}>Chá»‰nh sá»­a ká»¹ nÄƒng chuyÃªn mÃ´n</DialogTitle>
         <DialogContent dividers>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Nháº­p cÃ¡c ká»¹ nÄƒng phÃ¢n cÃ¡ch báº±ng dáº¥u pháº©y (,). VÃ­ dá»¥: Java, Spring Boot, MySQL, ReactJS, Docker...
+          </Typography>
           <TextField
             fullWidth
-            label="Danh sách kỹ năng"
+            multiline
+            rows={3}
             value={skillsText}
-            placeholder="Ví dụ: React, Java, Spring Boot, MySQL, Git"
-            helperText="Các kỹ năng cách nhau bởi dấu phẩy (,)"
             onChange={(e) => setSkillsText(e.target.value)}
-            sx={{ pt: 1 }}
+            placeholder="Java, Spring Boot, React, Docker..."
           />
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={() => setOpenSkill(false)} color="inherit" sx={{ textTransform: "none", fontWeight: 700 }}>
-            Hủy
+            Há»§y
           </Button>
           <Button onClick={handleSkillSubmit} variant="contained" disabled={saving} sx={{ bgcolor: "#0284c7", "&:hover": { bgcolor: "#0369a1" }, textTransform: "none", fontWeight: 700 }}>
-            {saving ? "Đang lưu..." : "Lưu thay đổi"}
+            LÆ°u ká»¹ nÄƒng
           </Button>
         </DialogActions>
       </Dialog>
@@ -745,40 +787,40 @@ export default function UserProfile() {
       {/* DIALOG MODAL: ADD/EDIT EDUCATION                         */}
       {/* ======================================================== */}
       <Dialog open={openEdu} onClose={() => setOpenEdu(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800 }}>{eduForm.id ? "Cập nhật học vấn" : "Thêm mục học vấn mới"}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800 }}>{eduForm.id ? "Cáº­p nháº­t há»c váº¥n" : "ThÃªm má»¥c há»c váº¥n"}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={3} sx={{ pt: 1 }}>
             <TextField
               fullWidth
-              label="Trường học"
+              label="TrÆ°á»ng há»c"
               value={eduForm.school}
-              placeholder="Ví dụ: Đại học Bách Khoa Hà Nội"
+              placeholder="VÃ­ dá»¥: Äáº¡i há»c BÃ¡ch Khoa HÃ  Ná»™i"
               onChange={(e) => setEduForm({ ...eduForm, school: e.target.value })}
               required
             />
             <TextField
               fullWidth
-              label="Bằng cấp / Ngành học"
+              label="Báº±ng cáº¥p / NgÃ nh há»c"
               value={eduForm.degree}
-              placeholder="Ví dụ: Cử nhân Công nghệ thông tin"
+              placeholder="VÃ­ dá»¥: Cá»­ nhÃ¢n CÃ´ng nghá»‡ thÃ´ng tin"
               onChange={(e) => setEduForm({ ...eduForm, degree: e.target.value })}
               required
             />
             <TextField
               fullWidth
-              label="Năm tốt nghiệp"
+              label="NÄƒm tá»‘t nghiá»‡p"
               value={eduForm.graduationDate}
-              placeholder="Ví dụ: 2022"
+              placeholder="VÃ­ dá»¥: 2022"
               onChange={(e) => setEduForm({ ...eduForm, graduationDate: e.target.value })}
             />
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={() => setOpenEdu(false)} color="inherit" sx={{ textTransform: "none", fontWeight: 700 }}>
-            Hủy
+            Há»§y
           </Button>
           <Button onClick={handleEduSubmit} variant="contained" disabled={saving} sx={{ bgcolor: "#0284c7", "&:hover": { bgcolor: "#0369a1" }, textTransform: "none", fontWeight: 700 }}>
-            Lưu mục học vấn
+            LÆ°u má»¥c há»c váº¥n
           </Button>
         </DialogActions>
       </Dialog>
@@ -787,39 +829,39 @@ export default function UserProfile() {
       {/* DIALOG MODAL: ADD/EDIT EXPERIENCE                        */}
       {/* ======================================================== */}
       <Dialog open={openExp} onClose={() => setOpenExp(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800 }}>{expForm.id ? "Cập nhật kinh nghiệm" : "Thêm kinh nghiệm làm việc"}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800 }}>{expForm.id ? "Cáº­p nháº­t kinh nghiá»‡m" : "ThÃªm kinh nghiá»‡m lÃ m viá»‡c"}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={3} sx={{ pt: 1 }}>
             <TextField
               fullWidth
-              label="Vị trí / Chức danh công việc"
+              label="Vá»‹ trÃ­ / Chá»©c danh cÃ´ng viá»‡c"
               value={expForm.title}
-              placeholder="Ví dụ: Fullstack Developer"
+              placeholder="VÃ­ dá»¥: Fullstack Developer"
               onChange={(e) => setExpForm({ ...expForm, title: e.target.value })}
               required
             />
             <TextField
               fullWidth
-              label="Công ty / Tổ chức"
+              label="CÃ´ng ty / Tá»• chá»©c"
               value={expForm.company}
-              placeholder="Ví dụ: Công ty TNHH AI Tech"
+              placeholder="VÃ­ dá»¥: CÃ´ng ty TNHH AI Tech"
               onChange={(e) => setExpForm({ ...expForm, company: e.target.value })}
               required
             />
             <Box sx={{ display: "flex", gap: 2 }}>
               <TextField
                 fullWidth
-                label="Thời gian bắt đầu"
+                label="Thá»i gian báº¯t Ä‘áº§u"
                 value={expForm.startDate}
-                placeholder="Ví dụ: 06/2022"
+                placeholder="VÃ­ dá»¥: 06/2022"
                 onChange={(e) => setExpForm({ ...expForm, startDate: e.target.value })}
                 required
               />
               <TextField
                 fullWidth
-                label="Thời gian kết thúc"
+                label="Thá»i gian káº¿t thÃºc"
                 value={expForm.endDate}
-                placeholder="Ví dụ: Hiện tại hoặc 12/2024"
+                placeholder="VÃ­ dá»¥: Hiá»‡n táº¡i hoáº·c 12/2024"
                 onChange={(e) => setExpForm({ ...expForm, endDate: e.target.value })}
               />
             </Box>
@@ -827,19 +869,19 @@ export default function UserProfile() {
               fullWidth
               multiline
               rows={4}
-              label="Mô tả công việc"
+              label="MÃ´ táº£ cÃ´ng viá»‡c"
               value={expForm.description}
-              placeholder="Mô tả cụ thể nhiệm vụ chính, dự án tham gia và công nghệ sử dụng..."
+              placeholder="MÃ´ táº£ cá»¥ thá»ƒ nhiá»‡m vá»¥ chÃ­nh, dá»± Ã¡n tham gia vÃ  cÃ´ng nghá»‡ sá»­ dá»¥ng..."
               onChange={(e) => setExpForm({ ...expForm, description: e.target.value })}
             />
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={() => setOpenExp(false)} color="inherit" sx={{ textTransform: "none", fontWeight: 700 }}>
-            Hủy
+            Há»§y
           </Button>
           <Button onClick={handleExpSubmit} variant="contained" disabled={saving} sx={{ bgcolor: "#0284c7", "&:hover": { bgcolor: "#0369a1" }, textTransform: "none", fontWeight: 700 }}>
-            Lưu mục kinh nghiệm
+            LÆ°u má»¥c kinh nghiá»‡m
           </Button>
         </DialogActions>
       </Dialog>
@@ -848,56 +890,56 @@ export default function UserProfile() {
       {/* DIALOG MODAL: ADD/EDIT PROJECT                           */}
       {/* ======================================================== */}
       <Dialog open={openProject} onClose={() => setOpenProject(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800 }}>{projectForm.id ? "Cập nhật dự án" : "Thêm dự án nổi bật"}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800 }}>{projectForm.id ? "Cáº­p nháº­t dá»± Ã¡n" : "ThÃªm dá»± Ã¡n ná»•i báº­t"}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={3} sx={{ pt: 1 }}>
             <TextField
               fullWidth
-              label="Tên dự án"
+              label="TÃªn dá»± Ã¡n"
               value={projectForm.name}
-              placeholder="Ví dụ: Hệ thống Quản lý CV thông minh"
+              placeholder="VÃ­ dá»¥: Há»‡ thá»‘ng Quáº£n lÃ½ CV thÃ´ng minh"
               onChange={(e) => setProjectForm({ ...projectForm, name: e.target.value })}
               required
             />
             <TextField
               fullWidth
-              label="Vai trò trong dự án"
+              label="Vai trÃ² trong dá»± Ã¡n"
               value={projectForm.role}
-              placeholder="Ví dụ: Backend Lead hoặc Thành viên chính"
+              placeholder="VÃ­ dá»¥: Backend Lead hoáº·c ThÃ nh viÃªn chÃ­nh"
               onChange={(e) => setProjectForm({ ...projectForm, role: e.target.value })}
               required
             />
             <TextField
               fullWidth
-              label="Công nghệ sử dụng"
+              label="CÃ´ng nghá»‡ sá»­ dá»¥ng"
               value={projectForm.technologies}
-              placeholder="Ví dụ: Spring Boot, React, MySQL, Docker"
+              placeholder="VÃ­ dá»¥: Spring Boot, React, MySQL, Docker"
               onChange={(e) => setProjectForm({ ...projectForm, technologies: e.target.value })}
             />
             <TextField
               fullWidth
               multiline
               rows={4}
-              label="Mô tả chi tiết dự án"
+              label="MÃ´ táº£ chi tiáº¿t dá»± Ã¡n"
               value={projectForm.description}
-              placeholder="Mô tả tóm tắt mục tiêu, hoạt động chính và các chức năng nổi bật của dự án..."
+              placeholder="MÃ´ táº£ tÃ³m táº¯t má»¥c tiÃªu, hoáº¡t Ä‘á»™ng chÃ­nh vÃ  cÃ¡c chá»©c nÄƒng ná»•i báº­t cá»§a dá»± Ã¡n..."
               onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
             />
             <TextField
               fullWidth
-              label="Link dự án / Github Repository"
+              label="Link dá»± Ã¡n / Github Repository"
               value={projectForm.link}
-              placeholder="Ví dụ: https://github.com/my-project"
+              placeholder="VÃ­ dá»¥: https://github.com/my-project"
               onChange={(e) => setProjectForm({ ...projectForm, link: e.target.value })}
             />
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={() => setOpenProject(false)} color="inherit" sx={{ textTransform: "none", fontWeight: 700 }}>
-            Hủy
+            Há»§y
           </Button>
           <Button onClick={handleProjectSubmit} variant="contained" disabled={saving} sx={{ bgcolor: "#0284c7", "&:hover": { bgcolor: "#0369a1" }, textTransform: "none", fontWeight: 700 }}>
-            Lưu mục dự án
+            LÆ°u má»¥c dá»± Ã¡n
           </Button>
         </DialogActions>
       </Dialog>
@@ -908,7 +950,7 @@ export default function UserProfile() {
         onApply={async (parsedData) => {
           const ok = await handleUpdateProfile(parsedData, null);
           if (ok) {
-            showToast("Đã tự động điền hồ sơ từ CV thành công!", "success");
+            showToast("ÄÃ£ tá»± Ä‘á»™ng Ä‘iá»n há»“ sÆ¡ tá»« CV thÃ nh cÃ´ng!", "success");
           }
         }}
       />

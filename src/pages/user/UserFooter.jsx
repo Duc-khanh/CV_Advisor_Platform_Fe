@@ -1,92 +1,120 @@
-import React from "react";
+﻿import React from "react";
 import {
   Box,
+  Container,
   Grid,
   Typography,
-  Link,
-  Divider,
   Stack,
   IconButton,
-  Container,
+  Divider,
+  Chip,
 } from "@mui/material";
-
 import {
-  LocationOn,
-  Phone,
-  Email,
   Facebook,
-  Twitter,
   LinkedIn,
+  Twitter,
   YouTube,
+  Email,
+  Phone,
+  LocationOn,
 } from "@mui/icons-material";
+import { Link, useNavigate } from "react-router-dom";
 
 const UserFooter = () => {
+  const navigate = useNavigate();
   const primaryColor = "#2563eb";
 
-  const footerLinks = {
-    candidate: [
-      "Tìm việc làm",
-      "Phân tích CV bằng AI",
-      "Tạo CV Online",
-      "Cẩm nang nghề nghiệp",
-    ],
-    employer: [
-      "Đăng tin tuyển dụng",
-      "Tìm kiếm nhân tài",
-      "Quản lý ứng viên",
-      "Giải pháp HR AI",
-    ],
-    support: [
-      "Trung tâm hỗ trợ",
-      "Điều khoản dịch vụ",
-      "Chính sách bảo mật",
-      "Liên hệ",
-    ],
-  };
+  const candidateLinks = [
+    { label: "Tìm việc làm IT", to: "/" },
+    { label: "Tạo CV Chuyên nghiệp", to: "/cv-builder" },
+    { label: "Phân tích CV bằng AI", to: "/cv-analysis", badge: "AI" },
+    { label: "Lộ trình học tập", to: "/career-roadmap", badge: "Hot" },
+    { label: "Luyện phỏng vấn AI", to: "/ai-interview" },
+    { label: "Cẩm nang nghề nghiệp", to: "/career-guide" },
+  ];
+
+  const employerLinks = [
+    { label: "Đăng tin tuyển dụng", to: "/for-employers" },
+    { label: "Tìm kiếm ứng viên", to: "/for-employers" },
+    { label: "Bảng giá dịch vụ", to: "/for-employers" },
+    { label: "Giải pháp Tuyển dụng AI", to: "/for-employers" },
+  ];
+
+  const supportLinks = [
+    { label: "Trung tâm hỗ trợ", to: "/privacy-policy" },
+    { label: "Điều khoản dịch vụ", to: "/privacy-policy" },
+    { label: "Chính sách bảo mật", to: "/privacy-policy" },
+    { label: "Liên hệ hợp tác", to: "/for-employers" },
+  ];
 
   return (
     <Box
+      component="footer"
       sx={{
         bgcolor: "#f8fafc",
         borderTop: "1px solid #e2e8f0",
         color: "#1e293b",
-        pt: 10,
-        pb: 4,
-        mt: 10,
+        mt: "auto",
+        width: "100%",
+        position: "relative",
       }}
     >
-      <Container maxWidth="xl">
-        <Grid container spacing={6}>
-          {/* BRAND */}
-          <Grid item xs={12} md={5}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.2, mb: 3.5 }}>
+      {/* TOP GLOW ACCENT BAR */}
+      <Box
+        sx={{
+          height: "3px",
+          width: "100%",
+          background: "linear-gradient(90deg, #2563eb 0%, #38bdf8 50%, #818cf8 100%)",
+        }}
+      />
+
+      <Container maxWidth="xl" sx={{ pt: { xs: 5, md: 7 }, pb: 4 }}>
+        <Grid container spacing={{ xs: 4, md: 5 }}>
+          {/* BRAND COLUMN */}
+          <Grid item xs={12} md={4.5}>
+            {/* LOGO */}
+            <Box
+              onClick={() => {
+                navigate("/");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                cursor: "pointer",
+                userSelect: "none",
+                mb: 2,
+              }}
+            >
               <Box
+                component="img"
+                src="/logo.png"
+                alt="CareerGo Logo"
                 sx={{
-                  width: 34,
-                  height: 34,
+                  width: 36,
+                  height: 36,
                   borderRadius: "10px",
-                  background: "linear-gradient(135deg, #3b82f6, #2563eb)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "white",
-                  fontWeight: 900,
-                  fontSize: "1rem",
-                  boxShadow: "0 4px 10px rgba(37,99,235,0.25)",
-                  letterSpacing: "-0.5px"
+                  mr: 1.2,
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                  objectFit: "cover",
                 }}
-              >
-                CG
-              </Box>
+                onError={(e) => {
+                  e.target.style.display = "none";
+                }}
+              />
               <Typography
-                variant="h5"
-                fontWeight="900"
+                variant="h6"
+                component="div"
                 sx={{
+                  fontWeight: 900,
+                  fontSize: { xs: "1.25rem", sm: "1.35rem" },
+                  letterSpacing: "-0.5px",
                   color: "#0f172a",
-                  letterSpacing: "-0.3px",
+                  display: "inline-flex",
+                  alignItems: "center",
                 }}
               >
-                Career<span style={{ color: "#2563eb" }}>Go</span>
+                Career<Box component="span" sx={{ color: "#2563eb", ml: "1px" }}>Go</Box>
               </Typography>
             </Box>
 
@@ -94,163 +122,210 @@ const UserFooter = () => {
               variant="body2"
               sx={{
                 color: "#475569",
-                lineHeight: 1.9,
-                maxWidth: 450,
-                mb: 4,
+                lineHeight: 1.75,
+                maxWidth: 420,
+                mb: 3,
+                fontSize: "0.875rem",
               }}
             >
               CareerGo — Nền tảng phát triển sự nghiệp thông minh ứng dụng AI,
-              giúp ứng viên tìm việc, xây dựng CV chuyên nghiệp và hỗ trợ doanh nghiệp
-              tuyển dụng nhân tài phù hợp nhanh chóng và hiệu quả.
+              giúp ứng viên tìm việc, xây dựng CV chuẩn chuyên gia và hỗ trợ doanh nghiệp
+              tuyển dụng nhân tài nhanh chóng, chuẩn xác.
             </Typography>
 
-            {/* SOCIAL */}
-            <Stack direction="row" spacing={1.5}>
-              {[Facebook, LinkedIn, Twitter, YouTube].map(
-                (Icon, index) => (
-                  <IconButton
-                    key={index}
-                    sx={{
-                      bgcolor: "#e2e8f0",
-                      color: "#475569",
-                      width: 42,
-                      height: 42,
-                      transition: "0.3s",
-                      "&:hover": {
-                        bgcolor: primaryColor,
-                        color: "#fff",
-                        transform: "translateY(-3px)",
-                      },
-                    }}
-                  >
-                    <Icon fontSize="small" />
-                  </IconButton>
-                )
-              )}
-            </Stack>
-          </Grid>
-
-          {/* LINKS */}
-          <Grid item xs={6} md={2}>
-            <Typography
-              variant="subtitle1"
-              fontWeight="700"
-              sx={{ mb: 3, color: "#0f172a" }}
-            >
-              Ứng Viên
-            </Typography>
-
-            <Stack spacing={2}>
-              {footerLinks.candidate.map((item) => (
-                <Link
-                  key={item}
-                  href="#"
-                  underline="none"
+            {/* SOCIAL ICONS */}
+            <Stack direction="row" spacing={1.2}>
+              {[
+                { icon: <Facebook fontSize="small" />, link: "#" },
+                { icon: <LinkedIn fontSize="small" />, link: "#" },
+                { icon: <Twitter fontSize="small" />, link: "#" },
+                { icon: <YouTube fontSize="small" />, link: "#" },
+              ].map((item, index) => (
+                <IconButton
+                  key={index}
+                  size="small"
                   sx={{
+                    bgcolor: "#e2e8f0",
                     color: "#475569",
-                    fontSize: "0.9rem",
-                    transition: "0.2s",
+                    width: 36,
+                    height: 36,
+                    borderRadius: "10px",
+                    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                     "&:hover": {
-                      color: primaryColor,
-                      pl: 0.5,
+                      bgcolor: primaryColor,
+                      color: "#ffffff",
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 4px 10px rgba(37,99,235,0.25)",
                     },
                   }}
                 >
-                  {item}
-                </Link>
+                  {item.icon}
+                </IconButton>
               ))}
             </Stack>
           </Grid>
 
-          {/* EMPLOYER */}
-          <Grid item xs={6} md={2}>
+          {/* ỨNG VIÊN */}
+          <Grid item xs={6} sm={4} md={2.5}>
             <Typography
-              variant="subtitle1"
-              fontWeight="700"
-              sx={{ mb: 3, color: "#0f172a" }}
+              variant="subtitle2"
+              fontWeight="800"
+              sx={{
+                mb: 2,
+                color: "#0f172a",
+                fontSize: "0.95rem",
+                letterSpacing: "-0.2px",
+              }}
+            >
+              Dành cho Ứng Viên
+            </Typography>
+
+            <Stack spacing={1.2}>
+              {candidateLinks.map((item, idx) => (
+                <Box
+                  key={idx}
+                  component={Link}
+                  to={item.to}
+                  sx={{
+                    color: "#475569",
+                    fontSize: "0.875rem",
+                    textDecoration: "none",
+                    fontWeight: 500,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 0.8,
+                    transition: "all 0.2s ease",
+                    width: "fit-content",
+                    "&:hover": {
+                      color: primaryColor,
+                      transform: "translateX(4px)",
+                    },
+                  }}
+                >
+                  <span>{item.label}</span>
+                  {item.badge && (
+                    <Chip
+                      label={item.badge}
+                      size="small"
+                      sx={{
+                        height: 18,
+                        fontSize: "0.65rem",
+                        fontWeight: 800,
+                        bgcolor: item.badge === "AI" ? "#eff6ff" : "#fef2f2",
+                        color: item.badge === "AI" ? "#2563eb" : "#ef4444",
+                        border: item.badge === "AI" ? "1px solid #bfdbfe" : "1px solid #fecaca",
+                        px: 0.2,
+                      }}
+                    />
+                  )}
+                </Box>
+              ))}
+            </Stack>
+          </Grid>
+
+          {/* DOANH NGHIỆP */}
+          <Grid item xs={6} sm={4} md={2.2}>
+            <Typography
+              variant="subtitle2"
+              fontWeight="800"
+              sx={{
+                mb: 2,
+                color: "#0f172a",
+                fontSize: "0.95rem",
+                letterSpacing: "-0.2px",
+              }}
             >
               Doanh Nghiệp
             </Typography>
 
-            <Stack spacing={2}>
-              {footerLinks.employer.map((item) => (
-                <Link
-                  key={item}
-                  href="#"
-                  underline="none"
+            <Stack spacing={1.2}>
+              {employerLinks.map((item, idx) => (
+                <Box
+                  key={idx}
+                  component={Link}
+                  to={item.to}
                   sx={{
                     color: "#475569",
-                    fontSize: "0.9rem",
-                    transition: "0.2s",
+                    fontSize: "0.875rem",
+                    textDecoration: "none",
+                    fontWeight: 500,
+                    display: "inline-block",
+                    transition: "all 0.2s ease",
+                    width: "fit-content",
                     "&:hover": {
                       color: primaryColor,
-                      pl: 0.5,
+                      transform: "translateX(4px)",
                     },
                   }}
                 >
-                  {item}
-                </Link>
+                  {item.label}
+                </Box>
               ))}
             </Stack>
           </Grid>
 
-          {/* CONTACT */}
-          <Grid item xs={12} md={3}>
+          {/* LIÊN HỆ */}
+          <Grid item xs={12} sm={4} md={2.8}>
             <Typography
-              variant="subtitle1"
-              fontWeight="700"
-              sx={{ mb: 3, color: "#0f172a" }}
+              variant="subtitle2"
+              fontWeight="800"
+              sx={{
+                mb: 2,
+                color: "#0f172a",
+                fontSize: "0.95rem",
+                letterSpacing: "-0.2px",
+              }}
             >
-              Liên Hệ
+              Liên Hệ & Hỗ Trợ
             </Typography>
 
-            <Stack spacing={3}>
-              <Box display="flex">
+            <Stack spacing={1.8}>
+              <Box display="flex" alignItems="flex-start" gap={1.2}>
                 <LocationOn
                   sx={{
-                    mr: 1.5,
                     color: primaryColor,
+                    fontSize: 20,
+                    mt: 0.2,
+                    flexShrink: 0,
                   }}
                 />
-
                 <Typography
                   variant="body2"
-                  sx={{ color: "#475569", lineHeight: 1.7 }}
+                  sx={{ color: "#475569", lineHeight: 1.6, fontSize: "0.875rem" }}
                 >
-                  QTSC Innovation Building,
-                  Quận 12, TP. Hồ Chí Minh
+                  Tòa nhà CareerGo Tower, Cầu Giấy, Hà Nội
                 </Typography>
               </Box>
 
-              <Box display="flex" alignItems="center">
+              <Box display="flex" alignItems="center" gap={1.2}>
                 <Phone
                   sx={{
-                    mr: 1.5,
                     color: primaryColor,
+                    fontSize: 20,
+                    flexShrink: 0,
                   }}
                 />
-
                 <Typography
                   variant="body2"
-                  sx={{ color: "#475569" }}
+                  sx={{ color: "#475569", fontSize: "0.875rem", fontWeight: 700 }}
                 >
-                  1900 123 456
+                  1900 6868
                 </Typography>
               </Box>
 
-              <Box display="flex" alignItems="center">
+              <Box display="flex" alignItems="center" gap={1.2}>
                 <Email
                   sx={{
-                    mr: 1.5,
                     color: primaryColor,
+                    fontSize: 20,
+                    flexShrink: 0,
                   }}
                 />
-
                 <Typography
                   variant="body2"
-                  sx={{ color: "#475569" }}
+                  sx={{ color: "#475569", fontSize: "0.875rem" }}
                 >
-                  contact@careergo.vn
+                  support@careergo.vn
                 </Typography>
               </Box>
             </Stack>
@@ -258,47 +333,53 @@ const UserFooter = () => {
         </Grid>
 
         {/* DIVIDER */}
-        <Divider
-          sx={{
-            borderColor: "#e2e8f0",
-            my: 6,
-          }}
-        />
+        <Divider sx={{ borderColor: "#e2e8f0", my: 3.5 }} />
 
-        {/* BOTTOM */}
+        {/* BOTTOM COPYRIGHT & LEGAL */}
         <Stack
-          direction={{ xs: "column", md: "row" }}
+          direction={{ xs: "column", sm: "row" }}
           justifyContent="space-between"
-          alignItems="center"
+          alignItems={{ xs: "center", sm: "center" }}
           spacing={2}
+          sx={{
+            pr: { xs: 0, sm: 4, md: 10 },
+          }}
         >
           <Typography
             variant="body2"
             sx={{
               color: "#64748b",
-              textAlign: { xs: "center", md: "left" },
+              fontSize: "0.8125rem",
+              textAlign: { xs: "center", sm: "left" },
             }}
           >
-            © {new Date().getFullYear()} CareerGo.
-            All rights reserved.
+            © {new Date().getFullYear()} CareerGo. All rights reserved.
           </Typography>
 
-          <Stack direction="row" spacing={3}>
-            {footerLinks.support.map((item) => (
-              <Link
-                key={item}
-                href="#"
-                underline="none"
+          <Stack
+            direction="row"
+            spacing={{ xs: 2, sm: 3 }}
+            flexWrap="wrap"
+            justifyContent="center"
+          >
+            {supportLinks.map((item, idx) => (
+              <Box
+                key={idx}
+                component={Link}
+                to={item.to}
                 sx={{
                   color: "#64748b",
-                  fontSize: "0.85rem",
+                  fontSize: "0.8125rem",
+                  textDecoration: "none",
+                  fontWeight: 500,
+                  transition: "color 0.15s ease",
                   "&:hover": {
                     color: primaryColor,
                   },
                 }}
               >
-                {item}
-              </Link>
+                {item.label}
+              </Box>
             ))}
           </Stack>
         </Stack>

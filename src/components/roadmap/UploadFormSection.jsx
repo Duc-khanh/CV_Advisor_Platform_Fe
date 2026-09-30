@@ -1,38 +1,24 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import {
-  Box,
-  Paper,
-  Typography,
-  TextField,
-  Button,
-  Stack,
-  Chip,
-  FormControl,
-  Select,
-  MenuItem,
-  InputAdornment,
-  CircularProgress,
-  IconButton,
-  Alert,
-} from "@mui/material";
-import {
-  CloudUpload,
-  InsertDriveFile,
-  WorkOutline,
-  CalendarMonth,
-  AutoAwesome,
-  Refresh,
-  ArrowForward,
-  ArrowDownward,
-  CheckCircle,
-  DeleteOutline,
-} from "@mui/icons-material";
+  UploadCloud,
+  FileCheck,
+  Briefcase,
+  Calendar,
+  Sparkles,
+  ArrowRight,
+  ArrowDown,
+  ShieldCheck,
+  RefreshCw,
+  AlertCircle,
+  FileText,
+} from "lucide-react";
 
 const suggestionTags = [
   "Java Backend",
   "Frontend React",
   "Data Analyst",
   "Tester / QA",
+  "DevOps Engineer",
 ];
 
 const roadmapDurations = [
@@ -54,589 +40,268 @@ const UploadFormSection = ({
   onReset,
 }) => {
   const fileInputRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleTagClick = (tag) => {
     onTargetRoleChange(tag);
   };
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const droppedFile = e.dataTransfer.files?.[0];
+    if (droppedFile) {
+      onFileUpload({ target: { files: [droppedFile] } });
+    }
+  };
+
   const isCtaDisabled = isAnalyzing || !cvFile || !targetRole?.trim();
 
   return (
-    <Paper
-      elevation={0}
-      sx={{
-        width: "100%",
-        maxWidth: { xs: "100%", lg: "1020px" },
-        mx: "auto",
-        alignSelf: "center",
-        p: { xs: 2.5, sm: 3, md: 3.5 },
-        borderRadius: "16px",
-        border: "1px solid #e2e8f0",
-        bgcolor: "#ffffff",
-        boxShadow: "0 8px 24px rgba(15, 23, 42, 0.05)",
-        boxSizing: "border-box",
-      }}
-    >
+    <div className="w-full max-w-4xl mx-auto bg-white/95 rounded-3xl border border-slate-200/90 shadow-xl shadow-blue-900/5 p-5 sm:p-8 backdrop-blur-md relative overflow-hidden transition-all duration-300">
       {/* KHUNG NHẬP LIỆU: BỐ CỤC 2 CỘT CÓ MŨI TÊN LIÊN KẾT Ở GIỮA */}
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "1fr",
-            md: "1fr auto 1fr",
-          },
-          alignItems: "stretch",
-          gap: { xs: 2, md: 2, lg: 2.5 },
-        }}
-      >
-        {/* ================= CỘT 1: ĐIỂM XUẤT PHÁT ================= */}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 1.5,
-            p: { xs: 2, sm: 2.25 },
-            borderRadius: "12px",
-            bgcolor: "#f8fafc",
-            border: "1px solid #e2e8f0",
-          }}
-        >
-          {/* Tiêu đề cột 1 */}
-          <Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.3 }}>
-              <Box
-                sx={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: "6px",
-                  bgcolor: "#eff6ff",
-                  color: "#2563eb",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 800,
-                  fontSize: "0.8rem",
-                  border: "1px solid #bfdbfe",
-                }}
-              >
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-stretch gap-4 md:gap-5">
+        {/* ================= CỘT 1: ĐIỂM XUẤT PHÁT (NĂNG LỰC HIỆN TẠI) ================= */}
+        <div className="flex flex-col justify-between p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
+          {/* Header Cột 1 */}
+          <div className="mb-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-6 h-6 rounded-lg bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center font-extrabold text-xs">
                 1
-              </Box>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 800,
-                  color: "#0f172a",
-                  fontSize: { xs: "0.98rem", sm: "1.05rem" },
-                }}
-              >
-                Năng lực hiện tại
-              </Typography>
-            </Box>
-            <Typography variant="body2" sx={{ color: "#64748b", fontSize: "0.8rem", pl: 4.2 }}>
+              </span>
+              <h3 className="font-extrabold text-slate-900 text-sm sm:text-base">
+                Năng Lực Hiện Tại
+              </h3>
+            </div>
+            <p className="text-xs text-slate-500 font-medium pl-8">
               Điểm xuất phát từ hồ sơ của bạn
-            </Typography>
-          </Box>
+            </p>
+          </div>
 
-          {/* Khung upload CV */}
-          {!cvFile ? (
-            <Button
-              component="label"
-              fullWidth
-              sx={{
-                flex: 1,
-                minHeight: 190,
-                borderRadius: "10px",
-                border: "2px dashed #93c5fd",
-                bgcolor: "#ffffff",
-                textTransform: "none",
-                color: "#0f172a",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                p: 2,
-                transition: "all 0.2s ease-in-out",
-                "&:hover": {
-                  bgcolor: "#eff6ff",
-                  borderColor: "#2563eb",
-                },
-              }}
-            >
-              <Box
-                sx={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: "8px",
-                  bgcolor: "#eff6ff",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#2563eb",
-                  mb: 1,
-                }}
-              >
-                <CloudUpload sx={{ fontSize: 24 }} />
-              </Box>
+          {/* Khung upload CV (Dropzone) */}
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`flex-1 min-h-[190px] rounded-2xl border-2 border-dashed p-4 text-center cursor-pointer transition-all duration-300 flex flex-col items-center justify-center ${
+              isDragging
+                ? "border-blue-600 bg-blue-50/70 scale-[1.01]"
+                : cvFile
+                ? "border-emerald-300 bg-emerald-50/20"
+                : "border-slate-300 hover:border-blue-500 bg-slate-50/50 hover:bg-blue-50/20"
+            }`}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              hidden
+              accept=".pdf,application/pdf"
+              onChange={onFileUpload}
+            />
 
-              <Typography
-                variant="subtitle1"
-                sx={{ fontWeight: 800, color: "#0f172a", fontSize: "0.92rem", mb: 0.3 }}
-              >
-                Tải lên CV (PDF)
-              </Typography>
+            {!cvFile ? (
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-50 to-indigo-100 border border-blue-200 text-blue-600 flex items-center justify-center shadow-xs mb-2">
+                  <UploadCloud className="w-6 h-6 text-blue-600" />
+                </div>
 
-              <Typography
-                variant="body2"
-                sx={{
-                  color: "#64748b",
-                  fontSize: "0.78rem",
-                  textAlign: "center",
-                  maxWidth: "260px",
-                  mb: 1.2,
-                }}
-              >
-                AI sẽ đọc kỹ năng và kinh nghiệm bạn đang có
-              </Typography>
+                <p className="font-bold text-slate-800 text-xs sm:text-sm">
+                  Tải lên CV (PDF)
+                </p>
 
-              <Chip
-                icon={<InsertDriveFile sx={{ color: "#2563eb !important", fontSize: 14 }} />}
-                label="Định dạng PDF (tối đa 5MB)"
-                size="small"
-                sx={{
-                  height: 24,
-                  bgcolor: "#eff6ff",
-                  color: "#3b82f6",
-                  fontWeight: 700,
-                  fontSize: "0.72rem",
-                  borderRadius: "6px",
-                }}
-              />
+                <p className="text-[11px] text-slate-500 font-medium max-w-[220px] mt-1 mb-2">
+                  AI sẽ đọc kỹ năng và kinh nghiệm bạn đang có
+                </p>
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                hidden
-                accept=".pdf,application/pdf"
-                onChange={onFileUpload}
-              />
-            </Button>
-          ) : (
-            /* Khi đã upload thành công */
-            <Box
-              sx={{
-                flex: 1,
-                minHeight: 190,
-                borderRadius: "10px",
-                border: "2px solid #86efac",
-                bgcolor: "#f0fdf4",
-                p: 2,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                boxSizing: "border-box",
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.2 }}>
-                <Box
-                  sx={{
-                    width: 38,
-                    height: 38,
-                    borderRadius: "8px",
-                    bgcolor: "#dcfce7",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#16a34a",
-                    flexShrink: 0,
-                  }}
-                >
-                  <InsertDriveFile sx={{ fontSize: 20 }} />
-                </Box>
-                <Box sx={{ minWidth: 0, flex: 1 }}>
-                  <Stack direction="row" alignItems="center" spacing={0.6} sx={{ mb: 0.2 }}>
-                    <CheckCircle sx={{ color: "#16a34a", fontSize: 16 }} />
-                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#166534", fontSize: "0.85rem" }}>
-                      Đã tải lên CV thành công
-                    </Typography>
-                  </Stack>
-                  <Typography
-                    variant="body2"
-                    noWrap
-                    sx={{
-                      fontWeight: 700,
-                      color: "#0f172a",
-                      fontSize: "0.85rem",
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-bold">
+                  <FileText className="w-3 h-3 text-blue-600" />
+                  Định dạng PDF (tối đa 5MB)
+                </span>
+              </div>
+            ) : (
+              /* Trạng thái đã chọn file */
+              <div className="w-full flex flex-col justify-between h-full text-left p-1">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                    <FileCheck className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="inline-block text-[11px] font-extrabold text-emerald-700 mb-0.5">
+                      ✓ Đã tải lên thành công
+                    </span>
+                    <p className="text-xs font-bold text-slate-900 truncate">
+                      {cvFile.name}
+                    </p>
+                    <p className="text-[10px] font-semibold text-slate-400 mt-0.5">
+                      {(cvFile.size / 1024 / 1024).toFixed(2)} MB • File PDF
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-3 mt-2 border-t border-emerald-100">
+                  <span className="text-[11px] font-bold text-emerald-700">
+                    Sẵn sàng phân tích
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      fileInputRef.current?.click();
                     }}
+                    className="text-[11px] font-bold text-blue-600 hover:text-blue-700 underline"
                   >
-                    {cvFile.name}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.75rem" }}>
-                    {(cvFile.size / 1024 / 1024).toFixed(2)} MB • File PDF
-                  </Typography>
-                </Box>
-              </Box>
-
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pt: 1 }}>
-                <Typography variant="caption" sx={{ color: "#15803d", fontWeight: 600, fontSize: "0.75rem" }}>
-                  ✓ AI sẵn sàng trích xuất kỹ năng
-                </Typography>
-
-                <Button
-                  component="label"
-                  size="small"
-                  variant="outlined"
-                  sx={{
-                    textTransform: "none",
-                    borderRadius: "6px",
-                    fontWeight: 700,
-                    fontSize: "0.78rem",
-                    py: 0.4,
-                    px: 1.2,
-                    borderColor: "#bbf7d0",
-                    color: "#15803d",
-                    bgcolor: "#ffffff",
-                    "&:hover": {
-                      borderColor: "#86efac",
-                      bgcolor: "#f0fdf4",
-                    },
-                  }}
-                >
-                  Đổi file khác
-                  <input
-                    type="file"
-                    hidden
-                    accept=".pdf,application/pdf"
-                    onChange={onFileUpload}
-                  />
-                </Button>
-              </Box>
-            </Box>
-          )}
-        </Box>
+                    Đổi file khác
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* ================= MŨI TÊN LIÊN KẾT Ở GIỮA ================= */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            py: { xs: 0.5, md: 0 },
-          }}
-        >
-          <Box
-            sx={{
-              width: { xs: 34, md: 36 },
-              height: { xs: 34, md: 36 },
-              borderRadius: "50%",
-              bgcolor: "#eff6ff",
-              border: "1.5px solid #bfdbfe",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#2563eb",
-              boxShadow: "0 2px 8px rgba(37,99,235,0.12)",
-            }}
-          >
-            {/* Desktop: Mũi tên sang phải / Mobile: Mũi tên xuống dưới */}
-            <Box sx={{ display: { xs: "none", md: "flex" } }}>
-              <ArrowForward sx={{ fontSize: 18 }} />
-            </Box>
-            <Box sx={{ display: { xs: "flex", md: "none" } }}>
-              <ArrowDownward sx={{ fontSize: 18 }} />
-            </Box>
-          </Box>
-        </Box>
+        <div className="flex items-center justify-center py-1 md:py-0">
+          <div className="w-9 h-9 rounded-full bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center shadow-xs">
+            <ArrowRight className="w-4 h-4 hidden md:block" />
+            <ArrowDown className="w-4 h-4 md:hidden" />
+          </div>
+        </div>
 
-        {/* ================= CỘT 2: ĐÍCH ĐẾN ================= */}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 1.5,
-            p: { xs: 2, sm: 2.25 },
-            borderRadius: "12px",
-            bgcolor: "#f8fafc",
-            border: "1px solid #e2e8f0",
-          }}
-        >
-          {/* Tiêu đề cột 2 */}
-          <Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.3 }}>
-              <Box
-                sx={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: "6px",
-                  bgcolor: "#eff6ff",
-                  color: "#2563eb",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 800,
-                  fontSize: "0.8rem",
-                  border: "1px solid #bfdbfe",
-                }}
-              >
+        {/* ================= CỘT 2: ĐÍCH ĐẾN (MỤC TIÊU MONG MUỐN) ================= */}
+        <div className="flex flex-col justify-between p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
+          {/* Header Cột 2 */}
+          <div className="mb-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-6 h-6 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center font-extrabold text-xs">
                 2
-              </Box>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 800,
-                  color: "#0f172a",
-                  fontSize: { xs: "0.98rem", sm: "1.05rem" },
-                }}
-              >
-                Mục tiêu mong muốn
-              </Typography>
-            </Box>
-            <Typography variant="body2" sx={{ color: "#64748b", fontSize: "0.8rem", pl: 4.2 }}>
+              </span>
+              <h3 className="font-extrabold text-slate-900 text-sm sm:text-base">
+                Mục Tiêu Mong Muốn
+              </h3>
+            </div>
+            <p className="text-xs text-slate-500 font-medium pl-8">
               Vị trí & thời gian bạn hướng tới
-            </Typography>
-          </Box>
+            </p>
+          </div>
 
-          {/* Khung nhập mục tiêu & thời gian */}
-          <Stack
-            spacing={1.5}
-            sx={{
-              flex: 1,
-              minHeight: 190,
-              bgcolor: "#ffffff",
-              p: 2,
-              borderRadius: "10px",
-              border: "1px solid #e2e8f0",
-              boxSizing: "border-box",
-              justifyContent: "space-between",
-            }}
-          >
-            {/* Input (Bắt buộc): Vị trí nghề nghiệp mục tiêu */}
-            <Box>
-              <Typography
-                component="label"
-                sx={{
-                  display: "block",
-                  fontSize: "0.82rem",
-                  fontWeight: 700,
-                  color: "#334155",
-                  mb: 0.4,
-                }}
-              >
+          {/* Form Fields Cột 2 */}
+          <div className="flex-1 flex flex-col justify-between gap-3">
+            {/* Vị trí mục tiêu */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 Vị trí nghề nghiệp mục tiêu (*)
-              </Typography>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="VD: Fullstack Developer, Data Engineer..."
-                value={targetRole}
-                onChange={(e) => onTargetRoleChange(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <WorkOutline sx={{ color: "#2563eb", fontSize: 16 }} />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "6px",
-                    bgcolor: "#ffffff",
-                    fontSize: "0.85rem",
-                    fontWeight: 600,
-                    "& fieldset": { borderColor: "#cbd5e1" },
-                    "&:hover fieldset": { borderColor: "#94a3b8" },
-                    "&.Mui-focused fieldset": { borderColor: "#2563eb" },
-                  },
-                }}
-              />
+              </label>
+              <div className="relative">
+                <Briefcase className="w-4 h-4 text-blue-600 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="VD: Fullstack Developer, Data Engineer..."
+                  value={targetRole}
+                  onChange={(e) => onTargetRoleChange(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-slate-400 text-slate-900"
+                />
+              </div>
 
-              {/* Tags gợi ý nhanh */}
-              <Box sx={{ mt: 0.8, display: "flex", alignItems: "center", gap: 0.6, flexWrap: "wrap" }}>
-                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, fontSize: "0.72rem" }}>
-                  Gợi ý:
-                </Typography>
+              {/* Suggestions */}
+              <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                <span className="text-[11px] font-bold text-slate-400">Gợi ý:</span>
                 {suggestionTags.map((tag) => {
                   const isSelected = targetRole === tag;
                   return (
-                    <Chip
+                    <button
                       key={tag}
-                      label={tag}
-                      size="small"
+                      type="button"
                       onClick={() => handleTagClick(tag)}
-                      sx={{
-                        cursor: "pointer",
-                        fontWeight: 600,
-                        fontSize: "0.72rem",
-                        height: 22,
-                        borderRadius: "6px",
-                        bgcolor: isSelected ? "#2563eb" : "#f1f5f9",
-                        color: isSelected ? "#ffffff" : "#475569",
-                        border: isSelected ? "1px solid #1d4ed8" : "1px solid #e2e8f0",
-                        transition: "all 0.15s ease",
-                        "&:hover": {
-                          bgcolor: isSelected ? "#1d4ed8" : "#e2e8f0",
-                        },
-                      }}
-                    />
+                      className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border transition-all ${
+                        isSelected
+                          ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                          : "bg-slate-50 text-slate-600 border-slate-200 hover:border-blue-300 hover:bg-blue-50/50"
+                      }`}
+                    >
+                      {tag}
+                    </button>
                   );
                 })}
-              </Box>
-            </Box>
+              </div>
+            </div>
 
-            {/* Select (Bắt buộc): Thời gian học tập dự kiến */}
-            <Box>
-              <Typography
-                component="label"
-                sx={{
-                  display: "block",
-                  fontSize: "0.82rem",
-                  fontWeight: 700,
-                  color: "#334155",
-                  mb: 0.4,
-                }}
-              >
+            {/* Thời gian dự kiến */}
+            <div className="mt-1">
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 Thời gian học tập dự kiến (*)
-              </Typography>
-              <FormControl fullWidth size="small">
-                <Select
+              </label>
+              <div className="relative">
+                <Calendar className="w-4 h-4 text-blue-600 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <select
                   value={desiredRoadmap || "6 tháng (Tiêu chuẩn)"}
                   onChange={(e) => onDesiredRoadmapChange(e.target.value)}
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <CalendarMonth sx={{ color: "#2563eb", fontSize: 16 }} />
-                    </InputAdornment>
-                  }
-                  sx={{
-                    borderRadius: "6px",
-                    bgcolor: "#ffffff",
-                    fontSize: "0.85rem",
-                    fontWeight: 600,
-                    "& .MuiOutlinedInput-notchedOutline": { borderColor: "#cbd5e1" },
-                    "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#94a3b8" },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#2563eb" },
-                  }}
+                  className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-900 bg-white cursor-pointer"
                 >
                   {roadmapDurations.map((dur) => (
-                    <MenuItem key={dur} value={dur} sx={{ fontWeight: 600, fontSize: "0.85rem" }}>
+                    <option key={dur} value={dur} className="font-medium text-slate-800">
                       {dur}
-                    </MenuItem>
+                    </option>
                   ))}
-                </Select>
-              </FormControl>
-            </Box>
-          </Stack>
-        </Box>
-      </Box>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      {/* THÔNG BÁO LỖI NẾU CÓ */}
+      {/* Thông báo lỗi nếu có */}
       {error && (
-        <Alert severity="error" sx={{ mt: 2.5, borderRadius: "8px", fontWeight: 600 }}>
-          {error}
-        </Alert>
+        <div className="mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+          <span>{error}</span>
+        </div>
       )}
 
       {/* ================= 3. NÚT HÀNH ĐỘNG CHÍNH (CTA) ================= */}
-      <Box
-        sx={{
-          mt: 3,
-          pt: 2.5,
-          borderTop: "1px solid #f1f5f9",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1.5}
-          alignItems="center"
-          sx={{ width: { xs: "100%", sm: "auto" } }}
+      <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col items-center justify-center">
+        <button
+          type="button"
+          onClick={onAnalyze}
+          disabled={isCtaDisabled}
+          className={`w-full sm:w-auto sm:min-w-[320px] py-3.5 px-8 rounded-2xl font-black text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all duration-300 shadow-md ${
+            isCtaDisabled
+              ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
+              : "bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 hover:from-blue-700 hover:via-indigo-700 hover:to-sky-700 text-white shadow-blue-500/25 hover:shadow-blue-500/35 hover:-translate-y-0.5 active:scale-[0.99]"
+          }`}
         >
-          <Button
-            variant="contained"
-            size="large"
-            onClick={onAnalyze}
-            disabled={isCtaDisabled}
-            sx={{
-              height: 48,
-              px: { xs: 3, sm: 5 },
-              width: { xs: "100%", sm: "auto" },
-              minWidth: { sm: 300, md: 340 },
-              borderRadius: "8px",
-              textTransform: "none",
-              fontSize: "1rem",
-              fontWeight: 800,
-              bgcolor: "#2563eb",
-              color: "#ffffff",
-              boxShadow: "0 8px 20px rgba(37,99,235,0.22)",
-              transition: "all 0.2s ease",
-              "&:hover": {
-                bgcolor: "#1d4ed8",
-                boxShadow: "0 10px 24px rgba(37,99,235,0.3)",
-              },
-              "&:disabled": {
-                bgcolor: "#cbd5e1",
-                color: "#f8fafc",
-                boxShadow: "none",
-              },
-            }}
-          >
-            {isAnalyzing ? (
-              <Stack direction="row" spacing={1.2} alignItems="center">
-                <CircularProgress size={20} color="inherit" />
-                <span>AI đang phân tích & tạo lộ trình...</span>
-              </Stack>
-            ) : (
-              <Stack direction="row" spacing={1} alignItems="center">
-                <AutoAwesome sx={{ fontSize: 20 }} />
-                <span>Tạo lộ trình học tập cùng AI</span>
-              </Stack>
-            )}
-          </Button>
-
-          {/* Nút Làm mới khi đã có dữ liệu nhập */}
-          {(cvFile || targetRole) && (
-            <Button
-              variant="outlined"
-              onClick={onReset}
-              startIcon={<Refresh sx={{ fontSize: 18 }} />}
-              sx={{
-                height: 48,
-                px: 2.5,
-                borderRadius: "8px",
-                textTransform: "none",
-                fontSize: "0.9rem",
-                fontWeight: 700,
-                borderColor: "#e2e8f0",
-                color: "#64748b",
-                "&:hover": {
-                  borderColor: "#cbd5e1",
-                  bgcolor: "#f8fafc",
-                  color: "#334155",
-                },
-              }}
-            >
-              Làm mới
-            </Button>
+          {isAnalyzing ? (
+            <>
+              <RefreshCw className="w-4 h-4 animate-spin text-white" />
+              <span>AI đang phân tích & lập lộ trình...</span>
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4 text-white" />
+              <span>Tạo lộ trình học tập cùng AI</span>
+            </>
           )}
-        </Stack>
+        </button>
 
-        {/* Chú thích hướng dẫn khi disable */}
-        {isCtaDisabled && !isAnalyzing && (
-          <Typography
-            variant="caption"
-            sx={{
-              color: "#94a3b8",
-              fontWeight: 600,
-              mt: 1.2,
-              fontSize: "0.78rem",
-            }}
-          >
-            * Vui lòng tải lên file CV và nhập vị trí mục tiêu để AI tạo lộ trình
-          </Typography>
-        )}
-      </Box>
-    </Paper>
+        {/* Security & Confidentiality */}
+        <div className="mt-3.5 flex items-center justify-center gap-1.5 text-center text-[11px] text-slate-400 font-medium">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+          <span>Dữ liệu được bảo mật tối đa và chỉ sử dụng để xây dựng lộ trình học tập cá nhân.</span>
+        </div>
+      </div>
+    </div>
   );
 };
 

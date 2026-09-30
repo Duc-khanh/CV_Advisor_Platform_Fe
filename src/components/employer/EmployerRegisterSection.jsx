@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import {
   Box,
   Paper,
@@ -88,7 +88,7 @@ const EmployerRegisterSection = () => {
         email: form.email.trim(),
         companyName: form.companyName.trim(),
         password: form.password,
-        industryName: "",
+        industryName: "Công nghệ thông tin",
         address: "",
         description: "",
       });
@@ -113,15 +113,11 @@ const EmployerRegisterSection = () => {
 
   return (
     <Box
-      id="employer-register"
       sx={{
-        py: { xs: 6, md: 9 },
-        bgcolor: "#f8fafc",
-        borderTop: "1px solid #f1f5f9",
-        borderBottom: "1px solid #f1f5f9",
-        scrollMarginTop: "70px",
         width: "100%",
+        py: { xs: 4, sm: 6 },
         display: "flex",
+        alignItems: "center",
         justifyContent: "center",
       }}
     >
@@ -171,12 +167,11 @@ const EmployerRegisterSection = () => {
             </Typography>
           </Box>
 
-          {/* 4. Giữ lại đúng 4 trường (loại bỏ Xác nhận mật khẩu) */}
-          {/* 5. Input spacing: space-y-3.5 (14px: spacing={1.75}) */}
+          {/* Form 4 trường */}
           <Stack
             component="form"
             onSubmit={handleSubmit}
-            spacing={1.75} // space-y-3.5 (14px)
+            spacing={1.75}
             noValidate
           >
             {/* Trường 1: Họ tên HR */}
@@ -255,7 +250,7 @@ const EmployerRegisterSection = () => {
               />
             </Box>
 
-            {/* Trường 4: Mật khẩu (có icon ẩn/hiện con mắt) */}
+            {/* Trường 4: Mật khẩu */}
             <Box>
               <Typography
                 component="label"
