@@ -1,550 +1,263 @@
-import React, { useEffect } from "react";
-import {
-  Box,
-  Container,
-  Typography,
-  Paper,
-  TextField,
-  InputAdornment,
-  Divider,
-  Button,
-  Stack,
-  Chip,
-  Grid,
-} from "@mui/material";
-import {
-  Search,
-  LocationOn,
-  TrendingUp,
-  Business,
-  People,
-} from "@mui/icons-material";
+﻿import React, { useState, useEffect } from "react";
+import { Search, MapPin, ArrowRight, Building2, TrendingUp, Sparkles, CheckCircle2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
-const HeroSection = ({ searchQuery, setSearchQuery, onSearch }) => {
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      const keyword = searchQuery.keyword?.trim();
-      const location = searchQuery.location?.trim();
-
-      if (keyword || location) {
-        onSearch();
-      }
-    }, 3000);
-
-    return () => clearTimeout(timeout);
-  }, [searchQuery.keyword, searchQuery.location, onSearch]);
-
+// ============= RIGHT COLUMN: AI MATCHING DASHBOARD =============
+const AIMatchingDashboard = () => {
   return (
-    <Box
-      sx={{
-        width: "100%",
-        background:
-          "radial-gradient(circle at 80% 20%, #eff6ff 0%, #ffffff 50%)",
-        pt: { xs: 8, md: 10 },
-        pb: { xs: 10, md: 12 },
-        position: "relative",
-        overflow: "hidden",
-      }}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 0.2 }}
+      className="w-full relative max-w-lg"
     >
-      <Box
-        sx={{
-          position: "absolute",
-          top: "12%",
-          right: "4%",
-          width: "480px",
-          height: "480px",
-          borderRadius: "50%",
-          border: "1.5px dashed rgba(59,130,246,0.12)",
-          zIndex: 0,
-          pointerEvents: "none",
-        }}
-      />
+      {/* Background Glow */}
+      <div className="absolute -inset-2 bg-gradient-to-r from-sky-500/15 via-blue-500/15 to-indigo-500/15 rounded-3xl blur-2xl -z-10 pointer-events-none" />
 
-      <Box
-        sx={{
-          position: "absolute",
-          top: "6%",
-          right: "-2%",
-          width: "560px",
-          height: "560px",
-          borderRadius: "50%",
-          background:
-            "radial-gradient(circle, rgba(59,130,246,0.03) 0%, rgba(255,255,255,0) 70%)",
-          zIndex: 0,
-          pointerEvents: "none",
-        }}
-      />
+      {/* Main Glass Card */}
+      <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-2xl shadow-sky-900/10 rounded-3xl p-6 sm:p-7 hover:shadow-2xl transition-all duration-300">
+        {/* Top Header */}
+        <div className="flex items-center justify-between mb-4">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200/80 rounded-full">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-xs font-extrabold text-emerald-700">AI CV Match</span>
+            <span className="text-xs font-bold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-full">
+              96% Phù hợp
+            </span>
+          </span>
+          <span className="text-xs font-semibold text-slate-400">Thời gian thực</span>
+        </div>
 
-      <Container maxWidth="xl" sx={{ position: "relative", zIndex: 1 }}>
-        <Grid container spacing={5} alignItems="center">
-          <Grid item xs={12} md={6.5} lg={7}>
-            <Typography
-              variant="h1"
-              fontWeight={900}
-              sx={{
-                color: "#0f172a",
-                mb: 2.5,
-                fontSize: { xs: "2.3rem", sm: "3.2rem", md: "3.8rem" },
-                lineHeight: 1.2,
-                letterSpacing: "-0.02em",
-              }}
-            >
-              Tìm công việc phù hợp
-              <br />
-              <Box
-                component="span"
-                sx={{
-                  color: "#2563eb",
-                  position: "relative",
-                  display: "inline-block",
-                }}
-              >
-                Phát triển sự nghiệp
-              </Box>
-            </Typography>
+        {/* Featured Job Card */}
+        <div className="space-y-3">
+          <h3 className="text-lg sm:text-xl font-black text-slate-900 leading-snug">
+            Senior React / Fullstack Developer
+          </h3>
+          <div className="text-xs sm:text-sm text-slate-600 flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1 font-bold text-slate-700">
+              <Building2 className="w-3.5 h-3.5 text-sky-600" />
+              FPT Software
+            </span>
+            <span className="text-slate-300">•</span>
+            <span className="inline-flex items-center gap-1 text-slate-500 font-medium">
+              <MapPin className="w-3.5 h-3.5 text-sky-600" />
+              Hà Nội / Hybrid
+            </span>
+          </div>
 
-            <Typography
-              variant="body1"
-              sx={{
-                color: "#475569",
-                mb: 5,
-                fontSize: "1.05rem",
-                lineHeight: 1.6,
-                maxWidth: "580px",
-                fontWeight: 500,
-              }}
-            >
-              Hàng ngàn cơ hội việc làm từ các công ty uy tín.
-              <br />
-              Tìm công việc phù hợp với kỹ năng và đam mê của bạn.
-            </Typography>
-
-            <Paper
-              elevation={0}
-              sx={{
-                p: 0.9,
-                borderRadius: "16px",
-                display: "flex",
-                gap: 1,
-                border: "1px solid #cbd5e1",
-                boxShadow:
-                  "0 15px 35px -5px rgba(59,130,246,0.04), 0 5px 15px rgba(0,0,0,0.01)",
-                flexDirection: { xs: "column", sm: "row" },
-                alignItems: "center",
-                bgcolor: "#ffffff",
-                mb: 3.5,
-              }}
-            >
-              <TextField
-                fullWidth
-                variant="standard"
-                placeholder="Vị trí công việc, kỹ năng, công ty..."
-                value={searchQuery.keyword}
-                onChange={(e) =>
-                  setSearchQuery({
-                    ...searchQuery,
-                    keyword: e.target.value,
-                  })
-                }
-                InputProps={{
-                  disableUnderline: true,
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search
-                        sx={{
-                          ml: 0.5,
-                          color: "#94a3b8",
-                          fontSize: 20,
-                        }}
-                      />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  px: 1,
-                  py: 0.2,
-                  "& .MuiInputBase-root": {
-                    height: 42,
-                    fontSize: "0.92rem",
-                  },
-                }}
+          {/* Compatibility Progress */}
+          <div className="pt-2">
+            <div className="flex justify-between items-center text-xs font-bold text-slate-600 mb-1.5">
+              <span>Độ tương thích hồ sơ</span>
+              <span className="text-sky-600">96.5%</span>
+            </div>
+            <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/60">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: "96.5%" }}
+                transition={{ duration: 1.2, ease: "easeOut", delay: 0.4 }}
+                className="h-full bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 rounded-full"
               />
+            </div>
+          </div>
+        </div>
 
-              <Divider
-                orientation="vertical"
-                flexItem
-                sx={{
-                  display: { xs: "none", sm: "block" },
-                  my: 1,
-                  borderColor: "#cbd5e1",
-                }}
-              />
+        {/* Metrics Grid */}
+        <div className="pt-5 mt-5 border-t border-slate-100 grid grid-cols-2 gap-3">
+          <div className="p-3.5 bg-sky-50/60 rounded-2xl border border-sky-100/80">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-bold text-slate-600">Việc làm mới</span>
+              <TrendingUp className="w-4 h-4 text-sky-600" />
+            </div>
+            <p className="font-black text-xl text-slate-900">1,250+</p>
+            <span className="text-[10px] font-bold text-emerald-600">+18% tuần này</span>
+          </div>
 
-              <TextField
-                variant="standard"
-                placeholder="Tất cả địa điểm"
-                value={searchQuery.location}
-                onChange={(e) =>
-                  setSearchQuery({
-                    ...searchQuery,
-                    location: e.target.value,
-                  })
-                }
-                InputProps={{
-                  disableUnderline: true,
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <LocationOn
-                        sx={{
-                          ml: 0.5,
-                          color: "#94a3b8",
-                          fontSize: 20,
-                        }}
-                      />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  px: 1,
-                  py: 0.2,
-                  width: { xs: "100%", sm: 240 },
-                  "& .MuiInputBase-root": {
-                    height: 42,
-                    fontSize: "0.92rem",
-                  },
-                }}
-              />
-
-              <Button
-                onClick={onSearch}
-                variant="contained"
-                sx={{
-                  px: 3.5,
-                  py: 1.2,
-                  minHeight: 42,
-                  width: { xs: "100%", sm: "auto" },
-                  borderRadius: "12px",
-                  background: "#2563eb",
-                  fontWeight: 700,
-                  fontSize: "0.92rem",
-                  textTransform: "none",
-                  boxShadow: "0 6px 16px rgba(37,99,235,0.18)",
-                  "&:hover": {
-                    background: "#1d4ed8",
-                    boxShadow: "0 8px 20px rgba(37,99,235,0.28)",
-                  },
-                  transition: "all 0.2s ease",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                Tìm việc ngay
-              </Button>
-            </Paper>
-
-            <Stack
-              direction="row"
-              spacing={1.5}
-              alignItems="center"
-              flexWrap="wrap"
-              useFlexGap
-              sx={{ gap: 1 }}
-            >
-              <Typography
-                variant="body2"
-                sx={{
-                  color: "#64748b",
-                  fontWeight: 700,
-                  fontSize: "0.85rem",
-                }}
-              >
-                Tìm kiếm phổ biến:
-              </Typography>
-
-              {["Marketing", "Kế toán", "IT", "Thiết kế", "Kinh doanh"].map(
-                (tag) => (
-                  <Chip
-                    key={tag}
-                    label={tag}
-                    size="small"
-                    clickable
-                    onClick={() => {
-                      setSearchQuery({
-                        ...searchQuery,
-                        keyword: tag,
-                      });
-                    }}
-                    sx={{
-                      color: "#475569",
-                      borderColor: "#e2e8f0",
-                      bgcolor: "#f8fafc",
-                      fontWeight: 700,
-                      fontSize: "0.75rem",
-                      px: 0.5,
-                      py: 1.5,
-                      "&:hover": {
-                        bgcolor: "#f1f5f9",
-                        borderColor: "#cbd5e1",
-                      },
-                    }}
-                  />
-                )
-              )}
-            </Stack>
-          </Grid>
-
-          <Grid
-            item
-            xs={12}
-            md={5.5}
-            lg={5}
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              position: "relative",
-              mt: { xs: 4, md: 0 },
-            }}
-          >
-            <Box
-              sx={{
-                position: "relative",
-                width: { xs: "320px", sm: "400px", md: "430px" },
-                height: { xs: "320px", sm: "400px", md: "430px" },
-              }}
-            >
-              <Box
-                sx={{
-                  position: "absolute",
-                  width: "100%",
-                  height: "100%",
-                  borderRadius: "50%",
-                  background:
-                    "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
-                  boxShadow: "0 15px 40px rgba(59,130,246,0.08)",
-                }}
-              />
-
-              <Box
-                component="img"
-                src="/hero_candidate_blue_portrait.png"
-                alt="HireAI Candidate"
-                sx={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  width: "88%",
-                  height: "auto",
-                  zIndex: 2,
-                }}
-              />
-
-              <Paper
-                elevation={0}
-                sx={{
-                  position: "absolute",
-                  top: "10%",
-                  left: "-12%",
-                  zIndex: 3,
-                  p: 1.8,
-                  borderRadius: 3.5,
-                  border: "1px solid #f1f5f9",
-                  boxShadow: "0 10px 25px rgba(0,0,0,0.04)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  bgcolor: "#ffffff",
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 2.5,
-                    bgcolor: "#eff6ff",
-                    color: "#2563eb",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <TrendingUp sx={{ fontSize: 20 }} />
-                </Box>
-
-                <Box>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    fontWeight={750}
-                    display="block"
-                    sx={{ fontSize: "0.65rem" }}
-                  >
-                    Việc làm phù hợp
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    fontWeight={900}
-                    color="#0f172a"
-                    sx={{ fontSize: "0.85rem", mb: 0.5 }}
-                  >
-                    1.248
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="#22c55e"
-                    fontWeight={750}
-                    display="block"
-                    sx={{ fontSize: "0.65rem" }}
-                  >
-                    ↑ 12% tuần này
-                  </Typography>
-                </Box>
-
-                <Box sx={{ ml: 1, display: "flex", alignItems: "center" }}>
-                  <svg width="50" height="20" viewBox="0 0 50 20" fill="none">
-                    <path
-                      d="M2 18C10 14 15 2 22 6C29 10 35 1 48 3"
-                      stroke="#3b82f6"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </Box>
-              </Paper>
-
-              <Paper
-                elevation={0}
-                sx={{
-                  position: "absolute",
-                  top: "35%",
-                  right: "-12%",
-                  zIndex: 3,
-                  p: 1.5,
-                  borderRadius: 3.5,
-                  border: "1px solid #f1f5f9",
-                  boxShadow: "0 10px 25px rgba(0,0,0,0.04)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1.5,
-                  bgcolor: "#ffffff",
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 2.5,
-                    bgcolor: "#eff6ff",
-                    color: "#2563eb",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Business sx={{ fontSize: 20 }} />
-                </Box>
-
-                <Box>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    fontWeight={750}
-                    display="block"
-                    sx={{ fontSize: "0.65rem" }}
-                  >
-                    Công ty uy tín
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    fontWeight={900}
-                    color="#0f172a"
-                    sx={{ fontSize: "0.85rem" }}
-                  >
-                    568+
-                    <Box
-                      component="span"
-                      sx={{
-                        color: "#64748b",
-                        fontSize: "0.65rem",
-                        ml: 0.5,
-                        fontWeight: 500,
-                      }}
-                    >
-                      Đang tuyển dụng
-                    </Box>
-                  </Typography>
-                </Box>
-              </Paper>
-
-              <Paper
-                elevation={0}
-                sx={{
-                  position: "absolute",
-                  bottom: "10%",
-                  right: "-5%",
-                  zIndex: 3,
-                  p: 1.5,
-                  borderRadius: 3.5,
-                  border: "1px solid #f1f5f9",
-                  boxShadow: "0 10px 25px rgba(0,0,0,0.04)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1.5,
-                  bgcolor: "#ffffff",
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 2.5,
-                    bgcolor: "#eff6ff",
-                    color: "#2563eb",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <People sx={{ fontSize: 20 }} />
-                </Box>
-
-                <Box>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    fontWeight={750}
-                    display="block"
-                    sx={{ fontSize: "0.65rem" }}
-                  >
-                    Ứng viên thành công
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    fontWeight={900}
-                    color="#0f172a"
-                    sx={{ fontSize: "0.85rem" }}
-                  >
-                    12.5K+
-                    <Box
-                      component="span"
-                      sx={{
-                        color: "#64748b",
-                        fontSize: "0.65rem",
-                        ml: 0.5,
-                        fontWeight: 500,
-                      }}
-                    >
-                      Đã tìm được việc
-                    </Box>
-                  </Typography>
-                </Box>
-              </Paper>
-            </Box>
-          </Grid>
-        </Grid>
-      </Container>
-    </Box>
+          <div className="p-3.5 bg-indigo-50/60 rounded-2xl border border-indigo-100/80">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-bold text-slate-600">Doanh nghiệp</span>
+              <Building2 className="w-4 h-4 text-indigo-600" />
+            </div>
+            <p className="font-black text-xl text-slate-900">580+</p>
+            <span className="text-[10px] font-bold text-indigo-600">Đang tuyển dụng</span>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 };
 
-export default HeroSection; 
+// ============= MAIN HERO SECTION =============
+export default function HeroSection({
+  searchQuery = {},
+  setSearchQuery = () => {},
+  onSearch = () => {},
+}) {
+  const [keyword, setKeyword] = useState(searchQuery?.keyword || "");
+  const [location, setLocation] = useState(searchQuery?.location || "");
+  const navigate = useNavigate();
+
+  const quickTags = ["Java Spring", "ReactJS", "Data & AI", "DevOps / Cloud", "Kế toán"];
+
+  useEffect(() => {
+    if (searchQuery.keyword !== undefined) setKeyword(searchQuery.keyword);
+    if (searchQuery.location !== undefined) setLocation(searchQuery.location);
+  }, [searchQuery]);
+
+  const handleSearch = () => {
+    const trimmedKeyword = keyword.trim();
+    const trimmedLocation = location.trim();
+    
+    setSearchQuery({ keyword: trimmedKeyword, location: trimmedLocation });
+    onSearch?.({ keyword: trimmedKeyword, location: trimmedLocation });
+
+    const params = new URLSearchParams();
+    if (trimmedKeyword) params.set("keyword", trimmedKeyword);
+    if (trimmedLocation) params.set("location", trimmedLocation);
+
+    const queryString = params.toString();
+    navigate(`/search${queryString ? `?${queryString}` : ""}`);
+  };
+
+  const handleTagClick = (tag) => {
+    setKeyword(tag);
+    const trimmedLocation = location.trim();
+    setSearchQuery({ keyword: tag, location: trimmedLocation });
+    onSearch?.({ keyword: tag, location: trimmedLocation });
+
+    const params = new URLSearchParams();
+    params.set("keyword", tag);
+    if (trimmedLocation) params.set("location", trimmedLocation);
+
+    navigate(`/search?${params.toString()}`);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  return (
+    <div className="w-full bg-gradient-to-b from-sky-50/50 via-white to-blue-50/30 pt-8 pb-14 relative overflow-hidden">
+      {/* Background Tech Blue Ambient Lighting */}
+      <div className="absolute top-10 right-20 w-[450px] h-[450px] bg-sky-400/15 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute bottom-10 left-10 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+          {/* ===== CỘT TRÁI (7 COLS): TÌM KIẾM & THÔNG TIN TUYỂN DỤNG CÔNG NGHỆ ===== */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            className="lg:col-span-7 flex flex-col justify-center"
+          >
+            {/* Tone Xanh: High-Tech Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/90 border border-sky-200/90 rounded-full shadow-sm mb-4 w-fit">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-sky-500"></span>
+              </span>
+              <span className="text-xs font-black tracking-wide text-sky-700 uppercase">
+                AI Career Advisor Platform 2026
+              </span>
+            </div>
+
+            {/* Tiêu đề chính */}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.15] mb-3">
+              Kết Nối Nhân Tài & Việc Làm
+              <br />
+              <span className="bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                Đột Phá Bằng Trí Tuệ AI
+              </span>
+            </h1>
+
+            {/* Subtext */}
+            <p className="text-slate-600 text-sm sm:text-base font-medium max-w-lg mb-6 leading-relaxed">
+              Phân tích CV tức thì, đo lường kỹ năng chuyên sâu và gợi ý việc làm chuẩn xác với tỷ lệ tương thích lên đến 98%.
+            </p>
+
+            {/* Thanh tìm kiếm Capsule */}
+            <div className="w-full max-w-xl mb-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white p-2 rounded-2xl border border-slate-200/90 shadow-xl shadow-sky-500/10 hover:border-sky-300 hover:shadow-2xl hover:shadow-sky-500/15 transition-all">
+                {/* Keyword Input */}
+                <div className="flex-1 min-w-0 flex items-center px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 rounded-xl focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-500/30 transition-all">
+                  <Search className="w-4 h-4 text-sky-600 mr-2 flex-shrink-0" />
+                  <input
+                    type="text"
+                    placeholder="Vị trí tuyển dụng, kỹ năng, công ty..."
+                    value={keyword}
+                    onChange={(e) => setKeyword(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    className="w-full bg-transparent outline-none text-xs sm:text-sm text-slate-900 placeholder-slate-400 font-bold"
+                  />
+                </div>
+
+                {/* Location Input */}
+                <div className="w-full sm:w-44 min-w-0 flex-shrink-0 flex items-center px-3 py-2.5 bg-slate-50/80 hover:bg-slate-50 rounded-xl focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-500/30 transition-all">
+                  <MapPin className="w-4 h-4 text-slate-400 mr-1.5 flex-shrink-0" />
+                  <input
+                    type="text"
+                    placeholder="Địa điểm"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    className="w-full bg-transparent outline-none text-xs sm:text-sm text-slate-900 placeholder-slate-400 font-bold"
+                  />
+                </div>
+
+                {/* Search Button */}
+                <button
+                  type="button"
+                  onClick={handleSearch}
+                  style={{ background: "linear-gradient(135deg, #0ea5e9 0%, #2563eb 50%, #4f46e5 100%)", color: "#ffffff" }}
+                  className="flex-shrink-0 px-6 py-2.5 hover:opacity-95 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md shadow-blue-600/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 border-none"
+                >
+                  <span>Tìm việc ngay</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Tags */}
+            <div className="flex items-center gap-2 flex-wrap mb-6">
+              <span className="text-xs font-bold text-slate-400">Xu hướng:</span>
+              {quickTags.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => handleTagClick(tag)}
+                  className="px-3 py-1 bg-white border border-slate-200/90 hover:border-sky-300 hover:text-sky-600 text-slate-600 text-xs font-bold rounded-lg transition-all cursor-pointer shadow-2xs"
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+
+            {/* 3 Thẻ số liệu */}
+            <div className="grid grid-cols-3 gap-3 pt-3 border-t border-slate-200/70 max-w-xl">
+              <div>
+                <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">1,250+</p>
+                <p className="text-xs font-bold text-slate-500">Việc làm mới mở</p>
+              </div>
+              <div>
+                <p className="text-xl sm:text-2xl font-black text-sky-600 tracking-tight">96.5%</p>
+                <p className="text-xs font-bold text-slate-500">Khớp hồ sơ AI</p>
+              </div>
+              <div>
+                <p className="text-xl sm:text-2xl font-black text-blue-600 tracking-tight">&lt; 0.28s</p>
+                <p className="text-xs font-bold text-slate-500">Tốc độ phân tích</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* ===== CỘT PHẢI (5 COLS): AI DASHBOARD GLASSMORPHISM ===== */}
+          <div className="lg:col-span-5 flex justify-center lg:justify-end">
+            <AIMatchingDashboard />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

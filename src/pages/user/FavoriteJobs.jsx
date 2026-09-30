@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+﻿import React, { useEffect, useState } from "react";
+import api from "../../services/axios";
 import { useNavigate } from "react-router-dom";
 import { 
   Container, Typography, Box, Stack, Avatar, 
   IconButton, Paper, CircularProgress, Button, Divider 
 } from "@mui/material";
 import { Favorite, ArrowForward, FavoriteBorder } from "@mui/icons-material";
-import UserLayout from "../../components/UserLayout";
 import { useToast } from "../../contexts/ToastContext";
 import { getMediaUrl } from "../../utils/urlHelpers";
 
@@ -25,7 +24,7 @@ export default function FavoriteJobs() {
     setLoading(true);
     const authHeader = getAuthHeader();
     try {
-      const res = await axios.get("http://localhost:8080/api/user/jobs/favorite/all", {
+      const res = await api.get("/api/user/jobs/favorite/all", {
         headers: authHeader,
       });
       // Đảm bảo dữ liệu từ server luôn hiển thị trạng thái đã lưu
@@ -47,7 +46,7 @@ export default function FavoriteJobs() {
     e.stopPropagation();
     const authHeader = getAuthHeader();
     try {
-      await axios.delete(`http://localhost:8080/api/user/jobs/favorite/${jobId}`, {
+      await api.delete(`/api/user/jobs/favorite/${jobId}`, {
         headers: authHeader,
       });
       // Xóa khỏi danh sách hiển thị ngay lập tức để người dùng thấy kết quả
@@ -60,7 +59,7 @@ export default function FavoriteJobs() {
   };
 
   return (
-    <UserLayout>
+    <>
       {/* 1. HEADER SECTION - Đồng bộ với tone màu trang chủ */}
       <Box sx={{ bgcolor: "#f8faff", pt: 12, pb: 8, borderBottom: "1px solid #eff6ff" }}>
         <Container maxWidth={false} sx={{ px: { xs: 4, md: 10 } }}>
@@ -91,7 +90,6 @@ export default function FavoriteJobs() {
             <CircularProgress sx={{ color: '#2563eb' }} />
           </Box>
         ) : favorites.length === 0 ? (
-          /* TRẠNG THÁI CHƯA CÓ CÔNG VIỆC YÊU THÍCH */
           <Box sx={{ textAlign: 'center', py: 10 }}>
             <Paper 
               elevation={0} 
@@ -122,7 +120,6 @@ export default function FavoriteJobs() {
             </Paper>
           </Box>
         ) : (
-          /* HIỂN THỊ DANH SÁCH (Dùng đúng form 7cm của trang Home) */
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'center' }}>
             {favorites.map((job) => (
               <Paper
@@ -186,6 +183,6 @@ export default function FavoriteJobs() {
           </Box>
         )}
       </Container>
-    </UserLayout>
+    </>
   );
 }

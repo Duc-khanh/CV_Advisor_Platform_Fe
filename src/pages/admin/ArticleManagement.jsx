@@ -16,10 +16,10 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import PushPinIcon from "@mui/icons-material/PushPin";
 import PushPinOutlinedIcon from "@mui/icons-material/PushPinOutlined";
 
-import { articleService } from "../../services/articleService";
+import { articleService } from "../../services/company/articleService";
 import { useToast } from "../../contexts/ToastContext";
 import { getMediaUrl } from "../../utils/urlHelpers";
-import ConfirmDialog from "../../components/ConfirmDialog";
+import ConfirmDialog from "../../components/dialogs/ConfirmDialog";
 
 export default function ArticleManagement() {
   const [articles, setArticles] = useState([]);
@@ -256,24 +256,6 @@ export default function ArticleManagement() {
       loadArticles();
     } catch (err) {
       showToast("Không thể cập nhật trạng thái bài viết", "error");
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "PUBLISHED": return "success";
-      case "HIDDEN": return "warning";
-      case "DRAFT": return "default";
-      default: return "default";
-    }
-  };
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case "PUBLISHED": return "Công khai";
-      case "HIDDEN": return "Ẩn";
-      case "DRAFT": return "Nháp";
-      default: return status;
     }
   };
 

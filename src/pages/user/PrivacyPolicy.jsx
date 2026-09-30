@@ -2,7 +2,6 @@ import React, { useEffect } from "react";
 import { Container, Typography, Box, Paper, Divider, Button, Stack } from "@mui/material";
 import { ArrowBack, Security, Gavel, Storage, Visibility } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import UserLayout from "../../components/UserLayout"; 
 
 export default function PrivacyPolicy() {
   const navigate = useNavigate();
@@ -12,8 +11,7 @@ export default function PrivacyPolicy() {
   }, []);
 
   return (
-    <UserLayout>
-      <Container maxWidth="md" sx={{ py: 6 }}>
+    <Container maxWidth="md" sx={{ py: 6 }}>
         <Button 
           startIcon={<ArrowBack />} 
           onClick={() => navigate(-1)} 
@@ -55,7 +53,7 @@ export default function PrivacyPolicy() {
                 <Storage color="primary" fontSize="small" /> 2. Cam kết bảo mật
               </Typography>
               <Typography variant="body1" paragraph>
-                Hệ thống <b>CV Advisor Platform</b> cam kết không chia sẻ dữ liệu của bạn cho bất kỳ bên thứ ba nào ngoài nhà tuyển dụng mà bạn đã chủ động nhấn nút "Nộp hồ sơ ứng tuyển". Toàn bộ dữ liệu được mã hóa và lưu trữ an toàn trên máy chủ của chúng tôi.
+                Hệ thống <b>CareerGo</b> cam kết không chia sẻ dữ liệu của bạn cho bất kỳ bên thứ ba nào ngoài nhà tuyển dụng mà bạn đã chủ động nhấn nút "Nộp hồ sơ ứng tuyển". Toàn bộ dữ liệu được mã hóa và lưu trữ an toàn trên máy chủ của chúng tôi.
               </Typography>
             </Box>
 
@@ -86,6 +84,5 @@ export default function PrivacyPolicy() {
           </Box>
         </Paper>
       </Container>
-    </UserLayout>
-  );
+    );
 }

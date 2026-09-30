@@ -15,7 +15,7 @@ import {
   Link,
 } from "@mui/material";
 import { Close, Star, Room, Favorite, FavoriteBorder, Language, Phone, Email } from "@mui/icons-material";
-import axios from "axios";
+import api from "../../services/axios";
 import { getMediaUrl } from "../../utils/urlHelpers";
 
 const getTimeAgo = (createdAt) => {
@@ -51,7 +51,7 @@ export default function CompanyDetailModal({ company, open, onClose, navigate, h
         try {
           const token = localStorage.getItem("token");
           const headers = token ? { Authorization: `Bearer ${token}` } : {};
-          const response = await axios.get(`http://localhost:8080/api/public/companies/${company.companyId}/jobs`, {
+          const response = await api.get(`/api/public/companies/${company.companyId}/jobs`, {
             headers,
           });
           setJobs(response.data);
@@ -68,8 +68,6 @@ export default function CompanyDetailModal({ company, open, onClose, navigate, h
   if (!company) return null;
 
   const themeColor = "#2563eb";
-  const themeHover = "#eff6ff";
-
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth scroll="paper" PaperProps={{ sx: { borderRadius: "20px" } }}>
       <Box sx={{ position: "absolute", top: 16, right: 16, zIndex: 10 }}>

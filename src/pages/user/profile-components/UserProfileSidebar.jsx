@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import {
   Box,
   Paper,
@@ -9,14 +9,14 @@ import {
   Chip,
 } from "@mui/material";
 import {
+  CalendarMonth,
   Home,
   FilePresent,
   Person,
   Work,
-  Email,
-  Assignment,
   Notifications,
   Settings,
+  AutoAwesome,
 } from "@mui/icons-material";
 import { getMediaUrl } from "../../../utils/urlHelpers";
 
@@ -26,18 +26,18 @@ export default function UserProfileSidebar({
   user,
   searchActive,
   setSearchActive,
-  appliedJobsCount = 0,
-  savedJobsCount = 0,
+  interviewCount = 0,
+  notificationCount = 0,
 }) {
   const menuItems = [
     { id: "overview", icon: <Home fontSize="small" />, text: "Tổng quan" },
-    { id: "attached_cv", icon: <FilePresent fontSize="small" />, text: "Hồ sơ đính kèm" },
     { id: "profile_itviec", icon: <Person fontSize="small" />, text: "Hồ sơ cá nhân" },
+    { id: "attached_cv", icon: <FilePresent fontSize="small" />, text: "Hồ sơ đính kèm" },
     { id: "my_jobs", icon: <Work fontSize="small" />, text: "Việc làm của tôi" },
-    { id: "invites", icon: <Email fontSize="small" />, text: "Lời mời công việc", badge: 0 },
-    { id: "email_subscribe", icon: <Assignment fontSize="small" />, text: "Đăng ký nhận email" },
-    { id: "notifications", icon: <Notifications fontSize="small" />, text: "Thông báo" },
-    { id: "settings", icon: <Settings fontSize="small" />, text: "Cài đặt" },
+    { id: "interviews", icon: <CalendarMonth fontSize="small" />, text: "Lịch phỏng vấn", badge: interviewCount > 0 ? interviewCount : undefined },
+    { id: "ai_usage", icon: <AutoAwesome fontSize="small" />, text: "Hạn mức & Gói AI" },
+    { id: "notifications", icon: <Notifications fontSize="small" />, text: "Thông báo", badge: notificationCount > 0 ? notificationCount : undefined },
+    { id: "settings", icon: <Settings fontSize="small" />, text: "Cài đặt tài khoản" },
   ];
 
   return (
@@ -65,23 +65,25 @@ export default function UserProfileSidebar({
             }}
           >
             <Avatar
-              src={getMediaUrl(user.avatarUrl || user.avatar)}
+              src={getMediaUrl(user?.avatarUrl || user?.avatar)}
               sx={{
                 width: 48,
                 height: 48,
-                bgcolor: "#f43f5e",
+                background: "linear-gradient(135deg, #0284c7, #2563eb)",
+                color: "#ffffff",
                 fontSize: "1.2rem",
-                fontWeight: 700,
+                fontWeight: 800,
+                boxShadow: "0 2px 8px rgba(2,132,199,0.25)",
               }}
             >
-              {user.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}
+              {user?.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}
             </Avatar>
             <Box>
               <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.8rem" }}>
                 Xin chào
               </Typography>
               <Typography variant="subtitle1" fontWeight={800} color="#0f172a" sx={{ lineHeight: 1.2 }}>
-                {user.fullName || "Khách"}
+                {user?.fullName || "Khách"}
               </Typography>
             </Box>
           </Box>
@@ -94,49 +96,41 @@ export default function UserProfileSidebar({
               <Typography variant="body2" fontWeight={700} color="#334155" sx={{ fontSize: "0.85rem" }}>
                 Cho phép tìm kiếm CV
               </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ display: "block", fontSize: "0.75rem" }}>
-                Nhà tuyển dụng có thể tìm thấy bạn
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+                {searchActive ? "Đang bật tìm kiếm" : "Đang ẩn với NTD"}
               </Typography>
             </Box>
-            <Chip
-              label={searchActive ? "Bật" : "Tắt"}
-              size="small"
+            <Box
               onClick={() => setSearchActive(!searchActive)}
               sx={{
-                fontWeight: 700,
-                fontSize: "0.75rem",
-                bgcolor: searchActive ? "#2563eb" : "#f1f5f9",
-                color: searchActive ? "#ffffff" : "#64748b",
-                px: 1.2,
-                cursor: "pointer",
-                "&:hover": {
-                  bgcolor: searchActive ? "#1d4ed8" : "#e2e8f0",
-                },
-              }}
-            />
-          </Box>
-
-          {/* Profile Views Count */}
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <Typography variant="body2" fontWeight={700} color="#334155" sx={{ fontSize: "0.85rem" }}>
-              Nhà tuyển dụng xem CV
-            </Typography>
-            <Avatar
-              sx={{
-                width: 24,
+                width: 42,
                 height: 24,
-                bgcolor: "#10b981",
-                fontSize: "0.75rem",
-                fontWeight: 700,
+                bgcolor: searchActive ? "#2563eb" : "#cbd5e1",
+                borderRadius: "12px",
+                p: "2px",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                display: "flex",
+                alignItems: "center",
               }}
             >
-              0
-            </Avatar>
+              <Box
+                sx={{
+                  width: 20,
+                  height: 20,
+                  bgcolor: "#ffffff",
+                  borderRadius: "50%",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                  transform: searchActive ? "translateX(18px)" : "translateX(0)",
+                  transition: "transform 0.3s ease",
+                }}
+              />
+            </Box>
           </Box>
         </Stack>
       </Paper>
 
-      {/* Sidebar Menu Items */}
+      {/* Navigation Menu */}
       <Paper
         sx={{
           p: 1.5,
@@ -148,7 +142,7 @@ export default function UserProfileSidebar({
       >
         <Stack spacing={0.5}>
           {menuItems.map((item) => {
-            const isSelected = activeTab === item.id || (item.id === "my_jobs" && activeTab === "saved_jobs");
+            const isActive = activeTab === item.id;
             return (
               <Box
                 key={item.id}
@@ -158,36 +152,51 @@ export default function UserProfileSidebar({
                   alignItems: "center",
                   justifyContent: "space-between",
                   px: 2,
-                  py: 1.5,
+                  py: 1.25,
                   borderRadius: 2.5,
                   cursor: "pointer",
-                  transition: "0.2s",
-                  bgcolor: isSelected ? "#fff5f5" : "transparent",
-                  color: isSelected ? "#ef4444" : "#64748b",
+                  transition: "all 0.2s ease",
+                  bgcolor: isActive ? "#eff6ff" : "transparent",
+                  color: isActive ? "#2563eb" : "#475569",
+                  fontWeight: isActive ? 700 : 500,
                   "&:hover": {
-                    bgcolor: isSelected ? "#fff5f5" : "#f1f5f9",
-                    color: isSelected ? "#ef4444" : "#0f172a",
+                    bgcolor: isActive ? "#eff6ff" : "#f8fafc",
+                    color: isActive ? "#2563eb" : "#0f172a",
                   },
                 }}
               >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                  {item.icon}
-                  <Typography variant="body2" fontWeight={isSelected ? 800 : 600} sx={{ fontSize: "0.875rem" }}>
-                    {item.text}
-                  </Typography>
-                </Box>
-                {item.badge !== undefined && (
-                  <Avatar
+                <Stack direction="row" alignItems="center" spacing={1.5}>
+                  <Box
                     sx={{
-                      width: 20,
-                      height: 20,
-                      bgcolor: "#2563eb",
-                      fontSize: "0.65rem",
-                      fontWeight: 700,
+                      color: isActive ? "#2563eb" : "#64748b",
+                      display: "flex",
+                      alignItems: "center",
                     }}
                   >
-                    {item.badge}
-                  </Avatar>
+                    {item.icon}
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    fontWeight={isActive ? 800 : 600}
+                    sx={{ fontSize: "0.88rem" }}
+                  >
+                    {item.text}
+                  </Typography>
+                </Stack>
+                {item.badge !== undefined && (
+                  <Chip
+                    label={item.badge}
+                    size="small"
+                    sx={{
+                      height: 20,
+                      minWidth: 20,
+                      fontSize: "0.7rem",
+                      fontWeight: 800,
+                      bgcolor: isActive ? "#2563eb" : "#ef4444",
+                      color: "#ffffff",
+                      px: 0.5,
+                    }}
+                  />
                 )}
               </Box>
             );

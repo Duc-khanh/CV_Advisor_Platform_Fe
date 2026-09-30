@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../../services/axios";
 import { useNavigate } from "react-router-dom";
 import {
   Typography,
@@ -7,6 +7,7 @@ import {
   Stack,
   Avatar,
   IconButton,
+  Grid,
   Paper,
   CircularProgress,
   Button,
@@ -30,7 +31,7 @@ export default function UserSavedJobsTab() {
     setLoading(true);
     const authHeader = getAuthHeader();
     try {
-      const res = await axios.get("http://localhost:8080/api/user/jobs/favorite/all", {
+      const res = await api.get("/api/user/jobs/favorite/all", {
         headers: authHeader,
       });
       const favoriteData = res.data.map((job) => ({ ...job, isFavorite: true }));
@@ -51,7 +52,7 @@ export default function UserSavedJobsTab() {
     e.stopPropagation();
     const authHeader = getAuthHeader();
     try {
-      await axios.delete(`http://localhost:8080/api/user/jobs/favorite/${jobId}`, {
+      await api.delete(`/api/user/jobs/favorite/${jobId}`, {
         headers: authHeader,
       });
       setFavorites((prev) => prev.filter((job) => job.jobId !== jobId));

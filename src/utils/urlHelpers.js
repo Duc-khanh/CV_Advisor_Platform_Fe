@@ -1,4 +1,10 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+
+// Most application endpoints already start with /api. Normalize an env value
+// such as https://example.com/api back to its origin to avoid /api/api paths.
+export const API_BASE_URL = configuredApiBaseUrl
+  .replace(/\/+$/, "")
+  .replace(/\/api$/i, "");
 
 export const isAbsoluteUrl = (url) => {
   return typeof url === "string" && /^(https?:\/\/|blob:|data:)/.test(url);

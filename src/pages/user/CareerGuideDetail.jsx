@@ -33,8 +33,7 @@ import {
   Star,
   StarOutline
 } from "@mui/icons-material";
-import UserLayout from "../../components/UserLayout";
-import { articleService } from "../../services/articleService";
+import { articleService } from "../../services/company/articleService";
 import { useToast } from "../../contexts/ToastContext";
 import { getMediaUrl } from "../../utils/urlHelpers";
 
@@ -273,14 +272,7 @@ export default function CareerGuideDetail() {
 
   // Helper for strong & inline code
   const parseInlineStyles = (text) => {
-    let parts = [text];
-    
-    // Parse bold **text**
-    const boldRegex = /\*\*(.*?)\*\*/g;
     let match;
-    let newParts = [];
-    
-    text.split("").forEach(() => {}); // dummy logic to shut up linters if needed
 
     // Simple replacement for bold and inline code
     const elements = [];
@@ -321,8 +313,7 @@ export default function CareerGuideDetail() {
   };
 
   return (
-    <UserLayout>
-      <Container maxWidth={false} sx={{ pt: 14, pb: 10, px: { xs: 4, md: 10 } }}>
+    <Container maxWidth={false} sx={{ pt: 14, pb: 10, px: { xs: 4, md: 10 } }}>
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
             <CircularProgress sx={{ color: "#2563eb" }} />
@@ -618,7 +609,7 @@ export default function CareerGuideDetail() {
                     Chuyên gia Tư vấn Nghề nghiệp
                   </Typography>
                   <Typography variant="body2" color="#64748b" sx={{ lineHeight: 1.5, px: 1 }}>
-                    Ban Biên Tập CvAdvisor Platform - Chia sẻ các bài phân tích sâu, xu hướng việc làm và bí quyết thương lượng lương, viết CV vượt qua ải ATS.
+                    Ban Biên Tập CareerGo - Chia sẻ các bài phân tích sâu, xu hướng việc làm và bí quyết thương lượng lương, viết CV vượt qua ải ATS.
                   </Typography>
                 </Paper>
 
@@ -688,6 +679,5 @@ export default function CareerGuideDetail() {
           </Grid>
         )}
       </Container>
-    </UserLayout>
-  );
+    );
 }

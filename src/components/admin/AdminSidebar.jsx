@@ -1,0 +1,214 @@
+import React, { useState } from "react";
+import {
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Toolbar,
+  Typography,
+  Box,
+  Button,
+  Divider,
+} from "@mui/material";
+import {
+  Dashboard,
+  People,
+  Business,
+  Assessment,
+  Settings,
+  Logout,
+  Book,
+  AutoAwesome,
+  AdminPanelSettings,
+} from "@mui/icons-material";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useToast } from "../../contexts/ToastContext";
+import LogoutConfirmDialog from "../dialogs/LogoutConfirmDialog";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+
+const drawerWidth = 260;
+
+export default function AdminSidebar({ mobileOpen, handleDrawerToggle }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const showToast = useToast();
+
+  const handleLogout = () => {
+    setLogoutDialogOpen(false);
+    localStorage.removeItem("token");
+    showToast("Đăng xuất thành công!", "success");
+    setTimeout(() => {
+      navigate("/login");
+    }, 400);
+  };
+
+  const menuItems = [
+    { text: "Dashboard", icon: <Dashboard />, path: "/admin_dashboard", color: "#0ea5e9" },
+    { text: "Quản lý AI", icon: <AutoAwesome />, path: "/admin/ai", color: "#2563eb" },
+    { text: "Quản lý Người dùng", icon: <People />, path: "/admin/users", color: "#8b5cf6" },
+    { text: "Quản lý Công ty", icon: <People />, path: "/admin/hrs", color: "#f43f5e" },
+    { text: "Quản lý Cẩm nang", icon: <Book />, path: "/admin/articles", color: "#ec4899" },
+    { text: "Thống kê", icon: <Assessment />, path: "/admin/stats", color: "#f59e0b" },
+    { text: "Cài đặt", icon: <Settings />, path: "/admin/settings", color: "#64748b" },
+  ];
+
+  const drawerContent = (
+    <>
+      {/* BRAND / LOGO & MENU */}
+      <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
+        <Toolbar
+          sx={{
+            mb: 2,
+            px: 2.5,
+            display: "flex",
+            alignItems: "center",
+            gap: 1.2,
+            cursor: "pointer",
+          }}
+          onClick={() => navigate("/admin_dashboard")}
+        >
+          <Box
+            sx={{
+              width: 34,
+              height: 34,
+              borderRadius: "10px",
+              background: "linear-gradient(135deg, #0ea5e9, #2563eb)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              boxShadow: "0 2px 6px rgba(14,165,233,0.25)",
+            }}
+          >
+            <AdminPanelSettings sx={{ fontSize: 20 }} />
+          </Box>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: "bold",
+              color: "#0ea5e9",
+              letterSpacing: 1,
+            }}
+          >
+            ADMIN PORTAL
+          </Typography>
+        </Toolbar>
+
+        <Box sx={{ overflow: "auto", flexGrow: 1 }}>
+          <List sx={{ px: 2 }}>
+            {menuItems.map((item) => {
+              const active = location.pathname.startsWith(item.path);
+
+              return (
+                <ListItem key={item.text} disablePadding sx={{ mb: 1.5 }}>
+                  <ListItemButton
+                    onClick={() => {
+                      navigate(item.path);
+                      if (isMobile && handleDrawerToggle) handleDrawerToggle();
+                    }}
+                    sx={{
+                      borderRadius: 2.5,
+                      border: "1.5px solid",
+                      borderColor: active ? item.color : `${item.color}15`,
+                      bgcolor: active ? `${item.color}10` : "#ffffff",
+                      color: active ? item.color : "#64748b",
+                      transition: "all 0.25s ease",
+                      "& .MuiListItemIcon-root": {
+                        color: item.color,
+                        minWidth: 40,
+                      },
+                      "&:hover": {
+                        bgcolor: `${item.color}08`,
+                        borderColor: item.color,
+                        color: item.color,
+                        transform: "translateX(4px)",
+                        boxShadow: `0 4px 12px ${item.color}15`,
+                      },
+                    }}
+                  >
+                    <ListItemIcon>{item.icon}</ListItemIcon>
+                    <ListItemText
+                      primary={item.text}
+                      primaryTypographyProps={{
+                        fontSize: "0.9rem",
+                        fontWeight: 600,
+                      }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+              );
+            })}
+          </List>
+        </Box>
+      </Box>
+
+      {/* LOGOUT */}
+      <Box sx={{ p: 2, pb: 3 }}>
+        <Divider sx={{ mb: 2, opacity: 0.6 }} />
+        <Button
+          fullWidth
+          variant="outlined"
+          startIcon={<Logout />}
+          onClick={() => setLogoutDialogOpen(true)}
+          sx={{
+            borderRadius: 2.5,
+            textTransform: "none",
+            fontWeight: 700,
+            py: 1.2,
+            color: "#f87171",
+            borderColor: "#fee2e2",
+            bgcolor: "#ffffff",
+            borderWidth: "1.5px",
+            "&:hover": {
+              bgcolor: "#fef2f2",
+              borderColor: "#f87171",
+              color: "#ef4444",
+              transform: "translateY(-2px)",
+              boxShadow: "0 4px 12px rgba(248,113,113,0.15)",
+            },
+          }}
+        >
+          Đăng xuất
+        </Button>
+      </Box>
+    </>
+  );
+
+  return (
+    <>
+      <Drawer
+        variant={isMobile ? "temporary" : "permanent"}
+        open={isMobile ? mobileOpen : true}
+        onClose={handleDrawerToggle}
+        ModalProps={{
+          keepMounted: true,
+        }}
+        sx={{
+          width: { sm: drawerWidth },
+          flexShrink: { sm: 0 },
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
+            boxSizing: "border-box",
+            bgcolor: "#ffffff",
+            borderRight: "1px solid #edf2f7",
+            display: "flex",
+            flexDirection: "column",
+          },
+        }}
+      >
+        {drawerContent}
+      </Drawer>
+      <LogoutConfirmDialog
+        open={logoutDialogOpen}
+        onClose={() => setLogoutDialogOpen(false)}
+        onConfirm={handleLogout}
+      />
+    </>
+  );
+}

@@ -3,8 +3,8 @@
  */
 
 import { useState, useCallback, useEffect } from "react";
-import { jobService } from "../../services/user";
-import { useToast } from "../../contexts/ToastContext";
+import { jobService } from "../../../../services/user";
+import { useToast } from "../../../../contexts/ToastContext";
 
 export const useFavorites = () => {
   const [favoriteJobs, setFavoriteJobs] = useState([]);
@@ -63,7 +63,7 @@ export const useFavorites = () => {
   // Fetch favorites on mount
   useEffect(() => {
     fetchFavorites();
-  }, []);
+  }, [fetchFavorites]);
 
   return {
     favoriteJobs,

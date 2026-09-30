@@ -2,8 +2,8 @@
  * CV Service - Quản lý tất cả API calls liên quan tới CV
  */
 
-import axios from "../../api/axios";
-import { API_ENDPOINTS } from "../_shared/constants";
+import axios from "../axios";
+import { API_ENDPOINTS } from "../../shared/api";
 
 export const cvService = {
   /**
@@ -20,13 +20,36 @@ export const cvService = {
    * @param {File} file
    * @returns {Promise}
    */
-  uploadCV: async (file) => {
+  uploadCV: async (file, onUploadProgress) => {
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", file, file.name);
 
-    const response = await axios.post(API_ENDPOINTS.UPLOAD_CV, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+    // Để trình duyệt tự thêm multipart boundary vào Content-Type.
+    const config = {
+      timeout: 60000,
+      onUploadProgress: (event) => {
+        if (!event.total || !onUploadProgress) return;
+        onUploadProgress(Math.round((event.loaded * 100) / event.total));
+      },
+    };
+
+    const response = await axios.post(API_ENDPOINTS.UPLOAD_CV, formData, config);
+    return response.data;
+  },
+
+  /**
+   * Xóa CV
+   * @param {string|number} cvId
+   * @returns {Promise}
+   */
+  getCVFile: async (cvId) => {
+    const response = await axios.get(`${API_ENDPOINTS.USER_CV}/${cvId}/file`, {
+      responseType: "blob",
     });
+    return response.data;
+  },
+  deleteCV: async (cvId) => {
+    const response = await axios.delete(`${API_ENDPOINTS.USER_CV}/${cvId}`);
     return response.data;
   },
 

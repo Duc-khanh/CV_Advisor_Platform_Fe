@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../services/axios";
 import { useNavigate } from "react-router-dom";
+import { Box } from "@mui/material";
 import {
   Code,
   Brush,
   Campaign,
   AccountBalance,
 } from "@mui/icons-material";
-import UserLayout from "../../components/UserLayout";
 import LastCvAnalysisSection from "./LastCvAnalysisSection";
 import HeroSection from "./HeroSection";
 import JobCategoriesSection from "./JobCategoriesSection";
@@ -17,7 +17,13 @@ import HomeCTASection from "./HomeCTASection";
 import TopCompaniesSection from "./TopCompaniesSection";
 import CompanyDetailModal from "./CompanyDetailModal";
 import CareerGuideSection from "./CareerGuideSection";
-import { migrateLegacyStorage } from "../../services/cvAnalysisStorage";
+import AIToolsShowcaseSection from "./AIToolsShowcaseSection";
+import PlatformStatsSection from "./PlatformStatsSection";
+import JobMarketInsightsSection from "./JobMarketInsightsSection";
+import TestimonialsSection from "./TestimonialsSection";
+import FAQSection from "./FAQSection";
+
+import { migrateLegacyStorage } from "../../services/cv/cvAnalysisStorage";
 import { useToast } from "../../contexts/ToastContext";
 
 export default function UserHome() {
@@ -26,10 +32,11 @@ export default function UserHome() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState({ keyword: "", location: "" });
-  const [favoriteIds, setFavoriteIds] = useState(new Set());
+  const [, setFavoriteIds] = useState(new Set());
 
   const [currentPage, setCurrentPage] = useState(1);
   const [showAllJobs, setShowAllJobs] = useState(false);
+  const [, setTotalPages] = useState(1);
   const jobsPerPage = showAllJobs ? Math.max(jobs.length, 12) : 12;
 
   // Selected company state for detail view modal
@@ -59,7 +66,7 @@ export default function UserHome() {
   const fetchFavoriteIds = async (authHeader) => {
     if (!authHeader) return new Set();
     try {
-      const res = await axios.get("http://localhost:8080/api/user/jobs/favorite/all", {
+      const res = await api.get("/api/user/jobs/favorite/all", {
         headers: authHeader,
       });
       return new Set(res.data.map((job) => job.jobId));
@@ -75,20 +82,28 @@ export default function UserHome() {
     const favoriteIdsFromServer = await fetchFavoriteIds(authHeader);
 
     try {
-      const response = await axios.get("http://localhost:8080/api/public/jobs", {
+      const response = await api.get("/api/public/jobs", {
         params: {
           keyword: searchQuery.keyword,
           location: searchQuery.location,
+          page: 0,
+          size: 50,
         },
         headers: authHeader || {},
       });
 
-      const jobsWithFavorite = response.data.map((job) => ({
+      // Backend trả về Spring Page object: { content: [...], totalPages, totalElements, ... }
+      const jobList = Array.isArray(response.data)
+        ? response.data
+        : response.data?.content ?? [];
+
+      const jobsWithFavorite = jobList.map((job) => ({
         ...job,
         isFavorite: favoriteIdsFromServer.has(job.jobId),
       }));
 
       setJobs(jobsWithFavorite);
+      setTotalPages(response.data?.totalPages ?? 1);
       setFavoriteIds(favoriteIdsFromServer);
       setCurrentPage(1);
     } catch (error) {
@@ -114,7 +129,7 @@ export default function UserHome() {
 
     if (currentFavoriteStatus) {
       try {
-        await axios.delete(`http://localhost:8080/api/user/jobs/favorite/${jobId}`, {
+        await api.delete(`/api/user/jobs/favorite/${jobId}`, {
           headers: authHeader,
         });
 
@@ -135,7 +150,7 @@ export default function UserHome() {
       }
     } else {
       try {
-        await axios.post(`http://localhost:8080/api/user/jobs/favorite/add/${jobId}`, null, {
+        await api.post(`/api/user/jobs/favorite/add/${jobId}`, null, {
           headers: authHeader,
         });
 
@@ -184,9 +199,14 @@ export default function UserHome() {
   ];
 
   return (
-    <UserLayout>
+    <Box
+      sx={{
+        "& .MuiPaper-root": { border: "none" },
+      }}
+    >
       <HeroSection searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={handleSearch} />
       <LastCvAnalysisSection />
+      
       <JobCategoriesSection jobCategories={jobCategories} />
       
       {/* Job list with filter tabs */}
@@ -202,13 +222,31 @@ export default function UserHome() {
         isHomePage={true}
       />
 
+      {/* Platform Real-Time Stats & Live Activity Ticker */}
+      <PlatformStatsSection />
+
+      {/* Real-Time Job Market Analytics & Insights */}
+      <JobMarketInsightsSection jobs={jobs} />
+
+      {/* Interactive AI Tools Showcase (ATS Scanner, Skill Gap, Mock Interview, Salary) */}
+      <AIToolsShowcaseSection />
+
       {/* Top Recruiting Companies from database */}
       <TopCompaniesSection onCompanyClick={handleCompanyClick} />
 
       {/* Career handbook guide articles */}
       <CareerGuideSection />
 
+      {/* Candidate Success Stories & Testimonials */}
+      <TestimonialsSection />
+
+      {/* Why Choose CareerGo Core Values */}
       <HowItWorksSection />
+
+      {/* Frequently Asked Questions (Interactive Accordion) */}
+      <FAQSection />
+
+      {/* High-Tech Master CTA Banner */}
       <HomeCTASection onCreateCv={() => navigate("/cv-builder")} />
 
       {/* Company Detail popup modal */}
@@ -219,6 +257,6 @@ export default function UserHome() {
         navigate={navigate}
         handleToggleFavorite={handleToggleFavorite}
       />
-    </UserLayout>
+    </Box>
   );
 }

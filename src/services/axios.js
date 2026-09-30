@@ -1,8 +1,9 @@
 // services/axios.js
 import axios from "axios";
+import { API_BASE_URL } from "../utils/urlHelpers";
 
 const instance = axios.create({
-  baseURL: "http://localhost:8080", // backend
+  baseURL: API_BASE_URL,
 });
   
 const normalizeToken = (value) => {
