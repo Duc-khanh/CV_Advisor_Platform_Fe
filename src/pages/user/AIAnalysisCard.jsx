@@ -28,7 +28,7 @@ export default function AIAnalysisCard({
   const status = getScoreStatus(numericScore);
   const circumference = 2 * Math.PI * 38; // r = 38 -> ~238.76
   const strokeOffset = circumference - (circumference * Math.min(Math.max(numericScore, 0), 100)) / 100;
-
+// hdhedghdhdgdhgdfgd
   return (
     <div className="w-full bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl shadow-sky-950/5 p-5 sm:p-7 relative overflow-hidden transition-all duration-300">
       
